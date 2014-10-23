@@ -1,4 +1,4 @@
-angular.module('wk.chart').factory 'chart', ($log, layeredData, scaleList, container, behavior, d3Animation) ->
+angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavior, d3Animation) ->
 
   chartCntr = 0
 

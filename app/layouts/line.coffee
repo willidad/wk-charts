@@ -3,7 +3,8 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
   return {
     restrict: 'A'
     require: 'layout'
-    link: (scope, element, attrs, host) ->
+    link: (scope, element, attrs, controller) ->
+      host = controller.me
       #$log.log 'linking s-line'
       _layerKeys = []
       _layout = []
@@ -46,19 +47,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
 
         if not options.skip
           _layerKeys = y.layerKeys(data)
-          _layout = _layerKeys.map((key) ->
-            {
-              key:key,
-              color:color.scale()(key),
-              value: data.map((d) ->
-                {
-                  x: x.value(d),
-                  y: y.layerValue(d, key),
-                  color: color.scale()(key),
-                  key: key
-                })
-            }
-          )
+          _layout = _layerKeys.map((key) => {key:key, color:color.scale()(key), value:data.map((d)-> {x:x.value(d),y:y.layerValue(d, key), color:color.scale()(key), key:key, __data$$:d})})
 
         offset = if x.isOrdinal() then x.scale().rangeBand() / 2 else 0
 

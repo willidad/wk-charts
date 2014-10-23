@@ -125,7 +125,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
       if bounds.width <= 0 then return # check if bounds have a meaningful value. Width is eventually 0 when called while browser layouts page after load. Will be called when layout is done, so just ignore the first call
       _margin = angular.copy(d3ChartMargins.default)
       for l in _layouts
-        for k, s of l.scales().allKinds()  #TODO: Not important -  find way to handle shared scales more efficiently
+        for k, s of l.scales().allKinds()
           if s.showAxis()
             axisPos = s.axisOrient()
             _margin[axisPos] = d3ChartMargins.axis[axisPos]
