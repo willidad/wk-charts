@@ -89,7 +89,7 @@ charts.constant 'd3Animation', {
   duration:500
 }
 
-charts.constant 'templateDir', 'app/lib/templates/'
+charts.constant 'templateDir', 'app/templates/'
 
 charts.constant 'd3ScaleMap', [
   scaleX: 'x'
