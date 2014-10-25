@@ -1,7 +1,6 @@
 angular.module('wk.chart', [])
-charts = angular.module 'wk.chart'
 
-charts.constant 'd3Scales', {
+angular.module('wk.chart').constant 'd3Scales', {
   linear: d3.scale.linear
   sqrt: d3.scale.sqrt
   log: d3.scale.log
@@ -17,7 +16,7 @@ charts.constant 'd3Scales', {
   time: d3.time.scale
 }
 
-charts.constant 'd3OrdinalScales', [
+angular.module('wk.chart').constant 'd3OrdinalScales', [
   'ordinal'
   'category10'
   'category20'
@@ -25,7 +24,7 @@ charts.constant 'd3OrdinalScales', [
   'category20c'
 ]
 
-charts.constant 'd3ChartMargins', {
+angular.module('wk.chart').constant 'd3ChartMargins', {
   top: 10
   left: 50
   bottom: 40
@@ -50,7 +49,7 @@ charts.constant 'd3ChartMargins', {
     right:20
 }
 
-charts.constant 'd3Shapes', [
+angular.module('wk.chart').constant 'd3Shapes', [
   'circle',
   'cross',
   'triangle-down',
@@ -59,7 +58,7 @@ charts.constant 'd3Shapes', [
   'diamond'
 ]
 
-charts.constant 'axisConfig', {
+angular.module('wk.chart').constant 'axisConfig', {
   labelFontSize: '1.6em'
   x:
     axisPositions: ['top', 'bottom']
@@ -85,13 +84,13 @@ charts.constant 'axisConfig', {
       right: '1.2em'
 }
 
-charts.constant 'd3Animation', {
+angular.module('wk.chart').constant 'd3Animation', {
   duration:500
 }
 
-charts.constant 'templateDir', 'app/templates/'
+angular.module('wk.chart').constant 'templateDir', 'app/templates/'
 
-charts.constant 'd3ScaleMap', [
+angular.module('wk.chart').constant 'd3ScaleMap', [
   scaleX: 'x'
   scaleY: 'y'
   scaleColor: 'color'
@@ -99,7 +98,7 @@ charts.constant 'd3ScaleMap', [
   scaleShape: 'shape'
 ]
 
-charts.constant 'formatDefaults', {
+angular.module('wk.chart').constant 'formatDefaults', {
   date: '%d.%m.%Y'
   number :  ',.2f'
 }

@@ -25582,7 +25582,7 @@ var styleDirective = valueFn({
 })(window, document);
 
 !window.angular.$$csp() && window.angular.element(document).find('head').prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}</style>');
-;/**
+/**
  * @license AngularJS v1.3.0
  * (c) 2010-2014 Google, Inc. http://angularjs.org
  * License: MIT
@@ -27695,7 +27695,7 @@ angular.module('ngAnimate', ['ng'])
 
 })(window, window.angular);
 
-;!function() {
+!function() {
   var d3 = {
     version: "3.4.13"
   };
@@ -36910,7 +36910,7 @@ angular.module('ngAnimate', ['ng'])
   if (typeof define === "function" && define.amd) define(d3); else if (typeof module === "object" && module.exports) module.exports = d3;
   this.d3 = d3;
 }();
-;/**
+/**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
  * Build: `lodash -o ./dist/lodash.compat.js`
@@ -44068,7 +44068,7 @@ angular.module('ngAnimate', ['ng'])
   }
 }.call(this));
 
-;(function() {
+(function() {
   var WebSocket = window.WebSocket || window.MozWebSocket;
   var br = window.brunch = (window.brunch || {});
   var ar = br['auto-reload'] = (br['auto-reload'] || {});
@@ -44103,7 +44103,7 @@ angular.module('ngAnimate', ['ng'])
       el.style.display = bodyDisplay;
     }
   };
-  var port = ar.port || 9486;
+  var port = ar.port || 9485;
   var host = br.server || window.location.hostname;
 
   var connect = function(){
@@ -44124,5 +44124,5 @@ angular.module('ngAnimate', ['ng'])
   connect();
 })();
 
-;
+
 //# sourceMappingURL=vendor.js.map

@@ -14,7 +14,11 @@ angular.module('wk.chart').constant('d3Scales', {
   category20b: d3.scale.category20b,
   category20c: d3.scale.category20c,
   time: d3.time.scale
-}).constant('d3OrdinalScales', ['ordinal', 'category10', 'category20', 'category20b', 'category20c']).constant('d3ChartMargins', {
+});
+
+angular.module('wk.chart').constant('d3OrdinalScales', ['ordinal', 'category10', 'category20', 'category20b', 'category20c']);
+
+angular.module('wk.chart').constant('d3ChartMargins', {
   top: 10,
   left: 50,
   bottom: 40,
@@ -46,7 +50,11 @@ angular.module('wk.chart').constant('d3Scales', {
     left: 20,
     right: 20
   }
-}).constant('d3Shapes', ['circle', 'cross', 'triangle-down', 'triangle-up', 'square', 'diamond']).constant('axisConfig', {
+});
+
+angular.module('wk.chart').constant('d3Shapes', ['circle', 'cross', 'triangle-down', 'triangle-up', 'square', 'diamond']);
+
+angular.module('wk.chart').constant('axisConfig', {
   labelFontSize: '1.6em',
   x: {
     axisPositions: ['top', 'bottom'],
@@ -78,9 +86,15 @@ angular.module('wk.chart').constant('d3Scales', {
       right: '1.2em'
     }
   }
-}).constant('d3Animation', {
+});
+
+angular.module('wk.chart').constant('d3Animation', {
   duration: 500
-}).constant('templateDir', 'app/lib/templates/').constant('d3ScaleMap', [
+});
+
+angular.module('wk.chart').constant('templateDir', 'app/templates/');
+
+angular.module('wk.chart').constant('d3ScaleMap', [
   {
     scaleX: 'x',
     scaleY: 'y',
@@ -88,7 +102,9 @@ angular.module('wk.chart').constant('d3Scales', {
     scaleSize: 'size',
     scaleShape: 'shape'
   }
-]).constant('formatDefaults', {
+]);
+
+angular.module('wk.chart').constant('formatDefaults', {
   date: '%d.%m.%Y',
   number: ',.2f'
 });
@@ -103,11 +119,11 @@ angular.module('wk.chart').constant('d3Scales', {
       change: '&'
     },
     link: function(scope, element, attrs, controllers) {
-      var brush, chart, layout, scales, x, xScale, y, yScale, _brushAreaSelection, _brushGroup, _isAreaBrush, _selectables;
-      chart = controllers[0];
-      layout = controllers[1];
-      x = controllers[2];
-      y = controllers[3];
+      var brush, chart, layout, scales, x, xScale, y, yScale, _brushAreaSelection, _brushGroup, _isAreaBrush, _ref, _ref1, _ref2, _selectables;
+      chart = controllers[0].me;
+      layout = (_ref = controllers[1]) != null ? _ref.me : void 0;
+      x = (_ref1 = controllers[2]) != null ? _ref1.me : void 0;
+      y = (_ref2 = controllers[3]) != null ? _ref2.me : void 0;
       xScale = void 0;
       yScale = void 0;
       _selectables = void 0;
@@ -156,23 +172,23 @@ angular.module('wk.chart').constant('d3Scales', {
     restrict: 'A',
     require: ['^chart', '?^layout', '?x', '?y'],
     link: function(scope, element, attrs, controllers) {
-      var axis, brusher, chart, layout, x, y, _brushGroup;
-      chart = controllers[0];
-      layout = controllers[1];
-      x = controllers[2];
-      y = controllers[3];
+      var axis, brusher, chart, layout, x, y, _brushGroup, _ref, _ref1, _ref2;
+      chart = controllers[0].me;
+      layout = (_ref = controllers[1]) != null ? _ref.me : void 0;
+      x = (_ref1 = controllers[2]) != null ? _ref1.me : void 0;
+      y = (_ref2 = controllers[3]) != null ? _ref2.me : void 0;
       axis = x || y;
       _brushGroup = void 0;
       brusher = function(extent) {
-        var l, _i, _len, _ref;
+        var l, _i, _len, _ref3;
         timing.start("brusher" + (axis.id()));
         if (!axis) {
           return;
         }
         axis.domain(extent).scale().domain(extent);
-        _ref = chart.layouts();
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          l = _ref[_i];
+        _ref3 = chart.layouts();
+        for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
+          l = _ref3[_i];
           if (l.scales().hasScale(axis)) {
             l.lifeCycle().brush(axis, true);
           }
@@ -203,13 +219,11 @@ angular.module('wk.chart').constant('d3Scales', {
       data: '='
     },
     controller: function() {
-      var me;
-      me = chart();
-      return me;
+      return this.me = chart();
     },
     link: function(scope, element, attrs, controller) {
       var deepWatch, me, watcherRemoveFn;
-      me = controller;
+      me = controller.me;
       deepWatch = false;
       watcherRemoveFn = void 0;
       element.addClass(me.id());
@@ -252,14 +266,12 @@ angular.module('wk.chart').constant('d3Scales', {
     restrict: 'AE',
     require: ['layout', '^chart'],
     controller: function($element) {
-      var me;
-      me = layout();
-      return me;
+      return this.me = layout();
     },
     link: function(scope, element, attrs, controllers) {
       var chart, me;
-      me = controllers[0];
-      chart = controllers[1];
+      me = controllers[0].me;
+      chart = controllers[1].me;
       me.chart(chart);
       element.addClass(me.id());
       chart.addLayout(me);
@@ -277,7 +289,9 @@ angular.module('wk.chart').constant('d3Scales', {
       selectedDomain: '='
     },
     require: 'layout',
-    link: function(scope, element, attrs, layout) {
+    link: function(scope, element, attrs, controller) {
+      var layout;
+      layout = controller.me;
       return layout.lifeCycle().on('configure.selection', function() {
         var _selection;
         _selection = layout.behavior().selected;
@@ -310,8 +324,9 @@ angular.module('wk.chart').constant('d3Scales', {
   return {
     restrict: 'A',
     require: 'layout',
-    link: function(scope, element, attrs, host) {
-      var area, brush, draw, layerKeys, offset, ttMoveData, ttMoveMarker, _circles, _id, _layout, _scaleList, _showMarkers, _tooltip, _ttHighlight;
+    link: function(scope, element, attrs, controller) {
+      var area, brush, draw, host, layerKeys, offset, ttMoveData, ttMoveMarker, _circles, _id, _layout, _scaleList, _showMarkers, _tooltip, _ttHighlight;
+      host = controller.me;
       layerKeys = [];
       _layout = [];
       _tooltip = void 0;
@@ -427,8 +442,9 @@ angular.module('wk.chart').constant('d3Scales', {
   return {
     restrict: 'A',
     require: 'layout',
-    link: function(scope, element, attrs, layout) {
-      var draw, ttEnter, _id, _scaleList, _selected, _tooltip;
+    link: function(scope, element, attrs, controller) {
+      var draw, layout, ttEnter, _id, _scaleList, _selected, _tooltip;
+      layout = controller.me;
       _tooltip = void 0;
       _scaleList = {};
       _id = 'bubble' + bubbleCntr++;
@@ -487,8 +503,9 @@ angular.module('wk.chart').constant('d3Scales', {
   return {
     restrict: 'A',
     require: '^layout',
-    link: function(scope, element, attrs, host) {
-      var clusterOld, draw, getLPredX, getLSuccX, getLayerByKey, getXByKey, getXPredX, getXSuccX, layerKeysOld, layers, ttEnter, xKeysOld, _id, _scaleList, _tooltip;
+    link: function(scope, element, attrs, controller) {
+      var clusterOld, draw, getLPredX, getLSuccX, getLayerByKey, getXByKey, getXPredX, getXSuccX, host, layerKeysOld, layers, ttEnter, xKeysOld, _id, _scaleList, _tooltip;
+      host = controller.me;
       _id = "clusteredBar" + (clusteredBarCntr++);
       layers = null;
       layerKeysOld = [];
@@ -682,8 +699,9 @@ angular.module('wk.chart').constant('d3Scales', {
       $attrs.$set('chart-id', me.id);
       return me;
     },
-    link: function(scope, element, attrs, layout) {
-      var draw, initalShow;
+    link: function(scope, element, attrs, controller) {
+      var draw, initalShow, layout;
+      layout = controller.me;
       initalShow = true;
       draw = function(data, options, x, y, color) {
         var addMarker, bar, colorDomain, dat, i, marker, ranges, yDomain, _i, _ref;
@@ -776,8 +794,9 @@ angular.module('wk.chart').constant('d3Scales', {
       geojson: '=',
       projection: '='
     },
-    link: function(scope, element, attrs, layout) {
-      var draw, pathSel, ttEnter, _dataMapping, _geoJson, _height, _id, _idProp, _path, _projection, _rotate, _scale, _scaleList, _selected, _tooltip, _width, _zoom;
+    link: function(scope, element, attrs, controller) {
+      var draw, layout, pathSel, ttEnter, _dataMapping, _geoJson, _height, _id, _idProp, _path, _projection, _rotate, _scale, _scaleList, _selected, _tooltip, _width, _zoom;
+      layout = controller.me;
       _tooltip = void 0;
       _selected = void 0;
       _scaleList = {};
@@ -869,8 +888,9 @@ angular.module('wk.chart').constant('d3Scales', {
   return {
     restrict: 'A',
     require: 'layout',
-    link: function(scope, element, attrs, host) {
-      var draw, layerKeys, offset, ttMoveData, ttMoveMarker, _circles, _id, _layout, _scaleList, _showMarkers, _tooltip, _ttHighlight;
+    link: function(scope, element, attrs, controller) {
+      var draw, host, layerKeys, offset, ttMoveData, ttMoveMarker, _circles, _id, _layout, _scaleList, _showMarkers, _tooltip, _ttHighlight;
+      host = controller.me;
       layerKeys = [];
       _layout = [];
       _tooltip = void 0;
@@ -977,8 +997,9 @@ angular.module('wk.chart').constant('d3Scales', {
   return {
     restrict: 'A',
     require: '^layout',
-    link: function(scope, element, attrs, host) {
-      var clusterOld, draw, getLPredy, getLSuccy, getLayerByKey, getXByKey, getYPredY, getYSuccY, layerKeysOld, layers, ttEnter, yKeysOld, _id, _scaleList, _tooltip;
+    link: function(scope, element, attrs, controller) {
+      var clusterOld, draw, getLPredy, getLSuccy, getLayerByKey, getXByKey, getYPredY, getYSuccY, host, layerKeysOld, layers, ttEnter, yKeysOld, _id, _scaleList, _tooltip;
+      host = controller.me;
       _id = "hClusteredBar" + (hClusteredBarCntr++);
       layers = null;
       layerKeysOld = [];
@@ -1179,8 +1200,9 @@ angular.module('wk.chart').constant('d3Scales', {
   return {
     restrict: 'A',
     require: 'layout',
-    link: function(scope, element, attrs, host) {
-      var draw, layerKeys, offset, prepData, setTooltip, ttEnter, ttMoveData, ttMoveMarker, _circles, _id, _layout, _scaleList, _showMarkers, _tooltip, _ttHighlight;
+    link: function(scope, element, attrs, controller) {
+      var draw, host, layerKeys, offset, prepData, setTooltip, ttEnter, ttMoveData, ttMoveMarker, _circles, _id, _layout, _scaleList, _showMarkers, _tooltip, _ttHighlight;
+      host = controller.me;
       layerKeys = [];
       _layout = [];
       _tooltip = void 0;
@@ -1315,8 +1337,9 @@ angular.module('wk.chart').constant('d3Scales', {
   return {
     restrict: 'A',
     require: 'layout',
-    link: function(scope, element, attrs, host) {
-      var brush, draw, line, markers, offset, ttMoveData, ttMoveMarker, _circles, _id, _initialOpacity, _layerKeys, _layout, _scaleList, _showMarkers, _tooltip, _ttHighlight;
+    link: function(scope, element, attrs, controller) {
+      var brush, draw, host, line, markers, offset, ttMoveData, ttMoveMarker, _circles, _id, _initialOpacity, _layerKeys, _layout, _scaleList, _showMarkers, _tooltip, _ttHighlight;
+      host = controller.me;
       _layerKeys = [];
       _layout = [];
       _initialOpacity = 1;
@@ -1361,20 +1384,23 @@ angular.module('wk.chart').constant('d3Scales', {
         var enter, layers;
         if (!options.skip) {
           _layerKeys = y.layerKeys(data);
-          _layout = _layerKeys.map(function(key) {
-            return {
-              key: key,
-              color: color.scale()(key),
-              value: data.map(function(d) {
-                return {
-                  x: x.value(d),
-                  y: y.layerValue(d, key),
-                  color: color.scale()(key),
-                  key: key
-                };
-              })
+          _layout = _layerKeys.map((function(_this) {
+            return function(key) {
+              return {
+                key: key,
+                color: color.scale()(key),
+                value: data.map(function(d) {
+                  return {
+                    x: x.value(d),
+                    y: y.layerValue(d, key),
+                    color: color.scale()(key),
+                    key: key,
+                    __data$$: d
+                  };
+                })
+              };
             };
-          });
+          })(this));
         }
         offset = x.isOrdinal() ? x.scale().rangeBand() / 2 : 0;
         if (_tooltip) {
@@ -1455,8 +1481,9 @@ angular.module('wk.chart').constant('d3Scales', {
   return {
     restrict: 'EA',
     require: '^layout',
-    link: function(scope, element, attrs, layout) {
-      var arcs, draw, init, initialShow, oldKeys, ttEnter, _id, _scaleList, _selected, _tooltip;
+    link: function(scope, element, attrs, controller) {
+      var arcs, draw, init, initialShow, layout, oldKeys, ttEnter, _id, _scaleList, _selected, _tooltip;
+      layout = controller.me;
       _id = "pie" + (pieCntr++);
       arcs = null;
       oldKeys = [];
@@ -1577,8 +1604,9 @@ angular.module('wk.chart').constant('d3Scales', {
   return {
     restrict: 'A',
     require: '^layout',
-    link: function(scope, element, attrs, layout) {
-      var draw, initialShow, ttEnter, _id, _scaleList, _selected, _tooltip;
+    link: function(scope, element, attrs, controller) {
+      var draw, initialShow, layout, ttEnter, _id, _scaleList, _selected, _tooltip;
+      layout = controller.me;
       _tooltip = void 0;
       _selected = void 0;
       _id = 'scatter' + scatterCnt++;
@@ -1642,8 +1670,9 @@ angular.module('wk.chart').constant('d3Scales', {
   return {
     restrict: 'A',
     require: '^layout',
-    link: function(scope, element, attrs, host) {
-      var bars, draw, getPredX, getSuccX, getXByKey, oldKeys, oldLayout, ttEnter, _id, _scaleList, _selected, _tooltip;
+    link: function(scope, element, attrs, controller) {
+      var bars, draw, getPredX, getSuccX, getXByKey, host, oldKeys, oldLayout, ttEnter, _id, _scaleList, _selected, _tooltip;
+      host = controller.me;
       _id = "simpleBar" + (sBarCntr++);
       bars = null;
       oldLayout = [];
@@ -1755,8 +1784,9 @@ angular.module('wk.chart').constant('d3Scales', {
   return {
     restrict: 'A',
     require: 'layout',
-    link: function(scope, element, attrs, layout) {
-      var axis, draw, ttEnter, _data, _id, _scaleList, _tooltip;
+    link: function(scope, element, attrs, controller) {
+      var axis, draw, layout, ttEnter, _data, _id, _scaleList, _tooltip;
+      layout = controller.me;
       _tooltip = void 0;
       _scaleList = {};
       _id = 'spider' + spiderCntr++;
@@ -1882,8 +1912,9 @@ angular.module('wk.chart').constant('d3Scales', {
   return {
     restrict: 'A',
     require: 'layout',
-    link: function(scope, element, attrs, host) {
-      var addedPred, area, deletedSucc, draw, getLayerByKey, layerData, layerKeys, layerKeysOld, layers, layout, layoutNew, layoutOld, offs, offset, scaleY, stack, ttMoveData, ttMoveMarker, _circles, _id, _scaleList, _showMarkers, _tooltip, _ttHighlight;
+    link: function(scope, element, attrs, controller) {
+      var addedPred, area, deletedSucc, draw, getLayerByKey, host, layerData, layerKeys, layerKeysOld, layers, layout, layoutNew, layoutOld, offs, offset, scaleY, stack, ttMoveData, ttMoveMarker, _circles, _id, _scaleList, _showMarkers, _tooltip, _ttHighlight;
+      host = controller.me;
       stack = d3.layout.stack();
       offset = 'zero';
       layers = null;
@@ -2096,8 +2127,9 @@ angular.module('wk.chart').constant('d3Scales', {
   return {
     restrict: 'A',
     require: 'layout',
-    link: function(scope, element, attrs, host) {
-      var draw, getLayerByKey, getXByKey, layers, oldKeys, oldStack, oldXKeys, stack, ttEnter, _id, _scaleList, _selected, _tooltip;
+    link: function(scope, element, attrs, controller) {
+      var draw, getLayerByKey, getXByKey, host, layers, oldKeys, oldStack, oldXKeys, stack, ttEnter, _id, _scaleList, _selected, _tooltip;
+      host = controller.me;
       _id = "stackedBar" + (stackedBarCntr++);
       layers = null;
       stack = [];
@@ -3040,7 +3072,7 @@ angular.module('wk.chart').constant('d3Scales', {
   };
   return behavior;
 });
-;angular.module('wk.chart').factory('chart', function($log, layeredData, scaleList, container, behavior, d3Animation) {
+;angular.module('wk.chart').factory('chart', function($log, scaleList, container, behavior, d3Animation) {
   var chart, chartCntr;
   chartCntr = 0;
   chart = function() {
@@ -4361,15 +4393,13 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
     restrict: 'E',
     require: ['color', '^chart', '?^layout'],
     controller: function($element) {
-      var me;
-      me = scale();
-      return me;
+      return this.me = scale();
     },
     link: function(scope, element, attrs, controllers) {
-      var chart, l, layout, me, name;
-      me = controllers[0];
-      chart = controllers[1];
-      layout = controllers[2];
+      var chart, l, layout, me, name, _ref;
+      me = controllers[0].me;
+      chart = controllers[1].me;
+      layout = (_ref = controllers[2]) != null ? _ref.me : void 0;
       l = void 0;
       if (!(chart || layout)) {
         $log.error('scale needs to be contained in a chart or layout directive ');
@@ -4586,15 +4616,13 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
     restrict: 'E',
     require: ['shape', '^chart', '?^layout'],
     controller: function($element) {
-      var me;
-      me = scale();
-      return me;
+      return this.me = scale();
     },
     link: function(scope, element, attrs, controllers) {
-      var chart, layout, me, name;
-      me = controllers[0];
-      chart = controllers[1];
-      layout = controllers[2];
+      var chart, layout, me, name, _ref;
+      me = controllers[0].me;
+      chart = controllers[1].me;
+      layout = (_ref = controllers[2]) != null ? _ref.me : void 0;
       if (!(chart || layout)) {
         $log.error('scale needs to be contained in a chart or layout directive ');
         return;
@@ -4620,15 +4648,13 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
     restrict: 'E',
     require: ['size', '^chart', '?^layout'],
     controller: function($element) {
-      var me;
-      me = scale();
-      return me;
+      return this.me = scale();
     },
     link: function(scope, element, attrs, controllers) {
-      var chart, layout, me, name;
-      me = controllers[0];
-      chart = controllers[1];
-      layout = controllers[2];
+      var chart, layout, me, name, _ref;
+      me = controllers[0].me;
+      chart = controllers[1].me;
+      layout = (_ref = controllers[2]) != null ? _ref.me : void 0;
       if (!(chart || layout)) {
         $log.error('scale needs to be contained in a chart or layout directive ');
         return;
@@ -4654,15 +4680,13 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
     restrict: 'E',
     require: ['x', '^chart', '?^layout'],
     controller: function($element) {
-      var me;
-      me = scale();
-      return me;
+      return this.me = scale();
     },
     link: function(scope, element, attrs, controllers) {
-      var chart, layout, me, name;
-      me = controllers[0];
-      chart = controllers[1];
-      layout = controllers[2];
+      var chart, layout, me, name, _ref;
+      me = controllers[0].me;
+      chart = controllers[1].me;
+      layout = (_ref = controllers[2]) != null ? _ref.me : void 0;
       if (!(chart || layout)) {
         $log.error('scale needs to be contained in a chart or layout directive ');
         return;
@@ -4704,15 +4728,13 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
     restrict: 'E',
     require: ['y', '^chart', '?^layout'],
     controller: function($element) {
-      var me;
-      me = scale();
-      return me;
+      return this.me = scale();
     },
     link: function(scope, element, attrs, controllers) {
-      var chart, layout, me, name;
-      me = controllers[0];
-      chart = controllers[1];
-      layout = controllers[2];
+      var chart, layout, me, name, _ref;
+      me = controllers[0].me;
+      chart = controllers[1].me;
+      layout = (_ref = controllers[2]) != null ? _ref.me : void 0;
       if (!(chart || layout)) {
         $log.error('scale needs to be contained in a chart or layout directive ');
         return;
@@ -4840,7 +4862,44 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
   };
   return this;
 });
-;/**
+;angular.module('wk.chart')
+.run(['$templateCache', function($templateCache) {
+  return $templateCache.put('app/templates/legend.jade', [
+'',
+'<div ng-style="position" ng-show="showLegend" class="d3ChartColorLegend">',
+'  <div ng-show="title" class="legend-title">{{title}}</div>',
+'  <ul class="list-unstyled">',
+'    <li ng-repeat="legendRow in legendRows track by legendRow.value" class="d3ChartColorLegendItem"><span ng-if="legendRow.color" ng-style="legendRow.color">&nbsp;&nbsp;&nbsp;</span>',
+'      <svg-icon ng-if="legendRow.path" path="legendRow.path" width="20"></svg-icon>&nbsp;{{legendRow.value}}',
+'    </li>',
+'  </ul>',
+'</div>',''].join("\n"));
+}])
+.run(['$templateCache', function($templateCache) {
+  return $templateCache.put('app/templates/toolTip.jade', [
+'',
+'<div ng-show="ttShow" ng-style="position" class="d3ChartsToolTip">',
+'  <table class="table table-condensed table-bordered">',
+'    <thead ng-show="headerValue">',
+'      <tr>',
+'        <th colspan="2">{{headerName}}</th>',
+'        <th>{{headerValue}}</th>',
+'      </tr>',
+'    </thead>',
+'    <tbody>',
+'      <tr ng-repeat="ttRow in layers">',
+'        <td ng-style="ttRow.color" ng-class="ttRow.class">',
+'          <svg-icon ng-if="ttRow.path" path="ttRow.path" width="15"></svg-icon>',
+'        </td>',
+'        <td>{{ttRow.name}}</td>',
+'        <td>{{ttRow.value}}</td>',
+'      </tr>',
+'    </tbody>',
+'  </table>',
+'</div>',''].join("\n"));
+}]);
+
+/**
  * Copyright Marc J. Schmidt. See the LICENSE file at the top-level
  * directory of this distribution and at
  * https://github.com/marcj/css-element-queries/blob/master/LICENSE.
@@ -4967,7 +5026,7 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
         }
     }
 })();
-;// Copyright (c) 2013, Jason Davies, http://www.jasondavies.com
+// Copyright (c) 2013, Jason Davies, http://www.jasondavies.com
 // See LICENSE.txt for details.
 (function() {
 
@@ -5093,7 +5152,7 @@ function cross(a, b) {
 
 })();
 
-;function glow(url) {
+function glow(url) {
     var stdDeviation = 2,
         rgb = "#000",
         colorMatrix = "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0";
