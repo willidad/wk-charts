@@ -14,9 +14,15 @@ angular.module('wk.chart').service 'scaleUtils', ($log) ->
           if d3.scale.hasOwnProperty(val) or val is 'time'
             me.scaleType(val)
           else
-            ## no scale defined, use default
-            $log.error "Error: illegal scale value: #{val}. Using 'linear' scale instead"
+            if val isnt ''
+              ## no scale defined, use default
+              $log.error "Error: illegal scale value: #{val}. Using 'linear' scale instead"
             me.scaleType('linear')
+          me.update()
+
+      attrs.$observe 'exponent', (val) ->
+        if me.scaleType() is 'pow' and _.isNumber(+val)
+          me.exponent(+val).update()
 
       attrs.$observe 'property', (val) ->
         me.property(parseList(val)).update()
@@ -45,11 +51,14 @@ angular.module('wk.chart').service 'scaleUtils', ($log) ->
             me.domain(parsedList)
             me.update()
           else
-            $log.error "domain #{name}: must be array, or comma-separated list, got", val
+            $log.error "domain: must be array, or comma-separated list, got", val
+        else
+            me.domain(undefined).update()
 
       attrs.$observe 'domainRange', (val) ->
         if val
           me.domainCalc(val)
+          me.update()
 
       attrs.$observe 'label', (val) ->
         if val isnt undefined

@@ -2107,9 +2107,11 @@ angular.module('wk.chart').constant('formatDefaults', {
       attrs.$observe('stackedArea', function(val) {
         if (val === 'zero' || val === 'silhouette' || val === 'expand' || val === 'wiggle') {
           offset = val;
+        } else {
+          offset = "zero";
         }
         stack.offset(offset);
-        return host.lifeCycle().redraw();
+        return host.lifeCycle().update();
       });
       return attrs.$observe('markers', function(val) {
         if (val === '' || val === 'true') {
@@ -3716,10 +3718,11 @@ angular.module('wk.chart').constant('formatDefaults', {
 angular.module('wk.chart').factory('scale', function($log, legend, formatDefaults) {
   var scale;
   scale = function() {
-    var calcDomain, keys, layerMax, layerMin, layerTotal, me, parsedValue, _axis, _axisLabel, _axisOrient, _axisOrientOld, _calculatedDomain, _chart, _domain, _domainCalc, _id, _inputFormatFn, _inputFormatString, _isHorizontal, _isOrdinal, _isVertical, _kind, _layerExclude, _layerProp, _layout, _legend, _outputFormatFn, _outputFormatString, _parent, _property, _range, _rangeOuterPadding, _rangePadding, _resetOnNewData, _scale, _scaleType, _showAxis, _showGrid, _showLabel, _tickFormat, _ticks;
+    var calcDomain, keys, layerMax, layerMin, layerTotal, me, parsedValue, _axis, _axisLabel, _axisOrient, _axisOrientOld, _calculatedDomain, _chart, _domain, _domainCalc, _exponent, _id, _inputFormatFn, _inputFormatString, _isHorizontal, _isOrdinal, _isVertical, _kind, _layerExclude, _layerProp, _layout, _legend, _outputFormatFn, _outputFormatString, _parent, _property, _range, _rangeOuterPadding, _rangePadding, _resetOnNewData, _scale, _scaleType, _showAxis, _showGrid, _showLabel, _tickFormat, _ticks;
     _id = '';
     _scale = d3.scale.linear();
     _scaleType = 'linear';
+    _exponent = 1;
     _isOrdinal = false;
     _domain = void 0;
     _domainCalc = void 0;
@@ -3923,6 +3926,20 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
         }
         if (_showAxis) {
           _axis.scale(_scale);
+        }
+        if (_exponent && _scaleType === 'pow') {
+          _scale.exponent(_exponent);
+        }
+        return me;
+      }
+    };
+    me.exponent = function(value) {
+      if (arguments.length === 0) {
+        return _exponent;
+      } else {
+        _exponent = value;
+        if (_scaleType === 'pow') {
+          _scale.exponent(_exponent);
         }
         return me;
       }
@@ -4445,11 +4462,19 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
       attrs.$observe('type', function(val) {
         if (val !== void 0) {
           if (d3.scale.hasOwnProperty(val) || val === 'time') {
-            return me.scaleType(val);
+            me.scaleType(val);
           } else {
-            $log.error("Error: illegal scale value: " + val + ". Using 'linear' scale instead");
-            return me.scaleType('linear');
+            if (val !== '') {
+              $log.error("Error: illegal scale value: " + val + ". Using 'linear' scale instead");
+            }
+            me.scaleType('linear');
           }
+          return me.update();
+        }
+      });
+      attrs.$observe('exponent', function(val) {
+        if (me.scaleType() === 'pow' && _.isNumber(+val)) {
+          return me.exponent(+val).update();
         }
       });
       attrs.$observe('property', function(val) {
@@ -4485,13 +4510,16 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
             me.domain(parsedList);
             return me.update();
           } else {
-            return $log.error("domain " + name + ": must be array, or comma-separated list, got", val);
+            return $log.error("domain: must be array, or comma-separated list, got", val);
           }
+        } else {
+          return me.domain(void 0).update();
         }
       });
       attrs.$observe('domainRange', function(val) {
         if (val) {
-          return me.domainCalc(val);
+          me.domainCalc(val);
+          return me.update();
         }
       });
       attrs.$observe('label', function(val) {

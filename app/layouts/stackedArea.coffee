@@ -154,8 +154,10 @@ angular.module('wk.chart').directive 'stackedArea', ($log, utils) ->
       attrs.$observe 'stackedArea', (val) ->
         if val in ['zero', 'silhouette', 'expand', 'wiggle']
           offset = val
+        else
+          offset = "zero"
         stack.offset(offset)
-        host.lifeCycle().redraw()
+        host.lifeCycle().update()
 
       attrs.$observe 'markers', (val) ->
         if val is '' or val is 'true'

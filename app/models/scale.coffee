@@ -4,6 +4,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults) ->
     _id = ''
     _scale = d3.scale.linear()
     _scaleType = 'linear'
+    _exponent = 1
     _isOrdinal = false
     _domain = undefined
     _domainCalc = undefined
@@ -162,6 +163,17 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults) ->
 
         if _showAxis
           _axis.scale(_scale)
+
+        if _exponent and _scaleType is 'pow'
+          _scale.exponent(_exponent)
+        return me
+
+    me.exponent = (value) ->
+      if arguments.length is 0 then return _exponent
+      else
+        _exponent = value
+        if _scaleType is 'pow'
+          _scale.exponent(_exponent)
         return me
 
     #--- Domain functions ----------------------------------------------------------------------------------------------
