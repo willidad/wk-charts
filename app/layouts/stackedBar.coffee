@@ -47,6 +47,9 @@ angular.module('wk.chart').directive 'stackedBar', ($log, utils) ->
       #-----------------------------------------------------------------------------------------------------------------
 
       draw = (data, options, x, y, color, size, shape) ->
+        $log.log 'y-range', y.scale().range(), 'y-domain', y.scale().domain()
+        $log.log 'x-range', x.scale().range(), 'x-domain', x.scale().domain()
+        $log.log 'color-range', color.scale().range(), 'color-domain', color.scale().domain()
         if not layers
           layers = @selectAll(".layer")
         #$log.debug "drawing stacked-bar"
@@ -60,13 +63,16 @@ angular.module('wk.chart').directive 'stackedBar', ($log, utils) ->
         xDeletedSucc = utils.diff(oldXKeys, xKeys,1)
         xAddedPred = utils.diff(xKeys,oldXKeys,-1)
 
+        NaNto0 = (n) ->
+          if isNaN(n) then 0 else n
+
         stack = []
         for d in data
           y0 = 0
-          l = {key:x.value(d), layers:[], data:d, x:x.map(d), width:x.scale().rangeBand()}
+          l = {key:x.value(d), layers:[], data:d, x:x.map(d), width:if x.scale().rangeBand then x.scale().rangeBand() else 1}
           if l.x isnt undefined
             l.layers = layerKeys.map((k) ->
-              layer = {layerKey:k, key:l.key, value:d[k], height:  y.scale()(0) - y.scale()(+d[k]), width: x.scale().rangeBand(), y: y.scale()(+y0 + +d[k]), color: color.scale()(k)}
+              layer = {layerKey:k, key:l.key, value:d[k], height:  y.scale()(0) - y.scale()(+d[k]), width: (if x.scale().rangeBand then x.scale().rangeBand() else 1), y: y.scale()(+y0 + +d[k]), color: color.scale()(k)}
               y0 += +d[k]
               return layer
             )
@@ -77,13 +83,13 @@ angular.module('wk.chart').directive 'stackedBar', ($log, utils) ->
 
         if oldStack.length is 0
           layers.enter().append('g')
-            .attr('class', "layer").attr('transform',(d) -> "translate(#{d.x},0) scale(1,1)").style('opacity',0).call(_tooltip.tooltip)
+            .attr('class', "layer").attr('transform',(d) -> "translate(#{NaNto0(d.x)},0) scale(1,1)").style('opacity',0).call(_tooltip.tooltip)
         else
           layers.enter().append('g')
             .attr('class', "layer").attr('transform',(d) ->
               pred = getXByKey(oldStack, xAddedPred[d.key])
               tx = if pred then pred.x + pred.width * 1.05 else 0
-              return "translate(#{tx},0) scale(0,1)"
+              return "translate(#{NaNto0(tx)},0) scale(0,1)"
             ).call(_tooltip.tooltip)
 
         layers
@@ -118,7 +124,6 @@ angular.module('wk.chart').directive 'stackedBar', ($log, utils) ->
             )
             .attr('height', 0).attr('width',(d) -> d.width)
             .call(_selected)
-
 
         bars.style('fill', (d) -> d.color)
           .transition().duration(options.duration)

@@ -90,8 +90,11 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
         if _elementSelection.empty()
           $log.error "Error: Element #{_element} does not exist"
         else
-          new ResizeSensor(_element.parentElement, _resizeHandler)
           _genChartFrame()
+          # find the div element to attach the handler to
+          resizeTarget = _elementSelection.select('.d3-chart').node()
+          new ResizeSensor(resizeTarget, _resizeHandler)
+
         return me
 
     me.addLayout = (layout) ->

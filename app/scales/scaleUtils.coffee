@@ -17,7 +17,6 @@ angular.module('wk.chart').service 'scaleUtils', ($log) ->
             if val isnt ''
               ## no scale defined, use default
               $log.error "Error: illegal scale value: #{val}. Using 'linear' scale instead"
-            me.scaleType('linear')
           me.update()
 
       attrs.$observe 'exponent', (val) ->
@@ -34,22 +33,19 @@ angular.module('wk.chart').service 'scaleUtils', ($log) ->
       attrs.$observe 'range', (val) ->
         range = parseList(val)
         if Array.isArray(range)
-          me.range(range)
-          me.update()
+          me.range(range).update()
 
       attrs.$observe 'dateFormat', (val) ->
         if val
           if me.scaleType() is 'time'
-            me.dataFormat(val)
-            me.update()
+            me.dataFormat(val).update()
 
       attrs.$observe 'domain', (val) ->
         if val
           $log.info 'domain', val
           parsedList = parseList(val)
           if Array.isArray(parsedList)
-            me.domain(parsedList)
-            me.update()
+            me.domain(parsedList).update()
           else
             $log.error "domain: must be array, or comma-separated list, got", val
         else
@@ -57,8 +53,7 @@ angular.module('wk.chart').service 'scaleUtils', ($log) ->
 
       attrs.$observe 'domainRange', (val) ->
         if val
-          me.domainCalc(val)
-          me.update()
+          me.domainCalc(val).update()
 
       attrs.$observe 'label', (val) ->
         if val isnt undefined
@@ -74,7 +69,7 @@ angular.module('wk.chart').service 'scaleUtils', ($log) ->
 
       attrs.$observe 'tickFormat', (val) ->
         if val isnt undefined
-          me.tickFormat(d3.format(val))
+          me.tickFormat(d3.format(val)).update()
 
       attrs.$observe 'ticks', (val) ->
         if val isnt undefined

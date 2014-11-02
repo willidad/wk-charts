@@ -39,6 +39,9 @@ angular.module('wk.chart').directive 'horizontalArea', ($log) ->
       #-----------------------------------------------------------------------------------------------------------------
 
       draw = (data, options, x, y, color) ->
+        $log.log 'y-range', y.scale().range(), 'y-domain', y.scale().domain()
+        $log.log 'x-range', x.scale().range(), 'x-domain', x.scale().domain()
+        $log.log 'color-range', color.scale().range(), 'color-domain', color.scale().domain()
         layerKeys = x.layerKeys(data)
         _layout = layerKeys.map((key) => {key:key, color:color.scale()(key), value:data.map((d)-> {y:y.value(d),x:x.layerValue(d, key)})})
 
@@ -47,7 +50,7 @@ angular.module('wk.chart').directive 'horizontalArea', ($log) ->
         if _tooltip then _tooltip.data(data)
 
         area = d3.svg.area()    # tricky. Draw this like a vertical chart and then rotate and position it.
-        .x((d) ->   options.width - y.scale()(d.y))
+        .x((d) -> options.width - y.scale()(d.y))
         .y0((d) ->  x.scale()(d.x))
         .y1((d) ->  x.scale()(0))
 

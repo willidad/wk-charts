@@ -90,7 +90,7 @@ angular.module('wk.chart').directive 'simpleBar', ($log, utils)->
 
     host.lifeCycle().on 'configure', ->
       _scaleList = @getScales(['x', 'y', 'color'])
-      @getKind('y').domainCalc('total').resetOnNewData(true)
+      @getKind('y').domainCalc('max').resetOnNewData(true)
       @getKind('x').resetOnNewData(true)
       _tooltip = host.behavior().tooltip
       _selected = host.behavior().selected

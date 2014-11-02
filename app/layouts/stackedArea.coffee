@@ -122,6 +122,7 @@ angular.module('wk.chart').directive 'stackedArea', ($log, utils) ->
           .attr('transform', "translate(#{offs})")
           .transition().duration(options.duration)
             .attr('d', (d) -> area(d.layer))
+            .style('fill', (d, i) -> color.scale()(d.key))
 
 
         layers.exit().transition().duration(options.duration)

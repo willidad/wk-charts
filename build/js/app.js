@@ -930,6 +930,9 @@ angular.module('wk.chart').constant('formatDefaults', {
       };
       draw = function(data, options, x, y, color) {
         var area, layers;
+        $log.log('y-range', y.scale().range(), 'y-domain', y.scale().domain());
+        $log.log('x-range', x.scale().range(), 'x-domain', x.scale().domain());
+        $log.log('color-range', color.scale().range(), 'color-domain', color.scale().domain());
         layerKeys = x.layerKeys(data);
         _layout = layerKeys.map((function(_this) {
           return function(key) {
@@ -1342,7 +1345,7 @@ angular.module('wk.chart').constant('formatDefaults', {
       host = controller.me;
       _layerKeys = [];
       _layout = [];
-      _initialOpacity = 1;
+      _initialOpacity = 0;
       _tooltip = void 0;
       _ttHighlight = void 0;
       _circles = void 0;
@@ -1382,6 +1385,9 @@ angular.module('wk.chart').constant('formatDefaults', {
       };
       draw = function(data, options, x, y, color) {
         var enter, layers;
+        $log.log('y-range', y.scale().range(), 'y-domain', y.scale().domain());
+        $log.log('x-range', x.scale().range(), 'x-domain', x.scale().domain());
+        $log.log('color-range', color.scale().range(), 'color-domain', color.scale().domain());
         if (!options.skip) {
           _layerKeys = y.layerKeys(data);
           _layout = _layerKeys.map((function(_this) {
@@ -1414,15 +1420,17 @@ angular.module('wk.chart').constant('formatDefaults', {
             }, function(d) {
               return d.x;
             });
-            m.enter().append('circle').attr('class', 'marker selectable').attr('r', 5).style('fill', function(d) {
-              return d.color;
-            }).style('pointer-events', 'none').style('opacity', _initialOpacity);
+            m.enter().append('circle').attr('class', 'marker selectable').attr('r', 5).style('pointer-events', 'none').style('opacity', _initialOpacity);
             m.transition().duration(duration).attr('cy', function(d) {
               return y.scale()(d.y);
             }).attr('cx', function(d) {
               return x.scale()(d.x) + offset;
-            }).style('opacity', 1);
+            }).style('opacity', 1).style('fill', function(d) {
+              return d.color;
+            });
             return m.exit().transition().duration(duration).style('opacity', 0).remove();
+          } else {
+            return layer.selectAll('.marker').transition().duration(duration).style('opacity', 0).remove();
           }
         };
         line = d3.svg.line().x(function(d) {
@@ -1434,11 +1442,11 @@ angular.module('wk.chart').constant('formatDefaults', {
           return d.key;
         });
         enter = layers.enter().append('g').attr('class', "layer");
-        enter.append('path').attr('class', 'line').style('stroke', function(d) {
-          return d.color;
-        }).style('opacity', _initialOpacity).style('pointer-events', 'none');
+        enter.append('path').attr('class', 'line').style('opacity', _initialOpacity).style('pointer-events', 'none');
         layers.select('.line').attr('transform', "translate(" + offset + ")").transition().duration(options.duration).attr('d', function(d) {
           return line(d.value);
+        }).style('stroke', function(d) {
+          return d.color;
         }).style('opacity', 1).style('pointer-events', 'none');
         layers.exit().transition().duration(options.duration).style('opacity', 0).remove();
         layers.call(markers, options.duration);
@@ -1467,10 +1475,11 @@ angular.module('wk.chart').constant('formatDefaults', {
       host.lifeCycle().on('brushDraw', brush);
       return attrs.$observe('markers', function(val) {
         if (val === '' || val === 'true') {
-          return _showMarkers = true;
+          _showMarkers = true;
         } else {
-          return _showMarkers = false;
+          _showMarkers = false;
         }
+        return host.lifeCycle().update();
       });
     }
   };
@@ -1768,7 +1777,7 @@ angular.module('wk.chart').constant('formatDefaults', {
       };
       host.lifeCycle().on('configure', function() {
         _scaleList = this.getScales(['x', 'y', 'color']);
-        this.getKind('y').domainCalc('total').resetOnNewData(true);
+        this.getKind('y').domainCalc('max').resetOnNewData(true);
         this.getKind('x').resetOnNewData(true);
         _tooltip = host.behavior().tooltip;
         _selected = host.behavior().selected;
@@ -2056,6 +2065,8 @@ angular.module('wk.chart').constant('formatDefaults', {
         }
         layers.attr('transform', "translate(" + offs + ")").transition().duration(options.duration).attr('d', function(d) {
           return area(d.layer);
+        }).style('fill', function(d, i) {
+          return color.scale()(d.key);
         });
         layers.exit().transition().duration(options.duration).attr('d', function(d) {
           var succ;
@@ -2180,7 +2191,10 @@ angular.module('wk.chart').constant('formatDefaults', {
         }
       };
       draw = function(data, options, x, y, color, size, shape) {
-        var bars, d, l, lAddedPred, lDeletedSucc, layerKeys, xAddedPred, xDeletedSucc, xKeys, y0, _i, _len;
+        var NaNto0, bars, d, l, lAddedPred, lDeletedSucc, layerKeys, xAddedPred, xDeletedSucc, xKeys, y0, _i, _len;
+        $log.log('y-range', y.scale().range(), 'y-domain', y.scale().domain());
+        $log.log('x-range', x.scale().range(), 'x-domain', x.scale().domain());
+        $log.log('color-range', color.scale().range(), 'color-domain', color.scale().domain());
         if (!layers) {
           layers = this.selectAll(".layer");
         }
@@ -2190,6 +2204,13 @@ angular.module('wk.chart').constant('formatDefaults', {
         lAddedPred = utils.diff(layerKeys, oldKeys, -1);
         xDeletedSucc = utils.diff(oldXKeys, xKeys, 1);
         xAddedPred = utils.diff(xKeys, oldXKeys, -1);
+        NaNto0 = function(n) {
+          if (isNaN(n)) {
+            return 0;
+          } else {
+            return n;
+          }
+        };
         stack = [];
         for (_i = 0, _len = data.length; _i < _len; _i++) {
           d = data[_i];
@@ -2199,7 +2220,7 @@ angular.module('wk.chart').constant('formatDefaults', {
             layers: [],
             data: d,
             x: x.map(d),
-            width: x.scale().rangeBand()
+            width: x.scale().rangeBand ? x.scale().rangeBand() : 1
           };
           if (l.x !== void 0) {
             l.layers = layerKeys.map(function(k) {
@@ -2209,7 +2230,7 @@ angular.module('wk.chart').constant('formatDefaults', {
                 key: l.key,
                 value: d[k],
                 height: y.scale()(0) - y.scale()(+d[k]),
-                width: x.scale().rangeBand(),
+                width: (x.scale().rangeBand ? x.scale().rangeBand() : 1),
                 y: y.scale()(+y0 + +d[k]),
                 color: color.scale()(k)
               };
@@ -2224,14 +2245,14 @@ angular.module('wk.chart').constant('formatDefaults', {
         });
         if (oldStack.length === 0) {
           layers.enter().append('g').attr('class', "layer").attr('transform', function(d) {
-            return "translate(" + d.x + ",0) scale(1,1)";
+            return "translate(" + (NaNto0(d.x)) + ",0) scale(1,1)";
           }).style('opacity', 0).call(_tooltip.tooltip);
         } else {
           layers.enter().append('g').attr('class', "layer").attr('transform', function(d) {
             var pred, tx;
             pred = getXByKey(oldStack, xAddedPred[d.key]);
             tx = pred ? pred.x + pred.width * 1.05 : 0;
-            return "translate(" + tx + ",0) scale(0,1)";
+            return "translate(" + (NaNto0(tx)) + ",0) scale(0,1)";
           }).call(_tooltip.tooltip);
         }
         layers.transition().duration(options.duration).attr('transform', function(d) {
@@ -3307,7 +3328,7 @@ angular.module('wk.chart').constant('formatDefaults', {
       }
     };
     me.element = function(elem) {
-      var _resizeHandler;
+      var resizeTarget, _resizeHandler;
       if (arguments.length === 0) {
         return _element;
       } else {
@@ -3319,8 +3340,9 @@ angular.module('wk.chart').constant('formatDefaults', {
         if (_elementSelection.empty()) {
           $log.error("Error: Element " + _element + " does not exist");
         } else {
-          new ResizeSensor(_element.parentElement, _resizeHandler);
           _genChartFrame();
+          resizeTarget = _elementSelection.select('.d3-chart').node();
+          new ResizeSensor(resizeTarget, _resizeHandler);
         }
         return me;
       }
@@ -3805,6 +3827,11 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
         layerKeys = me.layerKeys(data);
         return [0, layerMax(data, layerKeys)];
       },
+      min: function(data) {
+        var layerKeys;
+        layerKeys = me.layerKeys(data);
+        return [0, layerMin(data, layerKeys)];
+      },
       totalExtent: function(data) {
         var layerKeys;
         if (data[0].hasOwnProperty('total')) {
@@ -3949,6 +3976,9 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
         return _domain;
       } else {
         _domain = dom;
+        if (_.isArray(_domain)) {
+          _scale.domain(_domain);
+        }
         return me;
       }
     };
@@ -3992,13 +4022,14 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
       }
     };
     me.range = function(range) {
+      var _ref;
       if (arguments.length === 0) {
         return _scale.range();
       } else {
         _range = range;
-        if (_isOrdinal) {
+        if (_scaleType === 'ordinal' && ((_ref = me.kind()) === 'x' || _ref === 'y')) {
           _scale.rangeBands(range, _rangePadding, _rangeOuterPadding);
-        } else {
+        } else if (!(_scaleType === 'category10' || _scaleType === 'category20' || _scaleType === 'category20b' || _scaleType === 'category20c')) {
           _scale.range(range);
         }
         return me;
@@ -4053,7 +4084,7 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
             return d;
           };
         }
-        return me();
+        return me;
       }
     };
     me.value = function(data) {
@@ -4234,8 +4265,13 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
     };
     me.register = function() {
       me.chart().lifeCycle().on("scaleDomains." + (me.id()), function(data) {
+        var domain;
         if (me.resetOnNewData()) {
-          return _scale.domain(me.getDomain(data));
+          domain = me.getDomain(data);
+          if (_scaleType === 'linear' && _.some(domain, isNaN)) {
+            throw "Scale " + (me.kind()) + ", Type '" + _scaleType + "': cannot compute domain for property '" + _property + "' . Possible reasons: property not set, data not compatible with defined type. Domain:" + domain;
+          }
+          return _scale.domain(domain);
         }
       });
       return me.chart().lifeCycle().on("prepareData." + (me.id()), function(data) {
@@ -4467,7 +4503,6 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
             if (val !== '') {
               $log.error("Error: illegal scale value: " + val + ". Using 'linear' scale instead");
             }
-            me.scaleType('linear');
           }
           return me.update();
         }
@@ -4489,15 +4524,13 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
         var range;
         range = parseList(val);
         if (Array.isArray(range)) {
-          me.range(range);
-          return me.update();
+          return me.range(range).update();
         }
       });
       attrs.$observe('dateFormat', function(val) {
         if (val) {
           if (me.scaleType() === 'time') {
-            me.dataFormat(val);
-            return me.update();
+            return me.dataFormat(val).update();
           }
         }
       });
@@ -4507,8 +4540,7 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
           $log.info('domain', val);
           parsedList = parseList(val);
           if (Array.isArray(parsedList)) {
-            me.domain(parsedList);
-            return me.update();
+            return me.domain(parsedList).update();
           } else {
             return $log.error("domain: must be array, or comma-separated list, got", val);
           }
@@ -4518,8 +4550,7 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
       });
       attrs.$observe('domainRange', function(val) {
         if (val) {
-          me.domainCalc(val);
-          return me.update();
+          return me.domainCalc(val).update();
         }
       });
       attrs.$observe('label', function(val) {
@@ -4536,7 +4567,7 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
     observeAxisAttributes: function(attrs, me) {
       attrs.$observe('tickFormat', function(val) {
         if (val !== void 0) {
-          return me.tickFormat(d3.format(val));
+          return me.tickFormat(d3.format(val)).update();
         }
       });
       attrs.$observe('ticks', function(val) {

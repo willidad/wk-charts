@@ -65,6 +65,9 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults) ->
       max: (data) ->
         layerKeys = me.layerKeys(data)
         return [0, layerMax(data, layerKeys)]
+      min: (data) ->
+        layerKeys = me.layerKeys(data)
+        return [0, layerMin(data, layerKeys)]
       totalExtent: (data) ->
         if data[0].hasOwnProperty('total')
           return d3.extent(data.map((d) ->
@@ -182,6 +185,8 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults) ->
       if arguments.length is 0 then return _domain
       else
         _domain = dom
+        if _.isArray(_domain)
+          _scale.domain(_domain)
         return me
 
     me.domainCalc = (rule) ->
@@ -217,10 +222,11 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults) ->
       if arguments.length is 0 then return _scale.range()
       else
         _range = range
-        if _isOrdinal
-          _scale.rangeBands(range, _rangePadding, _rangeOuterPadding)
-        else
-          _scale.range(range)
+        if _scaleType is 'ordinal' and me.kind() in ['x','y']
+            _scale.rangeBands(range, _rangePadding, _rangeOuterPadding)
+        else if not (_scaleType in ['category10', 'category20', 'category20b', 'category20c'])
+          _scale.range(range) # ignore range for color category scales
+
         return me
 
     #--- property related attributes -----------------------------------------------------------------------------------
@@ -262,7 +268,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults) ->
           _inputFormatFn = d3.time.format(format)
         else
           _inputFormatFn = (d) -> d
-        return me()
+        return me
 
     #--- Core data transformation interface ----------------------------------------------------------------------------
 
@@ -413,7 +419,12 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults) ->
       me.chart().lifeCycle().on "scaleDomains.#{me.id()}", (data) ->
         # set the domain if required
         if me.resetOnNewData()
-          _scale.domain(me.getDomain(data))
+          # ensure robust behavior in case of problematic definitions
+          domain = me.getDomain(data)
+          if _scaleType is 'linear' and _.some(domain, isNaN)
+            throw "Scale #{me.kind()}, Type '#{_scaleType}': cannot compute domain for property '#{_property}' . Possible reasons: property not set, data not compatible with defined type. Domain:#{domain}"
+
+          _scale.domain(domain)
 
       me.chart().lifeCycle().on "prepareData.#{me.id()}", (data) ->
         # compute the domain range calculation if required
