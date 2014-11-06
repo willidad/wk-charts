@@ -410,6 +410,7 @@ angular.module('wk.chart').constant('formatDefaults', {
         var layers;
         layers = this.selectAll(".layer");
         return layers.select('.line').attr('d', function(d) {
+          null;
           return area(d.value);
         });
       };
@@ -1385,9 +1386,6 @@ angular.module('wk.chart').constant('formatDefaults', {
       };
       draw = function(data, options, x, y, color) {
         var enter, layers;
-        $log.log('y-range', y.scale().range(), 'y-domain', y.scale().domain());
-        $log.log('x-range', x.scale().range(), 'x-domain', x.scale().domain());
-        $log.log('color-range', color.scale().range(), 'color-domain', color.scale().domain());
         if (!options.skip) {
           _layerKeys = y.layerKeys(data);
           _layout = _layerKeys.map((function(_this) {
@@ -3705,7 +3703,7 @@ angular.module('wk.chart').constant('formatDefaults', {
         }
         _legendScope.showLegend = true;
         _legendScope.position = {
-          position: 'absolute'
+          position: _legendDiv ? 'relative' : 'absolute'
         };
         if (!_legendDiv) {
           _ref1 = _position.split('-');

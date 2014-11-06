@@ -44,9 +44,6 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
       #--- Draw --------------------------------------------------------------------------------------------------------
 
       draw = (data, options, x, y, color) ->
-        $log.log 'y-range', y.scale().range(), 'y-domain', y.scale().domain()
-        $log.log 'x-range', x.scale().range(), 'x-domain', x.scale().domain()
-        $log.log 'color-range', color.scale().range(), 'color-domain', color.scale().domain()
 
         if not options.skip
           _layerKeys = y.layerKeys(data)

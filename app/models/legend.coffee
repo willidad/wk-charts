@@ -102,7 +102,7 @@ angular.module('wk.chart').factory 'legend', ($log, $compile, $rootScope, $templ
           #$log.log _legendScope.legendRows
         _legendScope.showLegend = true
         _legendScope.position = {
-          position:'absolute'
+          position: if _legendDiv then 'relative' else 'absolute'
         }
         if not _legendDiv
           for p in _position.split('-')

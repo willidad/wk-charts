@@ -74,7 +74,9 @@ angular.module('wk.chart').directive 'area', ($log) ->
       brush = (data, options,x,y,color) ->
         layers = this.selectAll(".layer")
         layers.select('.line')
-          .attr('d', (d) -> area(d.value))
+          .attr('d', (d) ->
+            null
+            area(d.value))
 
 
       #--- Configuration and registration ------------------------------------------------------------------------------
