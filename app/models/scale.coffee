@@ -25,6 +25,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults) ->
     _axis = undefined
     _ticks = undefined
     _tickFormat = undefined
+    _rotateTickLabels = undefined
     _showLabel = false
     _axisLabel = undefined
     _showGrid = false
@@ -395,6 +396,12 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults) ->
         return if _axisLabel then _axisLabel else me.property()
       else
         _axisLabel = text
+        return me
+
+    me.rotateTickLabels = (nbr) ->
+      if arguments.length is 0 then return _rotateTickLabels
+      else
+        _rotateTickLabels = nbr
         return me
 
     me.format = (val) ->

@@ -16,6 +16,8 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
     _ownedScales = undefined  # holds the scles owned by chart, i.e. share scales
     _data = undefined           # pointer to the last data set bound to chart
     _showTooltip = false        # tooltip property
+    _title = undefined
+    _subTitle = undefined
     _behavior = behavior()
     _animationDuration = d3Animation.duration
 
@@ -34,6 +36,18 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
       else
         _showTooltip = trueFalse
         _behavior.tooltip.active(_showTooltip)
+        return me
+
+    me.title = (val) ->
+      if arguments.length is 0 then return _title
+      else
+        _title = val
+        return me
+
+    me.subTitle = (val) ->
+      if arguments.length is 0 then return _subTitle
+      else
+        _subTitle = val
         return me
 
     me.addLayout = (layout) ->

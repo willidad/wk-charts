@@ -47,4 +47,11 @@ angular.module('wk.chart').directive 'x', ($log, scale, scaleUtils) ->
 
       scaleUtils.observeAxisAttributes(attrs, me)
       scaleUtils.observeLegendAttributes(attrs, me, layout)
+
+      attrs.$observe 'rotateTickLabels', (val) ->
+        if val and _.isNumber(+val)
+          me.rotateTickLabels(+val)
+        else
+          me.rotateTickLabels(undefined)
+        me.update(true)
   }

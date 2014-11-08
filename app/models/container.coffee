@@ -36,7 +36,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
       _overlay.append('rect').style('visibility', 'hidden').attr('class', 'background').datum({name:'background'})
       _chartArea = _container.append('g').attr('class', 'chartArea')
 
-    _getAxis = (orient) ->
+    _genAxis = (orient) ->
       axis = _container.select(".axis.#{orient}")
       if axis.empty()
         axis = _container.append('g').attr('class',"axis #{orient}")
@@ -52,7 +52,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
     _removeLabel = (orient) ->
       _container.select(".label.#{orient}").remove()
 
-    _getLabel = (orient) ->
+    _genLabel = (orient) ->
       label = _container.select(".label.#{orient}")
       if label.empty()
         label = _container.append('g').attr('class',"label #{orient}")
@@ -66,6 +66,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
         when 'right'
           label.attr('transform', (d) ->"translate(#{_innerWidth+_margin.right},#{_innerHeight/2})rotate(90)")
       return label
+
 
     #--- Getter/Setter Functions ---------------------------------------------------------------------------------------
 
@@ -161,17 +162,33 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
 
           if s.showAxis()
             s.axis().scale(s.scale())
-            a = _getAxis(s.axisOrient())
+            a = _genAxis(s.axisOrient())
             if s.showGrid()
               s.axis().tickSize(if s.isHorizontal() then -_innerHeight else -_innerWidth).tickPadding(6)
             else
               s.axis().tickSize(6)
             s.axis().orient(s.axisOrient())
             a.transition().duration(duration).call(s.axis())
+
+            # test test test
+            if s.rotateTickLabels()
+              _container.selectAll(".#{s.axisOrient()}.axis text")
+                .attr({dy:'-0.71em', x:-9})
+                .attr('transform',"translate(0,9) rotate(#{s.rotateTickLabels()})")
+                .style('text-anchor','end')
+
+              tickText = _container.selectAll('.bottom.axis').each((s) ->
+                null
+                $log.debug 'axis Text',s,  this.getBBox()
+                )
+            else
+              # ensure that transform gets removed and tick labels are in their original position
+              _container.selectAll(".#{s.axisOrient()}.axis text").attr('transform', null)
+
             a.selectAll('.tick').style('pointer-events', 'none')  # avoid fading of tooltip wne hovering over grid lines
             if s.showLabel()
               offs = axisConfig[s.kind()].labelOffset[s.axisOrient()]
-              lbl = _getLabel(s.axisOrient())
+              lbl = _genLabel(s.axisOrient())
               txt = lbl.selectAll('.label-text')
               if txt.empty()
                 txt = lbl.append('text').attr('class','label-text').attr('dy', (d) -> offs)
