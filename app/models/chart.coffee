@@ -107,8 +107,8 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
         _lifeCycle.prepareData(data, noAnimation)    # calls the registered layout types
         _lifeCycle.scaleDomains(data, noAnimation)   # calls registered the scales
         _lifeCycle.sizeContainer(data, noAnimation)  # calls container
-        _lifeCycle.drawAxis(noAnimation)              # calls container
-        _lifeCycle.drawChart(data, noAnimation)      # calls layout
+        _lifeCycle.drawAxis(noAnimation)             # calls container
+        _lifeCycle.drawChart(data, noAnimation)     # calls layout
 
     me.resizeLifeCycle = (noAnimation) ->
       if _data
@@ -128,7 +128,7 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
       if _data
         _lifeCycle.sizeContainer(_data, noAnimation)
         _lifeCycle.drawAxis(noAnimation)              # calls container
-        _lifeCycle.drawChart(data, noAnimation)
+        _lifeCycle.drawChart(_data, noAnimation)
 
     me.brushExtentChanged = () ->
       if _data

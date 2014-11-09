@@ -40,7 +40,7 @@
     padding-right:0;
 }
 
-.d3-chart {
+.wk-chart {
     position:relative;
 }
 
@@ -124,6 +124,10 @@ li.d3ChartShapeLegendItem span {
 .selected {
     stroke:red;
     stroke-width:3px;
+}
+
+.wk-chart-grid {
+    stroke: lightgrey;
 }
 
 /*# sourceMappingURL=app.css.map*/

@@ -1,4 +1,4 @@
-angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, scaleList, axisConfig, d3Animation, behavior) ->
+angular.module('wk.chart').factory 'containerOld', ($log, $window, d3ChartMargins, scaleList, axisConfig, d3Animation, behavior) ->
 
   containerCnt = 0
 
