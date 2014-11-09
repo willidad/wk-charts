@@ -14,7 +14,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
     _data = undefined
     _tooltipDispatch = d3.dispatch('enter', 'moveData', 'moveMarker', 'leave')
 
-    _templ = $templateCache.get(templateDir + 'toolTip.jade')
+    _templ = $templateCache.get(templateDir + 'toolTip.html')
     _templScope = $rootScope.$new(true)
     _compiledTempl = $compile(_templ)(_templScope)
     body = $document.find('body')

@@ -118,7 +118,7 @@ angular.module('wk.chart').factory 'legend', ($log, $compile, $rootScope, $templ
       layout.lifeCycle().on "draw.#{_id}", me.draw
       return me
 
-    me.template(templateDir + 'legend.jade')
+    me.template(templateDir + 'legend.html')
 
     me.redraw = () ->
       if _data and _options
