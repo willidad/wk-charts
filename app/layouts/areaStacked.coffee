@@ -1,4 +1,4 @@
-angular.module('wk.chart').directive 'stackedArea', ($log, utils) ->
+angular.module('wk.chart').directive 'areaStacked', ($log, utils) ->
   stackedAreaCntr = 0
   return {
     restrict: 'A'
@@ -152,7 +152,7 @@ angular.module('wk.chart').directive 'stackedArea', ($log, utils) ->
 
       #--- Property Observers ------------------------------------------------------------------------------------------
 
-      attrs.$observe 'stackedArea', (val) ->
+      attrs.$observe 'areaStacked', (val) ->
         if val in ['zero', 'silhouette', 'expand', 'wiggle']
           offset = val
         else

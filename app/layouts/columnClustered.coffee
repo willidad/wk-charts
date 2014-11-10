@@ -1,4 +1,4 @@
-angular.module('wk.chart').directive 'clusteredBar', ($log, utils)->
+angular.module('wk.chart').directive 'columnClustered', ($log, utils)->
 
   clusteredBarCntr = 0
   return {

@@ -1,4 +1,4 @@
-angular.module('wk.chart').directive 'horizontalArea', ($log) ->
+angular.module('wk.chart').directive 'areaVertical', ($log) ->
   lineCntr = 0
   return {
     restrict: 'A'

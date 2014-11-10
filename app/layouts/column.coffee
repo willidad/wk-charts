@@ -1,4 +1,4 @@
-angular.module('wk.chart').directive 'simpleBar', ($log, utils)->
+angular.module('wk.chart').directive 'column', ($log, utils)->
   sBarCntr = 0
   return {
   restrict: 'A'

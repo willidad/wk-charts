@@ -1,4 +1,4 @@
-angular.module('wk.chart').directive 'stackedBar', ($log, utils) ->
+angular.module('wk.chart').directive 'columnStacked', ($log, utils) ->
 
   stackedBarCntr = 0
   return {
