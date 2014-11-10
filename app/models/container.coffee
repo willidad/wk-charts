@@ -140,6 +140,27 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
     _removeLabel = (orient) ->
       _container.select(".wk-chart-label.#{orient}").remove()
 
+    drawGrid = (s) ->
+      kind = s.kind()
+      ticks = if s.isOrdinal() then s.scale().range() else s.scale().ticks()
+      gridLines = _container.selectAll(".wk-chart-grid.#{kind}").data(ticks, (d) -> d)
+      gridLines.enter().append('line').attr('class', "wk-chart-grid #{kind}").style('pointer-events', 'none')
+      if kind is 'y'
+        gridLines.attr({
+          x1:0,
+          x2: _innerWidth,
+          y1:(d) -> if s.isOrdinal() then  d else s.scale()(d),
+          y2:(d) -> if s.isOrdinal() then d else s.scale()(d)
+        })
+      else
+        gridLines.attr({
+          y1:0,
+          y2: _innerHeight,
+          x1:(d) -> if s.isOrdinal() then d else s.scale()(d),
+          x2:(d) -> if s.isOrdinal() then d else s.scale()(d)
+        })
+      gridLines.exit().remove()
+
     #--- Build the container -------------------------------------------------------------------------------------------
     # build generic elements first
 
@@ -227,29 +248,8 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
 
       for l in _layouts
         for k, s of l.scales().allKinds()
-          if k is 'y' and s.showAxis() and s.showGrid()
-            ticks = if s.isOrdinal() then s.scale().range() else s.scale().ticks()
-            gridLines = _container.selectAll(".wk-chart-grid.x").data(ticks, (d) -> d)
-            gridLines.enter().append('line').attr('class', 'wk-chart-grid x').style('pointer-events', 'none')
-            gridLines.attr({
-              x1:0,
-              x2: _innerWidth,
-              y1:(d) -> if s.isOrdinal() then  d else s.scale()(d),
-              y2:(d) -> if s.isOrdinal() then d else s.scale()(d)
-            })
-            gridLines.exit().remove()
-
-          if k is 'x' and s.showAxis() and s.showGrid()
-            ticks = if s.isOrdinal() then s.scale().range() else s.scale().ticks()
-            gridLines = _container.selectAll(".wk-chart-grid.y").data(ticks, (d) -> d)
-            gridLines.enter().append('line').attr('class', 'wk-chart-grid y').style('pointer-events', 'none')
-            gridLines.attr({
-              y1:0,
-              y2: _innerHeight,
-              x1:(d) -> if s.isOrdinal() then d else s.scale()(d),
-              x2:(d) -> if s.isOrdinal() then d else s.scale()(d)
-            })
-            gridLines.exit().remove()
+          if s.showAxis() and s.showGrid()
+            drawGrid(s)
 
       _chart.behavior().overlay(_overlay)
       _chart.behavior().container(_chartArea)
@@ -260,6 +260,9 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
       if scale.showAxis()
         a = _spacedContainer.select(".axis.#{scale.axis().orient()}")
         a.call(scale.axis())
+
+        if scale.showGrid()
+          drawGrid(scale)
       return me
 
     return me
