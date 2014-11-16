@@ -45,9 +45,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils)->
 
       bars.enter().append('rect')
         .attr('class', 'bar selectable')
-        .attr('y', (d) ->
-          null
-          return if initial then d.y else _merge.addedPred(d).y )
+        .attr('y', (d) -> if initial then d.y else _merge.addedPred(d).y)
         .attr('height', (d) -> if initial then d.height else 0)
         .style('opacity', if initial then 0 else 1)
         .call(_tooltip.tooltip)
@@ -62,7 +60,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils)->
 
       bars.exit()
         .transition().duration(options.duration)
-        .attr('y', (d) -> _merge.deletedSucc(d).y + _merge.deletedSucc(d).height* 1.05)
+        .attr('y', (d) -> _merge.deletedSucc(d).y + _merge.deletedSucc(d).height * 1.05)
         .attr('height', 0)
         .remove()
 

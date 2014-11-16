@@ -17,8 +17,8 @@
 }
 .wk-chart-tooltip.ng-hide-add,
 .wk-chart-tooltip.ng-hide-remove {
-    -webkit-transition: 0.5s linear opacity;
-    transition: 0.5s linear opacity;
+    -webkit-transition: 0.2s linear opacity;
+    transition: 0.2s linear opacity;
 }
 
 .wk-chart-tooltip.ng-hide-add,

@@ -49,6 +49,7 @@ angular.module('wk.chart').service 'utils', ($log) ->
     _last = undefined
 
     _key = (d) -> d # identity
+    _layerKey = (d) -> d
 
 
     me = (data) ->
@@ -82,6 +83,11 @@ angular.module('wk.chart').service 'utils', ($log) ->
       _key = fn;
       return me;
 
+    me.layerKey = (fn) ->
+      if not arguments then return _layerKey
+      _layerKey = fn
+      return me
+
     me.first = (first) ->
       if not arguments then return _first
       _first = first
@@ -103,6 +109,12 @@ angular.module('wk.chart').service 'utils', ($log) ->
       for p, i in _prevData
         if !_prevCommon[i] then ret.push(_prevData[i])
       return ret
+
+    me.current = (key) ->
+      return _data[_hash[key]]
+
+    me.prev = (key) ->
+      return _prevData[_prevHash[key]]
 
     me.addedPred = (added) ->
       predIdx = _hash[_key(added)]

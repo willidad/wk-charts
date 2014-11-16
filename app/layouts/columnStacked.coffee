@@ -8,7 +8,7 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils) ->
       host = controller.me
       #$log.log 'linking Stacked bar'
 
-      _id = "stackedBar#{stackedBarCntr++}"
+      _id = "stackedColumn#{stackedBarCntr++}"
 
       layers = null
 
@@ -47,9 +47,9 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils) ->
       #-----------------------------------------------------------------------------------------------------------------
 
       draw = (data, options, x, y, color, size, shape) ->
-        $log.log 'y-range', y.scale().range(), 'y-domain', y.scale().domain()
-        $log.log 'x-range', x.scale().range(), 'x-domain', x.scale().domain()
-        $log.log 'color-range', color.scale().range(), 'color-domain', color.scale().domain()
+        #$log.log 'y-range', y.scale().range(), 'y-domain', y.scale().domain()
+        #$log.log 'x-range', x.scale().range(), 'x-domain', x.scale().domain()
+        #$log.log 'color-range', color.scale().range(), 'color-domain', color.scale().domain()
         if not layers
           layers = @selectAll(".layer")
         #$log.debug "drawing stacked-bar"

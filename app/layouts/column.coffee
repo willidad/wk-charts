@@ -7,29 +7,14 @@ angular.module('wk.chart').directive 'column', ($log, utils)->
   link: (scope, element, attrs, controller) ->
     host = controller.me
 
-    _id = "simpleBar#{sBarCntr++}"
+    _id = "simpleColumn#{sBarCntr++}"
 
     bars = null
-    oldLayout = []
-    oldKeys = []
     _scaleList = {}
     _selected = undefined
-
-    #-------------------------------------------------------------------------------------------------------------------
-
-    getXByKey = (key, layout) ->
-      for l in layout
-        if l.key is key
-          return l
-
-    getPredX = (key, layout) ->
-      pred = getXByKey(key, layout)
-      if pred then pred.x + pred.width * 1.05 else 0
-
-    getSuccX = (key, layout) ->
-      succ = getXByKey(key, layout)
-      if succ then succ.x - succ.width * 0.05 else layout[layout.length - 1].x + layout[layout.length - 1].width * 1.05
-
+    _merge = utils.mergeData()
+    _merge([]).key((d) -> d.key)
+    initial = true
 
     #--- Tooltip Event Handlers --------------------------------------------------------------------------------------
 
@@ -48,27 +33,19 @@ angular.module('wk.chart').directive 'column', ($log, utils)->
         bars = @selectAll('.bars')
       #$log.log "rendering stacked-bar"
 
-      layout = data.map((d) -> {data:d, key:x.value(d), value:y.value(d), x:x.map(d), y:y.map(d), color:color.map(d), width:x.scale().rangeBand(x.value(d))})
-      newKeys = layout.map((d) -> d.key)
+      layout = data.map((d) -> {data:d, key:x.value(d), x:x.map(d), y:y.map(d), color:color.map(d), width:x.scale().rangeBand(x.value(d))})
 
-      deletedSucc = utils.diff(oldKeys, newKeys, 1)
-      addedPred = utils.diff(newKeys, oldKeys, -1)
+      _merge(layout).first({x:0}).last({x:options.width, width:0})
 
       bars = bars.data(layout, (d) -> d.key)
 
-      if oldLayout.length is 0
-        bars.enter().append('rect')
-          .attr('class', 'bar selectable')
-          .style('opacity', 0)
-          .call(_tooltip.tooltip)
-          .call(_selected)
-      else
-        bars.enter().append('rect')
-          .attr('class', 'bar selectable')
-          .attr('x', (d) -> getPredX(addedPred[d.key], oldLayout))
-          .attr('width', 0)
-          .call(_tooltip.tooltip)
-          .call(_selected)
+      bars.enter().append('rect')
+        .attr('class', 'bar selectable')
+        .attr('x', (d) -> if initial then d.x else _merge.addedPred(d).x  + _merge.addedPred(d).width * 1.05)
+        .attr('width', (d) -> if initial then d.width else 0)
+        .style('opacity', if initial then 0 else 1)
+        .call(_tooltip.tooltip)
+        .call(_selected)
 
       bars.style('fill', (d) -> d.color).transition().duration(options.duration)
         .attr('y', (d) -> Math.min(y.scale()(0), d.y))
@@ -79,12 +56,11 @@ angular.module('wk.chart').directive 'column', ($log, utils)->
 
       bars.exit()
         .transition().duration(options.duration)
-        .attr('x', (d) -> getSuccX(deletedSucc[d.key], layout))
+        .attr('x', (d) -> _merge.deletedSucc(d).x)
         .attr('width', 0)
         .remove()
 
-      oldLayout = layout
-      oldKeys = newKeys
+      initial = false
 
     #--- Configuration and registration ------------------------------------------------------------------------------
 

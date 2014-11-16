@@ -8,7 +8,7 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils)->
     link: (scope, element, attrs, controller) ->
       host = controller.me
 
-      _id = "clusteredBar#{clusteredBarCntr++}"
+      _id = "clusteredColumn#{clusteredBarCntr++}"
 
       layers = null
       layerKeysOld = []
