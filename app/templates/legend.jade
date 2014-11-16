@@ -1,7 +1,7 @@
-.d3ChartColorLegend(ng-style="position", ng-show="showLegend")
+.wk-chart-legend(ng-style="position", ng-show="showLegend")
     .legend-title(ng-show="title") {{title}}
     ul.list-unstyled
-        li(ng-repeat="legendRow in legendRows track by legendRow.value", class="d3ChartColorLegendItem")
+        li(ng-repeat="legendRow in legendRows track by legendRow.value", class="wk-chart-legend-item")
             span(ng-if="legendRow.color", ng-style="legendRow.color") &nbsp;&nbsp;&nbsp;
             svg-icon(ng-if="legendRow.path", path="legendRow.path", width="20")
             span  &nbsp;{{legendRow.value}}

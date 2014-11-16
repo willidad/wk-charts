@@ -43,7 +43,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults) ->
 
     #---- utility functions ----------------------------------------------------------------------------------------
 
-    keys = (data) -> if _.isArray(data) then _.keys(data[0]) else _.keys(data)
+    keys = (data) -> if _.isArray(data) then _.reject(_.keys(data[0]), (d) -> d is '$$hashKey') else _.reject(_.keys(data), (d) -> d is '$$hashKey')
 
     layerTotal = (d, layerKeys) ->
       layerKeys.reduce(
@@ -253,11 +253,11 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults) ->
     me.layerKeys = (data) ->
       if _property
         if _.isArray(_property)
-          return _.intersection(_property, keys(data))# ensure only keys also in the data are returned
+          return _.intersection(_property, keys(data)) # ensure only keys also in the data are returned and $$hashKey is not returned
         else
           return [_property] #always return an array !!!
       else
-        keys(data).filter((d) -> not (d in _layerExclude))
+        _.reject(keys(data), (d) -> d in _layerExclude)
 
     #--- Data Formatting -----------------------------------------------------------------------------------------------
 

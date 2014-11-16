@@ -66,6 +66,7 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter, container) 
         watcherRemoveFn = scope.$watch 'data', (val) ->
           if val
             _data = val
+            if _.isArray(_data) and _data.length is 0 then return
             if _filter
               me.lifeCycle().newData($filter('filter')(val, _filter))
             else
