@@ -13,12 +13,14 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils) ->
       layers = null
 
       stack = []
-      oldKeys = []
-      oldXKeys = []
-      oldStack = []
       _tooltip = ()->
       _scaleList = {}
       _selected = undefined
+
+      _merge = utils.mergeData().key((d) -> d.key)
+      _mergeLayers = utils.mergeData()
+
+      initial = true
 
       ttEnter = (data) ->
         ttLayers = data.layers.map((l) -> {name:l.layerKey, value:_scaleList.y.formatValue(l.value), color: {'background-color': l.color}})
@@ -28,41 +30,13 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils) ->
 
       #-----------------------------------------------------------------------------------------------------------------
 
-      getXByKey = (stack, key) ->
-        i = 0
-        while i < stack.length
-          if stack[i].key is key
-            return stack[i]
-          i++
-
-      getLayerByKey = (stack, xKey, layerKey) ->
-        s = getXByKey(stack, xKey)
-        if s
-          i = 0
-          while i < s.layers.length
-            if s.layers[i].layerKey is layerKey
-              return s.layers[i]
-            i++
-
-      #-----------------------------------------------------------------------------------------------------------------
-
       draw = (data, options, x, y, color, size, shape) ->
 
         if not layers
           layers = @selectAll(".layer")
         #$log.debug "drawing stacked-bar"
 
-
         layerKeys = x.layerKeys(data)
-        xKeys = y.value(data)
-
-        lDeletedSucc = utils.diff(oldKeys,layerKeys,1)
-        lAddedPred = utils.diff(layerKeys, oldKeys, -1)
-        xDeletedSucc = utils.diff(oldXKeys, xKeys,1)
-        xAddedPred = utils.diff(xKeys,oldXKeys,-1)
-
-        NaNto0 = (n) ->
-          if isNaN(n) then 0 else n
 
         stack = []
         for d in data
@@ -76,19 +50,16 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils) ->
             )
             stack.push(l)
 
+        _merge(stack).first({y:options.height, height:0}).last({y:0, height:0})
+        _mergeLayers(layerKeys)
+
         layers = layers
           .data(stack, (d)-> d.key)
 
-        if oldStack.length is 0
-          layers.enter().append('g')
-            .attr('class', "layer").attr('transform',(d) -> "translate(0, #{d.y}) scale(1,1)").style('opacity',0).call(_tooltip.tooltip)
-        else
-          layers.enter().append('g')
-            .attr('class', "layer").attr('transform',(d) ->
-              pred = getXByKey(oldStack, xAddedPred[d.key])
-              tx = if pred then pred.x + pred.width * 1.05 else 0
-              return "translate(#{NaNto0(tx)},0) scale(0,1)"
-            ).call(_tooltip.tooltip)
+        layers.enter().append('g')
+          .attr('class', "layer").attr('transform',(d) -> "translate(0,#{if initial then d.y else _merge.addedPred(d).y}) scale(1,#{if initial then 1 else 0})")
+          .style('opacity',if initial then 0 else 1)
+          .call(_tooltip.tooltip)
 
         layers
           .transition().duration(options.duration)
@@ -97,10 +68,7 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils) ->
 
         layers.exit()
           .transition().duration(options.duration)
-          .attr('transform',(d, i) ->
-            succ = getXByKey(stack, xDeletedSucc[d.key])
-            tx = if succ then succ.x - succ.width * 0.05 else if stack.length > 0 then stack[stack.length-1].x + stack[stack.length-1].width else 0
-            return "translate(#{tx},#{y.scale()(0)}) scale(0,0)")
+          .attr('transform',(d) -> "translate(0,#{_merge.deletedSucc(d).y + _merge.deletedSucc(d).height * 1.05}) scale(1,0)")
           .remove()
 
         bars = layers.selectAll('.bar')
@@ -109,19 +77,18 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils) ->
           , (d) -> d.layerKey + '|' + d.key
           )
 
-        if oldStack.length is 0
-          bars.enter().append('rect')
-            .attr('class', 'bar')
-            .call(_selected)
-        else
-          bars.enter().append('rect')
-            .attr('class', 'bar selectable')
-            .attr('x', (d) ->
-              pred = getLayerByKey(oldStack, d.key, lAddedPred[d.layerKey])
-              return if pred then pred.x else x.scale()(0)
-            )
-            .attr('width', 0).attr('height',(d) -> d.height)
-            .call(_selected)
+        bars.enter().append('rect')
+          .attr('class', 'bar selectable')
+          .attr('x', (d) ->
+            if _merge.prev(d.key)
+              idx = layerKeys.indexOf(_mergeLayers.addedPred(d.layerKey))
+              if idx >= 0 then _merge.prev(d.key).layers[idx].x + _merge.prev(d.key).layers[idx].width else x.scale()(0)
+            else
+              d.x
+          )
+          .attr('width', (d) -> if _merge.prev(d.key) then 0 else d.width)
+          .attr('height',(d) -> d.height)
+          .call(_selected)
 
         bars.style('fill', (d) -> d.color)
           .transition().duration(options.duration)
@@ -131,20 +98,14 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils) ->
 
         bars.exit()
           .transition().duration(options.duration)
-          .attr('height',0)
           .attr('x', (d) ->
-            succ = getLayerByKey(stack, d.key, lDeletedSucc[d.layerKey])
-            if succ
-              return succ.x + succ.height
-            else
-              x = getXByKey(stack, d.key)
-              return x.layers[x.layers.length - 1].y
+            idx = layerKeys.indexOf(_mergeLayers.deletedSucc(d.layerKey))
+            if idx >= 0 then _merge.current(d.key).layers[idx].x else _merge.current(d.key).layers[layerKeys.length - 1].x + _merge.current(d.key).layers[layerKeys.length - 1].width
           )
+          .attr('width', 0)
           .remove()
 
-        oldKeys = layerKeys
-        oldXKeys = xKeys
-        oldStack = stack
+        initial = false
 
       #-----------------------------------------------------------------------------------------------------------------
 
