@@ -1,21 +1,5 @@
 angular.module('wk.chart', [])
 
-angular.module('wk.chart').constant 'd3Scales', {
-  linear: d3.scale.linear
-  sqrt: d3.scale.sqrt
-  log: d3.scale.log
-  identity: d3.scale.identity
-  quantize: d3.scale.quantize
-  quantile: d3.scale.quantile
-  threshold: d3.scale.threshold
-  ordinal: d3.scale.ordinal
-  category10: d3.scale.category10
-  category20: d3.scale.category20
-  category20b: d3.scale.category20b
-  category20c: d3.scale.category20c
-  time: d3.time.scale
-}
-
 angular.module('wk.chart').constant 'd3OrdinalScales', [
   'ordinal'
   'category10'
@@ -90,16 +74,12 @@ angular.module('wk.chart').constant 'd3Animation', {
 
 angular.module('wk.chart').constant 'templateDir', 'templates/'
 
-angular.module('wk.chart').constant 'd3ScaleMap', [
-  scaleX: 'x'
-  scaleY: 'y'
-  scaleColor: 'color'
-  scaleSize: 'size'
-  scaleShape: 'shape'
-]
-
 angular.module('wk.chart').constant 'formatDefaults', {
   date: '%d.%m.%Y'
   number :  ',.2f'
+}
+
+angular.module('wk.chart').constant 'barConfig', {
+  padding: 0.1
 }
 

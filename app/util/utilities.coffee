@@ -73,20 +73,12 @@ angular.module('wk.chart').service 'utils', ($log) ->
           #element is in both arrays
           _prevCommon[_prevHash[key]] = true
           _common[j] = true
-
-      console.log('common',_common)
-      console.log('prev_common', _prevCommon)
       return me;
 
     me.key = (fn) ->
       if not arguments then return _key
       _key = fn;
       return me;
-
-    me.layerKey = (fn) ->
-      if not arguments then return _layerKey
-      _layerKey = fn
-      return me
 
     me.first = (first) ->
       if not arguments then return _first
