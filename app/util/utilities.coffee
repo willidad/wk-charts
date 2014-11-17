@@ -122,4 +122,43 @@ angular.module('wk.chart').service 'utils', ($log) ->
 
     return me;
 
+  @mergeSeries =  (aOld, aNew)  ->
+    iOld = 0
+    iNew = 0
+    lOldMax = aOld.length - 1
+    lNewMax = aNew.length - 1
+    lMax = Math.max(lOldMax, lNewMax)
+    result = []
+
+    while iOld <= lOldMax and iNew <= lNewMax
+      if +aOld[iOld] is +aNew[iNew]
+        result.push([iOld, Math.min(iNew,lNewMax),aOld[iOld]]);
+        #console.log('same', aOld[iOld]);
+        iOld++;
+        iNew++;
+      else if +aOld[iOld] < +aNew[iNew]
+        # aOld[iOld is deleted
+        result.push([iOld,undefined, aOld[iOld]])
+        # console.log('deleted', aOld[iOld]);
+        iOld++
+      else
+        # aNew[iNew] is added
+        result.push([undefined, Math.min(iNew,lNewMax),aNew[iNew]])
+        # console.log('added', aNew[iNew]);
+        iNew++
+
+    while iOld <= lOldMax
+      # if there is more old items, mark them as deleted
+      result.push([iOld,undefined, aOld[iOld]]);
+      # console.log('deleted', aOld[iOld]);
+      iOld++;
+
+    while iNew <= lNewMax
+      # if there is more new items, mark them as added
+      result.push([undefined, Math.min(iNew,lNewMax),aNew[iNew]]);
+      # console.log('added', aNew[iNew]);
+      iNew++;
+
+    return result
+
   return @
