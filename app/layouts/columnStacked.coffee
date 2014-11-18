@@ -1,6 +1,6 @@
-angular.module('wk.chart').directive 'columnStacked', ($log, utils) ->
+angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig) ->
 
-  stackedBarCntr = 0
+  stackedColumnCntr = 0
   return {
     restrict: 'A'
     require: 'layout'
@@ -8,17 +8,24 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils) ->
       host = controller.me
       #$log.log 'linking Stacked bar'
 
-      _id = "stackedColumn#{stackedBarCntr++}"
+      _id = "stackedColumn#{stackedColumnCntr++}"
 
       layers = null
 
       stack = []
-      oldKeys = []
-      oldXKeys = []
-      oldStack = []
       _tooltip = ()->
       _scaleList = {}
       _selected = undefined
+
+      barPaddingOld = 0
+      barOuterPaddingOld = 0
+
+      _merge = utils.mergeData().key((d) -> d.key)
+      _mergeLayers = utils.mergeData()
+
+      initial = true
+
+      config = barConfig
 
       ttEnter = (data) ->
         ttLayers = data.layers.map((l) -> {name:l.layerKey, value:_scaleList.y.formatValue(l.value), color: {'background-color': l.color}})
@@ -28,43 +35,15 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils) ->
 
       #-----------------------------------------------------------------------------------------------------------------
 
-      getXByKey = (stack, key) ->
-        i = 0
-        while i < stack.length
-          if stack[i].key is key
-            return stack[i]
-          i++
-
-      getLayerByKey = (stack, xKey, layerKey) ->
-        s = getXByKey(stack, xKey)
-        if s
-          i = 0
-          while i < s.layers.length
-            if s.layers[i].layerKey is layerKey
-              return s.layers[i]
-            i++
-
-      #-----------------------------------------------------------------------------------------------------------------
-
       draw = (data, options, x, y, color, size, shape) ->
-        #$log.log 'y-range', y.scale().range(), 'y-domain', y.scale().domain()
-        #$log.log 'x-range', x.scale().range(), 'x-domain', x.scale().domain()
-        #$log.log 'color-range', color.scale().range(), 'color-domain', color.scale().domain()
         if not layers
           layers = @selectAll(".layer")
         #$log.debug "drawing stacked-bar"
 
+        barPadding = x.scale().rangeBand() / (1 - config.padding) * config.padding
+        barOuterPadding = x.scale().rangeBand() / (1 - config.outerPadding) * config.outerPadding
 
         layerKeys = y.layerKeys(data)
-        xKeys = x.value(data)
-
-        lDeletedSucc = utils.diff(oldKeys,layerKeys,1)
-        lAddedPred = utils.diff(layerKeys, oldKeys, -1)
-        xDeletedSucc = utils.diff(oldXKeys, xKeys,1)
-        xAddedPred = utils.diff(xKeys,oldXKeys,-1)
-
-        NaNto0 = (n) ->
-          if isNaN(n) then 0 else n
 
         stack = []
         for d in data
@@ -78,32 +57,26 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils) ->
             )
             stack.push(l)
 
+        _merge(stack).first({x: barPaddingOld / 2 - barOuterPadding, width:0}).last({x:options.width + barPadding/2 - barOuterPaddingOld, width:0})
+        _mergeLayers(layerKeys)
+
         layers = layers
           .data(stack, (d)-> d.key)
 
-        if oldStack.length is 0
-          layers.enter().append('g')
-            .attr('class', "layer").attr('transform',(d) -> "translate(#{NaNto0(d.x)},0) scale(1,1)").style('opacity',0).call(_tooltip.tooltip)
-        else
-          layers.enter().append('g')
-            .attr('class', "layer").attr('transform',(d) ->
-              pred = getXByKey(oldStack, xAddedPred[d.key])
-              tx = if pred then pred.x + pred.width * 1.05 else 0
-              return "translate(#{NaNto0(tx)},0) scale(0,1)"
-            ).call(_tooltip.tooltip)
+        layers.enter().append('g')
+          .attr('transform',(d) -> "translate(#{if initial then d.x else _merge.addedPred(d).x + _merge.addedPred(d).width + barPaddingOld / 2},0) scale(#{if initial then 1 else 0}, 1)")
+          .style('opacity',if initial then 0 else 1)
+          .call(_tooltip.tooltip)
 
         layers
           .transition().duration(options.duration)
-          .attr('transform',(d) ->
-            return "translate(#{d.x},0) scale(1,1)").style('opacity', 1)
+          .attr('transform',(d) -> "translate(#{d.x},0) scale(1,1)")
+          .style('opacity', 1)
 
         layers.exit()
           .transition().duration(options.duration)
-          .attr('transform',(d, i) ->
-            succ = getXByKey(stack, xDeletedSucc[d.key])
-            tx = if succ then succ.x - succ.width * 0.05 else if stack.length > 0 then stack[stack.length-1].x + stack[stack.length-1].width else 0
-            return "translate(#{tx},#{y.scale()(0)}) scale(0,0)")
-          .remove()
+            .attr('transform',(d) -> "translate(#{_merge.deletedSucc(d).x - barPadding / 2}, 0) scale(0,1)")
+            .remove()
 
         bars = layers.selectAll('.bar')
           .data(
@@ -111,19 +84,17 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils) ->
           , (d) -> d.layerKey + '|' + d.key
           )
 
-        if oldStack.length is 0
-          bars.enter().append('rect')
-            .attr('class', 'bar')
-            .call(_selected)
-        else
-          bars.enter().append('rect')
-            .attr('class', 'bar selectable')
-            .attr('y', (d) ->
-              pred = getLayerByKey(oldStack, d.key, lAddedPred[d.layerKey])
-              return if pred then pred.y else y.scale()(0)
-            )
-            .attr('height', 0).attr('width',(d) -> d.width)
-            .call(_selected)
+        bars.enter().append('rect')
+          .attr('class', 'bar selectable')
+          .attr('y', (d) ->
+            if _merge.prev(d.key)
+              idx = layerKeys.indexOf(_mergeLayers.addedPred(d.layerKey))
+              if idx >= 0 then _merge.prev(d.key).layers[idx].y else y.scale()(0)
+            else
+              d.y
+          )
+          .attr('height',(d) -> if initial then d.height else 0)
+          .call(_selected)
 
         bars.style('fill', (d) -> d.color)
           .transition().duration(options.duration)
@@ -135,26 +106,21 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils) ->
           .transition().duration(options.duration)
           .attr('height',0)
           .attr('y', (d) ->
-            succ = getLayerByKey(stack, d.key, lDeletedSucc[d.layerKey])
-            if succ
-              return succ.y + succ.height
-            else
-              x = getXByKey(stack, d.key)
-              return x.layers[x.layers.length - 1].y
+            idx = layerKeys.indexOf(_mergeLayers.deletedSucc(d.layerKey))
+            if idx >= 0 then _merge.current(d.key).layers[idx].y + _merge.current(d.key).layers[idx].height else _merge.current(d.key).layers[layerKeys.length - 1].y
           )
           .remove()
 
-        oldKeys = layerKeys
-        oldXKeys = xKeys
-        oldStack = stack
+        initial = false
+        barPaddingOld = barPadding
+        barOuterPaddingOld = barOuterPadding
 
       #-----------------------------------------------------------------------------------------------------------------
-
 
       host.lifeCycle().on 'configure', ->
         _scaleList = @getScales(['x', 'y', 'color'])
         @getKind('y').domainCalc('total').resetOnNewData(true)
-        @getKind('x').resetOnNewData(true)
+        @getKind('x').resetOnNewData(true).rangePadding(config)
         @layerScale('color')
         _tooltip = host.behavior().tooltip
         _selected = host.behavior().selected
@@ -162,4 +128,23 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils) ->
 
       host.lifeCycle().on 'draw', draw
       host.lifeCycle().on 'brushDraw', draw
+
+
+      attrs.$observe 'padding', (val) ->
+        if val is 'false'
+          config.padding = 0
+          config.outerPadding = 0
+        else if val is 'true'
+          _.merge(config, barConfig)
+        else
+          values = utils.parseList(val)
+          if values
+            if values.length is 1
+              config.padding = values[0]/100
+              config.outerPadding = values[0]/100
+            if values.length is 2
+              config.padding = values[0]/100
+              config.outerPadding = values[1]/100
+        _scaleList.y.rangePadding(config)
+        host.lifeCycle().update()
   }

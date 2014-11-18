@@ -1,4 +1,4 @@
-angular.module('wk.chart').directive 'barStacked', ($log, utils) ->
+angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig) ->
 
   stackedBarCntr = 0
   return {
@@ -16,11 +16,15 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils) ->
       _tooltip = ()->
       _scaleList = {}
       _selected = undefined
+      barPaddingOld = 0
+      barOuterPaddingOld = 0
 
       _merge = utils.mergeData().key((d) -> d.key)
       _mergeLayers = utils.mergeData()
 
       initial = true
+
+      config = barConfig
 
       ttEnter = (data) ->
         ttLayers = data.layers.map((l) -> {name:l.layerKey, value:_scaleList.y.formatValue(l.value), color: {'background-color': l.color}})
@@ -36,6 +40,9 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils) ->
           layers = @selectAll(".layer")
         #$log.debug "drawing stacked-bar"
 
+        barPadding = y.scale().rangeBand() / (1 - config.padding) * config.padding
+        barOuterPadding = y.scale().rangeBand() / (1 - config.outerPadding) * config.outerPadding
+
         layerKeys = x.layerKeys(data)
 
         stack = []
@@ -50,25 +57,24 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils) ->
             )
             stack.push(l)
 
-        _merge(stack).first({y:options.height, height:0}).last({y:0, height:0})
+        _merge(stack).first({y:options.height + barPaddingOld / 2 - barOuterPadding, height:0}).last({y:0, height:barOuterPaddingOld - barPaddingOld / 2})
         _mergeLayers(layerKeys)
 
         layers = layers
           .data(stack, (d)-> d.key)
 
         layers.enter().append('g')
-          .attr('class', "layer").attr('transform',(d) -> "translate(0,#{if initial then d.y else _merge.addedPred(d).y}) scale(1,#{if initial then 1 else 0})")
+          .attr('class', "layer").attr('transform',(d) -> "translate(0,#{if initial then d.y else _merge.addedPred(d).y - barPaddingOld / 2}) scale(1,#{if initial then 1 else 0})")
           .style('opacity',if initial then 0 else 1)
           .call(_tooltip.tooltip)
 
         layers
           .transition().duration(options.duration)
-          .attr('transform',(d) ->
-            return "translate(0, #{d.y}) scale(1,1)").style('opacity', 1)
+          .attr('transform',(d) -> return "translate(0, #{d.y}) scale(1,1)").style('opacity', 1)
 
         layers.exit()
           .transition().duration(options.duration)
-          .attr('transform',(d) -> "translate(0,#{_merge.deletedSucc(d).y + _merge.deletedSucc(d).height * 1.05}) scale(1,0)")
+          .attr('transform',(d) -> "translate(0,#{_merge.deletedSucc(d).y + _merge.deletedSucc(d).height + barPadding / 2}) scale(1,0)")
           .remove()
 
         bars = layers.selectAll('.bar')
@@ -106,6 +112,8 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils) ->
           .remove()
 
         initial = false
+        barPaddingOld = barPadding
+        barOuterPaddingOld = barOuterPadding
 
       #-----------------------------------------------------------------------------------------------------------------
 
@@ -113,7 +121,7 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils) ->
       host.lifeCycle().on 'configure', ->
         _scaleList = @getScales(['x', 'y', 'color'])
         @getKind('x').domainCalc('total').resetOnNewData(true)
-        @getKind('y').resetOnNewData(true)
+        @getKind('y').resetOnNewData(true).rangePadding(config)
         @layerScale('color')
         _tooltip = host.behavior().tooltip
         _selected = host.behavior().selected
@@ -121,4 +129,23 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils) ->
 
       host.lifeCycle().on 'draw', draw
       host.lifeCycle().on 'brushDraw', draw
+
+
+      attrs.$observe 'padding', (val) ->
+        if val is 'false'
+          config.padding = 0
+          config.outerPadding = 0
+        else if val is 'true'
+          _.merge(config, barConfig)
+        else
+          values = utils.parseList(val)
+          if values
+            if values.length is 1
+              config.padding = values[0]/100
+              config.outerPadding = values[0]/100
+            if values.length is 2
+              config.padding = values[0]/100
+              config.outerPadding = values[1]/100
+        _scaleList.y.rangePadding(config)
+        host.lifeCycle().update()
   }
