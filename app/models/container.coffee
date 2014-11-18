@@ -144,22 +144,28 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
       kind = s.kind()
       ticks = if s.isOrdinal() then s.scale().range() else s.scale().ticks()
       gridLines = _container.selectAll(".wk-chart-grid.#{kind}").data(ticks, (d) -> d)
-      gridLines.enter().append('line').attr('class', "wk-chart-grid #{kind}").style('pointer-events', 'none')
+      gridLines.enter().append('line').attr('class', "wk-chart-grid #{kind}")
+        .style('pointer-events', 'none')
+        .style('opacity',0)
       if kind is 'y'
-        gridLines.attr({
-          x1:0,
-          x2: _innerWidth,
-          y1:(d) -> if s.isOrdinal() then  d else s.scale()(d),
-          y2:(d) -> if s.isOrdinal() then d else s.scale()(d)
-        })
+        gridLines.transition().duration(_duration)
+          .attr({
+            x1:0,
+            x2: _innerWidth,
+            y1:(d) -> if s.isOrdinal() then  d else s.scale()(d),
+            y2:(d) -> if s.isOrdinal() then d else s.scale()(d)
+          })
+          .style('opacity',1)
       else
-        gridLines.attr({
-          y1:0,
-          y2: _innerHeight,
-          x1:(d) -> if s.isOrdinal() then d else s.scale()(d),
-          x2:(d) -> if s.isOrdinal() then d else s.scale()(d)
-        })
-      gridLines.exit().remove()
+        gridLines.transition().duration(_duration)
+          .attr({
+            y1:0,
+            y2: _innerHeight,
+            x1:(d) -> if s.isOrdinal() then d else s.scale()(d),
+            x2:(d) -> if s.isOrdinal() then d else s.scale()(d)
+          })
+          .style('opacity',1)
+      gridLines.exit().transition().duration(_duration).style('opacity',0).remove()
 
     #--- Build the container -------------------------------------------------------------------------------------------
     # build generic elements first

@@ -10,6 +10,8 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
       _layout = []
       _dataOld = []
       _pathValuesOld = []
+      _pathValuesNew = []
+      _pathArray = []
       _initialOpacity = 0
 
       _tooltip = undefined
@@ -25,23 +27,27 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
 
       #--- Tooltip Event Handlers --------------------------------------------------------------------------------------
 
+      ttEnter = (idx) ->
+        _pathArray = _.toArray(_pathValuesNew)
+        ttMoveData.apply(this, [idx])
+
       ttMoveData = (idx) ->
-        ttLayers = _layout.map((l) -> {name:l.key, value:_scaleList.y.formatValue(l.value[idx].y), color:{'background-color': l.color}})
+        ttLayers = _pathArray.map((l) -> {name:l[idx].key, value:_scaleList.y.formatValue(l[idx].yv), color:{'background-color': l[idx].color}, xv:l[idx].xv})
         @headerName = _scaleList.x.axisLabel()
-        @headerValue = _scaleList.x.formatValue(_layout[0].value[idx].x)
+        @headerValue = _scaleList.x.formatValue(ttLayers[0].xv)
         @layers = @layers.concat(ttLayers)
 
       ttMoveMarker = (idx) ->
-        _circles = this.selectAll(".marker-#{_id}").data(_layout, (d) -> d.key)
+        _circles = this.selectAll(".marker-#{_id}").data(_pathArray, (d) -> d[idx].key)
         _circles.enter().append('circle').attr('class',"marker-#{_id}")
           .attr('r', if _showMarkers then 8 else 5)
-          .style('fill', (d)-> d.color)
+          .style('fill', (d)-> d[idx].color)
           .style('fill-opacity', 0.6)
           .style('stroke', 'black')
           .style('pointer-events','none')
-        _circles.attr('cy', (d) -> _scaleList.y.scale()(d.value[idx].y))
+        _circles.attr('cy', (d) -> d[idx].y)
         _circles.exit().remove()
-        this.attr('transform', "translate(#{_scaleList.x.scale()(_layout[0].value[idx].x) + offset})")
+        this.attr('transform', "translate(#{_pathArray[0][idx].x + offset})")
 
       #--- Draw --------------------------------------------------------------------------------------------------------
 
@@ -54,9 +60,9 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
         _pathValuesNew = {}
 
         for key in _layerKeys
-          _pathValuesNew[key] = data.map((d)-> {x:x.map(d),y:y.scale()(y.layerValue(d, key))})
+          _pathValuesNew[key] = data.map((d)-> {x:x.map(d),y:y.scale()(y.layerValue(d, key)), xv:x.value(d), yv:y.layerValue(d,key), key:key, color:color.scale()(key)})
 
-          layer = {key:key, color:color.scale()(key), valueOld:[], valueNew:[]}
+          layer = {key:key, color:color.scale()(key), value:[]}
           # find starting value for old
           i = 0
           while i < mergedX.length
@@ -72,25 +78,32 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
             i++
 
           for val, i in mergedX
+            v = {color:layer.color, xMerge:val[2]}
             # set x and y values for old values. If there is a added value, maintain the last valid position
+            if val[1] is undefined #ie an old value is deleted, maintain the last new position
+              v.yNew = _pathValuesOld[key][val[0]].y
+              v.xNew = newLast.x # animate to the predesessors new position
+              v.deleted = true
+            else
+              v.yNew = _pathValuesNew[key][val[1]].y
+              v.xNew = _pathValuesNew[key][val[1]].x
+              newLast = _pathValuesNew[key][val[1]]
+              v.deleted = false
+
             if _dataOld.length > 0
               if  val[0] is undefined # ie a new value has been added
-                vo = {}
-                vo.y = _pathValuesNew[key][val[1]].y
-                vo.x = oldLast.x # start x-animation from the predecessors old position
+                v.yOld = _pathValuesNew[key][val[1]].y
+                v.xOld = oldLast.x # start x-animation from the predecessors old position
               else
-                vo = _pathValuesOld[key][val[0]]
+                v.yOld = _pathValuesOld[key][val[0]].y
+                v.xOld = _pathValuesOld[key][val[0]].x
                 oldLast = _pathValuesOld[key][val[0]]
-              layer.valueOld.push(vo)
-
-            if val[1] is undefined #ie an old value is deleted, maintain the last new position
-              vn = {}
-              vn.y = _pathValuesOld[key][val[0]].y
-              vn.x = newLast.x # animate to the predesessors new position
             else
-              vn = _pathValuesNew[key][val[1]]
-              newLast = _pathValuesNew[key][val[1]]
-            layer.valueNew.push(vn)
+              v.xOld = v.xNew
+              v.yOld = v.yNew
+
+
+            layer.value.push(v)
 
           _layout.push(layer)
 
@@ -102,38 +115,49 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
           if _showMarkers
             m = layer.selectAll('.marker').data(
                 (l) -> l.value
-              , (d) -> d.x
+              , (d) -> d.xMerge
             )
             m.enter().append('circle').attr('class','marker selectable')
               .attr('r', 5)
               .style('pointer-events','none')
-              .style('opacity', _initialOpacity)
-            m.transition().duration(duration)
-              .attr('cy', (d) -> y.scale()(d.y))
-              .attr('cx', (d) -> x.scale()(d.x) + offset)
-              .style('opacity', 1)
+              #.style('opacity', _initialOpacity)
               .style('fill', (d) -> d.color)
-            m.exit().transition().duration(duration).style('opacity', 0).remove()
+            m
+              .attr('cy', (d) -> d.yOld)
+              .attr('cx', (d) -> d.xOld + offset)
+              .classed('deleted',(d) -> d.deleted)
+            .transition().duration(duration)
+              .attr('cy', (d) -> d.yNew)
+              .attr('cx', (d) -> d.xNew + offset)
+              .style('opacity', (d) -> if d.deleted then 0 else 1)
+
+            m.exit()
+              .remove()
+
           else
             layer.selectAll('.marker').transition().duration(duration).style('opacity', 0).remove()
 
-        line = d3.svg.line()
-          .x((d) -> d.x)
-          .y((d) -> d.y)
+        lineOld = d3.svg.line()
+          .x((d) -> d.xOld)
+          .y((d) -> d.yOld)
 
-        layers = this.selectAll(".line")
+        lineNew = d3.svg.line()
+          .x((d) -> d.xNew)
+          .y((d) -> d.yNew)
+
+        layers = this.selectAll(".layer")
           .data(_layout, (d) -> d.key)
-        #enter = layers.enter().append('g').attr('class', "layer")
-        layers.enter().append('path')
+        enter = layers.enter().append('g').attr('class', "layer")
+        enter.append('path')
           .attr('class','line')
-          .attr('d', (d) -> line(d.valueOld))
+          .attr('d', (d) -> lineNew(d.value))
           .style('opacity', _initialOpacity)
           .style('pointer-events', 'none')
 
-        layers.attr('transform', "translate(#{offset})")
-          .attr('d', (d) -> line(d.valueOld))
+        layers.select('.line').attr('transform', "translate(#{offset})")
+          .attr('d', (d) -> lineOld(d.value))
           .transition().duration(options.duration)
-          .attr('d', (d) -> line(d.valueNew))
+          .attr('d', (d) -> lineNew(d.value))
           .style('stroke', (d) -> d.color)
           .style('opacity', 1).style('pointer-events', 'none')
 
@@ -141,7 +165,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
           .style('opacity', 0)
           .remove()
 
-        #layers.call(markers, options.duration)
+        layers.call(markers, options.duration)
 
         _initialOpacity = 0
         _dataOld = data
@@ -150,7 +174,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
       brush = (data, options, x, y, color) ->
         layers = this.selectAll(".line")
           .attr('d', (d) -> line(d.valueNew))
-        #layers.call(markers, 0)
+        layers.call(markers, 0)
 
       #--- Configuration and registration ------------------------------------------------------------------------------
 
@@ -159,11 +183,11 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
         @layerScale('color')
         @getKind('y').domainCalc('extent').resetOnNewData(true)
         @getKind('x').resetOnNewData(true).domainCalc('extent')
-        #_tooltip = host.behavior().tooltip
-        #_tooltip.markerScale(_scaleList.x)
-        #_tooltip.on "enter.#{_id}", ttMoveData
-        #_tooltip.on "moveData.#{_id}", ttMoveData
-        #_tooltip.on "moveMarker.#{_id}", ttMoveMarker
+        _tooltip = host.behavior().tooltip
+        _tooltip.markerScale(_scaleList.x)
+        _tooltip.on "enter.#{_id}", ttEnter
+        _tooltip.on "moveData.#{_id}", ttMoveData
+        _tooltip.on "moveMarker.#{_id}", ttMoveMarker
 
       host.lifeCycle().on 'draw', draw
       host.lifeCycle().on 'brushDraw', brush
