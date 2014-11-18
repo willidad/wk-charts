@@ -140,7 +140,8 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
     _removeLabel = (orient) ->
       _container.select(".wk-chart-label.#{orient}").remove()
 
-    drawGrid = (s) ->
+    drawGrid = (s, noAnimation) ->
+      duration = if noAnimation then 0 else _duration
       kind = s.kind()
       ticks = if s.isOrdinal() then s.scale().range() else s.scale().ticks()
       gridLines = _container.selectAll(".wk-chart-grid.#{kind}").data(ticks, (d) -> d)
@@ -148,7 +149,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
         .style('pointer-events', 'none')
         .style('opacity',0)
       if kind is 'y'
-        gridLines.transition().duration(_duration)
+        gridLines.transition().duration(duration)
           .attr({
             x1:0,
             x2: _innerWidth,
@@ -157,7 +158,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
           })
           .style('opacity',1)
       else
-        gridLines.transition().duration(_duration)
+        gridLines.transition().duration(duration)
           .attr({
             y1:0,
             y2: _innerHeight,
@@ -165,7 +166,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
             x2:(d) -> if s.isOrdinal() then d else s.scale()(d)
           })
           .style('opacity',1)
-      gridLines.exit().transition().duration(_duration).style('opacity',0).remove()
+      gridLines.exit().transition().duration(duration).style('opacity',0).remove()
 
     #--- Build the container -------------------------------------------------------------------------------------------
     # build generic elements first
@@ -268,7 +269,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
         a.call(scale.axis())
 
         if scale.showGrid()
-          drawGrid(scale)
+          drawGrid(scale, true)
       return me
 
     return me

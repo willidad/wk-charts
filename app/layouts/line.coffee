@@ -24,6 +24,8 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
       line = undefined
       markers = undefined
 
+      brushLine = undefined
+
 
       #--- Tooltip Event Handlers --------------------------------------------------------------------------------------
 
@@ -78,7 +80,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
             i++
 
           for val, i in mergedX
-            v = {color:layer.color, xMerge:val[2]}
+            v = {color:layer.color, x:val[2]}
             # set x and y values for old values. If there is a added value, maintain the last valid position
             if val[1] is undefined #ie an old value is deleted, maintain the last new position
               v.yNew = _pathValuesOld[key][val[0]].y
@@ -115,7 +117,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
           if _showMarkers
             m = layer.selectAll('.marker').data(
                 (l) -> l.value
-              , (d) -> d.xMerge
+              , (d) -> d.x
             )
             m.enter().append('circle').attr('class','marker selectable')
               .attr('r', 5)
@@ -143,6 +145,10 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
 
         lineNew = d3.svg.line()
           .x((d) -> d.xNew)
+          .y((d) -> d.yNew)
+
+        brushLine = d3.svg.line()
+          .x((d) -> x.scale()(d.x))
           .y((d) -> d.yNew)
 
         layers = this.selectAll(".layer")
@@ -173,7 +179,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
 
       brush = (data, options, x, y, color) ->
         layers = this.selectAll(".line")
-          .attr('d', (d) -> line(d.valueNew))
+          .attr('d', (d) -> brushLine(d.value))
         layers.call(markers, 0)
 
       #--- Configuration and registration ------------------------------------------------------------------------------
