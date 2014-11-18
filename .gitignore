@@ -1,4 +1,5 @@
-node_modules/
-bower_components/
-build/
-.idea/
+# Created by .gitignore support plugin (hsz.mobi)
+bower_components
+build
+node_modules
+.idea
