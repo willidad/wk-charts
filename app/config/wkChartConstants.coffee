@@ -69,7 +69,7 @@ angular.module('wk.chart').constant 'axisConfig', {
 }
 
 angular.module('wk.chart').constant 'd3Animation', {
-  duration:500
+  duration:2500
 }
 
 angular.module('wk.chart').constant 'templateDir', 'templates/'
@@ -81,5 +81,6 @@ angular.module('wk.chart').constant 'formatDefaults', {
 
 angular.module('wk.chart').constant 'barConfig', {
   padding: 0.1
+  outerPadding: 0
 }
 

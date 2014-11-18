@@ -14,8 +14,8 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults) ->
     _layerProp = ''
     _layerExclude = []
     _range = undefined
-    _rangePadding = 0.1
-    _rangeOuterPadding = 0
+    _rangePadding = 0.3
+    _rangeOuterPadding = 0.3
     _inputFormatString = undefined
     _inputFormatFn = (data) -> if isNaN(+data) or _.isDate(data) then data else +data
 
@@ -228,6 +228,13 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults) ->
         else if not (_scaleType in ['category10', 'category20', 'category20b', 'category20c'])
           _scale.range(range) # ignore range for color category scales
 
+        return me
+
+    me.rangePadding = (config) ->
+      if arguments.length is 0 then return {padding:_rangePadding, outerPadding:_rangeOuterPadding}
+      else
+        _rangePadding = config.padding
+        _rangeOuterPadding = config.outerPadding
         return me
 
     #--- property related attributes -----------------------------------------------------------------------------------
