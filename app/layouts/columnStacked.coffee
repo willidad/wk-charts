@@ -93,7 +93,7 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig) -
             else
               d.y
           )
-          .attr('height',(d) -> if initial then d.height else 0)
+          .attr('height',(d) -> d.height)
           .call(_selected)
 
         bars.style('fill', (d) -> d.color)

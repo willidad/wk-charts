@@ -69,7 +69,7 @@ angular.module('wk.chart').constant 'axisConfig', {
 }
 
 angular.module('wk.chart').constant 'd3Animation', {
-  duration:2500
+  duration:500
 }
 
 angular.module('wk.chart').constant 'templateDir', 'templates/'
