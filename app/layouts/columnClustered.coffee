@@ -55,12 +55,12 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig)
         _mergeLayers(cluster[0].layers).first({x:0, width:0}).last({x:cluster[0].width, width:0})
 
         if not layers
-          layers = @selectAll('.layer')
+          layers = @selectAll('.wk-chart-layer')
 
         layers = layers.data(cluster, (d) -> d.key)
 
         layers.enter().append('g')
-          .attr('class', 'layer').call(_tooltip.tooltip)
+          .attr('class', 'wk-chart-layer').call(_tooltip.tooltip)
           .attr('transform',(d) -> "translate(#{if initial then d.x else _merge.addedPred(d).x + _merge.addedPred(d).width + barPaddingOld / 2},0) scale(#{if initial then 1 else 0}, 1)")
           .style('opacity', if initial then 0 else 1)
 
@@ -74,14 +74,14 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig)
             .attr('transform',(d) -> "translate(#{_merge.deletedSucc(d).x - barPadding / 2}, 0) scale(0,1)")
             .remove()
 
-        bars = layers.selectAll('.bar')
+        bars = layers.selectAll('.wk-chart-bar')
           .data(
             (d) -> d.layers
           , (d) -> d.layerKey + '|' + d.key
           )
 
         bars.enter().append('rect')
-          .attr('class', 'bar selectable')
+          .attr('class', 'wk-chart-bar wk-chart-selectable')
           .attr('x', (d) -> if initial then d.x else _mergeLayers.addedPred(d).x + _mergeLayers.addedPred(d).width)
           .attr('width', (d) ->if initial then d.width else 0)
 

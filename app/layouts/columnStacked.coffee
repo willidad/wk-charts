@@ -78,14 +78,14 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig) -
             .attr('transform',(d) -> "translate(#{_merge.deletedSucc(d).x - barPadding / 2}, 0) scale(0,1)")
             .remove()
 
-        bars = layers.selectAll('.bar')
+        bars = layers.selectAll('.wk-chart-bar')
           .data(
             (d) -> d.layers
           , (d) -> d.layerKey + '|' + d.key
           )
 
         bars.enter().append('rect')
-          .attr('class', 'bar selectable')
+          .attr('class', 'wk-chart-bar wk-chart-selectable')
           .attr('y', (d) ->
             if _merge.prev(d.key)
               idx = layerKeys.indexOf(_mergeLayers.addedPred(d.layerKey))

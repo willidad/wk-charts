@@ -35,8 +35,8 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils) ->
         @layers = @layers.concat(ttLayers)
 
       ttMoveMarker = (idx) ->
-        _circles = this.selectAll(".marker-#{_id}").data(layerData, (d) -> d.key)
-        _circles.enter().append('circle').attr('class',"marker-#{_id}")
+        _circles = this.selectAll(".wk-chart-marker-#{_id}").data(layerData, (d) -> d.key)
+        _circles.enter().append('circle').attr('class',"wk-chart-marker-#{_id}")
           .attr('r', if _showMarkers then 8 else 5)
           .style('fill', (d)-> d.color)
           .style('fill-opacity', 0.6)
@@ -89,7 +89,7 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils) ->
         if _tooltip then _tooltip.data(data)
 
         if not layers
-          layers = this.selectAll('.layer')
+          layers = this.selectAll('.wk-chart-layer')
 
         if offset is 'expand'
           scaleX = x.scale().copy()
@@ -106,13 +106,13 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils) ->
 
         if layoutOld.length is 0
           layers.enter()
-            .append('path').attr('class', 'area')
+            .append('path').attr('class', 'wk-chart-area')
             .style('fill', (d, i) -> color.scale()(d.key)).style('opacity', 0)
             .style('pointer-events', 'none')
             .style('opacity', 0.7)
         else
           layers.enter()
-            .append('path').attr('class', 'area')
+            .append('path').attr('class', 'wk-chart-area')
             .attr('d', (d) -> if addedPred[d.key] then getLayerByKey(addedPred[d.key], layoutOld).path else area(d.layer.map((p) ->  {yy: p.yy, y: 0, y0: 0})))
             .style('fill', (d, i) -> color.scale()(d.key))
             .style('pointer-events', 'none')

@@ -22,8 +22,8 @@ angular.module('wk.chart').directive 'bubble', ($log, utils) ->
 
       draw = (data, options, x, y, color, size) ->
 
-        bubbles = @selectAll('.bubble').data(data, (d) -> color.value(d))
-        bubbles.enter().append('circle').attr('class','bubble selectable')
+        bubbles = @selectAll('.wk-chart-bubble').data(data, (d) -> color.value(d))
+        bubbles.enter().append('circle').attr('class','wk-chart-bubble wk-chart-selectable')
           .style('opacity', 0)
           .call(_tooltip.tooltip)
           .call(_selected)

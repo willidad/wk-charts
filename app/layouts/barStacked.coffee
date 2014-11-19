@@ -37,7 +37,7 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig) ->
       draw = (data, options, x, y, color, size, shape) ->
 
         if not layers
-          layers = @selectAll(".layer")
+          layers = @selectAll(".wk-chart-layer")
         #$log.debug "drawing stacked-bar"
 
         barPadding = y.scale().rangeBand() / (1 - config.padding) * config.padding
@@ -64,7 +64,7 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig) ->
           .data(stack, (d)-> d.key)
 
         layers.enter().append('g')
-          .attr('class', "layer").attr('transform',(d) -> "translate(0,#{if initial then d.y else _merge.addedPred(d).y - barPaddingOld / 2}) scale(1,#{if initial then 1 else 0})")
+          .attr('class', "wk-chart-layer").attr('transform',(d) -> "translate(0,#{if initial then d.y else _merge.addedPred(d).y - barPaddingOld / 2}) scale(1,#{if initial then 1 else 0})")
           .style('opacity',if initial then 0 else 1)
           .call(_tooltip.tooltip)
 
@@ -77,14 +77,14 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig) ->
           .attr('transform',(d) -> "translate(0,#{_merge.deletedSucc(d).y + _merge.deletedSucc(d).height + barPadding / 2}) scale(1,0)")
           .remove()
 
-        bars = layers.selectAll('.bar')
+        bars = layers.selectAll('.wk-chart-bar')
           .data(
             (d) -> d.layers
           , (d) -> d.layerKey + '|' + d.key
           )
 
         bars.enter().append('rect')
-          .attr('class', 'bar selectable')
+          .attr('class', 'wk-chart-bar wk-chart-selectable')
           .attr('x', (d) ->
             if _merge.prev(d.key)
               idx = layerKeys.indexOf(_mergeLayers.addedPred(d.layerKey))

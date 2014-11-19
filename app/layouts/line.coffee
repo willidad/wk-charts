@@ -40,8 +40,8 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
         @layers = @layers.concat(ttLayers)
 
       ttMoveMarker = (idx) ->
-        _circles = this.selectAll(".marker-#{_id}").data(_pathArray, (d) -> d[idx].key)
-        _circles.enter().append('circle').attr('class',"marker-#{_id}")
+        _circles = this.selectAll(".wk-chart-marker-#{_id}").data(_pathArray, (d) -> d[idx].key)
+        _circles.enter().append('circle').attr('class',"wk-chart-marker-#{_id}")
           .attr('r', if _showMarkers then 8 else 5)
           .style('fill', (d)-> d[idx].color)
           .style('fill-opacity', 0.6)
@@ -115,11 +115,11 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
 
         markers = (layer, duration) ->
           if _showMarkers
-            m = layer.selectAll('.marker').data(
+            m = layer.selectAll('.wk-chart-marker').data(
                 (l) -> l.value
               , (d) -> d.x
             )
-            m.enter().append('circle').attr('class','marker selectable')
+            m.enter().append('circle').attr('class','wk-chart-marker wk-chart-selectable')
               .attr('r', 5)
               .style('pointer-events','none')
               #.style('opacity', _initialOpacity)
@@ -127,7 +127,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
             m
               .attr('cy', (d) -> d.yOld)
               .attr('cx', (d) -> d.xOld + offset)
-              .classed('deleted',(d) -> d.deleted)
+              .classed('wk-chart-deleted',(d) -> d.deleted)
             .transition().duration(duration)
               .attr('cy', (d) -> d.yNew)
               .attr('cx', (d) -> d.xNew + offset)
@@ -137,7 +137,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
               .remove()
 
           else
-            layer.selectAll('.marker').transition().duration(duration).style('opacity', 0).remove()
+            layer.selectAll('.wk-chart-marker').transition().duration(duration).style('opacity', 0).remove()
 
         lineOld = d3.svg.line()
           .x((d) -> d.xOld)
@@ -151,16 +151,16 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
           .x((d) -> x.scale()(d.x))
           .y((d) -> d.yNew)
 
-        layers = this.selectAll(".layer")
+        layers = this.selectAll(".wk-chart-layer")
           .data(_layout, (d) -> d.key)
-        enter = layers.enter().append('g').attr('class', "layer")
+        enter = layers.enter().append('g').attr('class', "wk-chart-layer")
         enter.append('path')
-          .attr('class','line')
+          .attr('class','wk-chart-line')
           .attr('d', (d) -> lineNew(d.value))
           .style('opacity', _initialOpacity)
           .style('pointer-events', 'none')
 
-        layers.select('.line').attr('transform', "translate(#{offset})")
+        layers.select('.wk-chart-line').attr('transform', "translate(#{offset})")
           .attr('d', (d) -> lineOld(d.value))
           .transition().duration(options.duration)
           .attr('d', (d) -> lineNew(d.value))
@@ -178,7 +178,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
         _pathValuesOld = _pathValuesNew
 
       brush = (data, options, x, y, color) ->
-        layers = this.selectAll(".line")
+        layers = this.selectAll(".wk-chart-line")
           .attr('d', (d) -> brushLine(d.value))
         layers.call(markers, 0)
 

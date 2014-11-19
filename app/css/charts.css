@@ -2,25 +2,24 @@
     width: 100%;
     height: 100%;
     font-size: 10px;
-}
-svg {
-    height:100%;
-    width:100%
+    position: relative;
 }
 
-.axis path, .axis line {
+.wk-chart-axis path, .wk-chart-axis line {
     fill:none;
     stroke: darkGrey;
     shape-rendering: crispEdges;
 }
 
-.line {
+.wk-chart-line {
     fill:none;
+    shape-rendering: crispEdges;
 }
 
-polyline {
+.wk-chart-polyline {
     fill:none;
     stroke:black;
+    shape-rendering: crispEdges;
 }
 
 .wk-chart-tooltip {
@@ -50,13 +49,9 @@ polyline {
 .wk-chart-tooltip > .table {
     margin-bottom: 0;
 }
-.table-condensed > tbody > tr > td.tt-svg-shape {
+.wk-chart-tooltip .table-condensed > tbody > tr > td.wk-chart-tt-svg-shape {
     padding-left:0;
     padding-right:0;
-}
-
-.wk-chart {
-    position:relative;
 }
 
 .wk-chart-legend {
@@ -109,26 +104,26 @@ li.wk-chart-legend-shapeItem span {
     opacity:1;
 }
 
-.overlay .resize rect {
+.wk-chart-overlay .wk-chart-resize rect {
     stroke: black;
     fill: darkgrey;
     visibility: hidden;
 }
 
-.show-brush-handles .overlay .resize rect {
+.show-brush-handles .wk-chart-overlay .wk-chart-resize rect {
     visibility: visible;
 }
 
-.overlay .background {
+.wk-chart-overlay .wk-chart-background {
     visibility: hidden
 }
-.overlay>.extent {
+.wk-chart-overlay>.wk-chart-extent {
     fill:lightgrey;
     fill-opacity:0.6;
 }
 
 
-.selected {
+.wk-chart-selected {
     stroke:red;
     stroke-width:3px;
 }

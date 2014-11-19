@@ -121,21 +121,21 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
       return box
 
     drawAxis = (dim) ->
-      axis = _container.select(".axis.#{dim.axisOrient()}")
+      axis = _container.select(".wk-chart-axis.#{dim.axisOrient()}")
       if axis.empty()
-        axis = _container.append('g').attr('class', 'axis ' + dim.axisOrient())
+        axis = _container.append('g').attr('class', 'wk-chart-axis ' + dim.axisOrient())
       axis.transition().duration(_duration).call(dim.axis())
 
       if dim.rotateTickLabels()
-        axis.selectAll(".#{dim.axisOrient()}.axis text")
+        axis.selectAll(".#{dim.axisOrient()}.wk-chart-axis text")
           .attr({dy:'-0.71em', x:-9})
           .attr('transform',"translate(0,9) rotate(#{dim.rotateTickLabels()})")
           .style('text-anchor','end')
       else
-        axis.selectAll(".#{dim.axisOrient()}.axis text").attr('transform', null)
+        axis.selectAll(".#{dim.axisOrient()}.wk-chart-axis text").attr('transform', null)
 
     _removeAxis = (orient) ->
-      _container.select(".axis.#{orient}").remove()
+      _container.select(".wk-chart-axis.#{orient}").remove()
 
     _removeLabel = (orient) ->
       _container.select(".wk-chart-label.#{orient}").remove()
@@ -172,12 +172,12 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
     # build generic elements first
 
     _genChartFrame = () ->
-      _svg = _elementSelection.append('div').attr('class', 'wk-chart').append('svg')
+      _svg = _elementSelection.append('div').attr('class', 'wk-chart').append('svg').attr('class', 'wk-chart')
       _svg.append('defs').append('clipPath').attr('id', "clip-#{_containerId}").append('rect')
       _container= _svg.append('g').attr('class','wk-chart-container')
-      _overlay = _container.append('g').attr('class', 'overlay').style('pointer-events', 'all')
-      _overlay.append('rect').style('visibility', 'hidden').attr('class', 'background').datum({name:'background'})
-      _chartArea = _container.append('g').attr('class', 'chartArea')
+      _overlay = _container.append('g').attr('class', 'wk-chart-overlay').style('pointer-events', 'all')
+      _overlay.append('rect').style('visibility', 'hidden').attr('class', 'wk-chart-background').datum({name:'background'})
+      _chartArea = _container.append('g').attr('class', 'wk-chart-area')
 
     # start to build and size the elements from top to bottom
 
@@ -237,12 +237,12 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
 
       _spacedContainer = _container.attr('transform', "translate(#{leftMargin}, #{topMargin})")
       _svg.select("#clip-#{_containerId} rect").attr('width', _innerWidth).attr('height', _innerHeight)
-      _spacedContainer.select('.overlay>.background').attr('width', _innerWidth).attr('height', _innerHeight)
-      _spacedContainer.select('.chartArea').style('clip-path', "url(#clip-#{_containerId})")
-      _spacedContainer.select('.overlay').style('clip-path', "url(#clip-#{_containerId})")
+      _spacedContainer.select('.wk-chart-overlay>.wk-chart-background').attr('width', _innerWidth).attr('height', _innerHeight)
+      _spacedContainer.select('.wk-chart-area').style('clip-path', "url(#clip-#{_containerId})")
+      _spacedContainer.select('.wk-chart-overlay').style('clip-path', "url(#clip-#{_containerId})")
 
-      _container.selectAll('.axis.right').attr('transform', "translate(#{_innerWidth}, 0)")
-      _container.selectAll('.axis.bottom').attr('transform', "translate(0, #{_innerHeight})")
+      _container.selectAll('.wk-chart-axis.right').attr('transform', "translate(#{_innerWidth}, 0)")
+      _container.selectAll('.wk-chart-axis.bottom').attr('transform', "translate(0, #{_innerHeight})")
 
       _container.select('.wk-chart-label.left').attr('transform', "translate(#{-axisRect.left.width-labelHeight.left / 2 }, #{_innerHeight/2}) rotate(-90)")
       _container.select('.wk-chart-label.right').attr('transform', "translate(#{_innerWidth+axisRect.right.width + labelHeight.right / 2}, #{_innerHeight/2}) rotate(90)")
@@ -265,7 +265,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
 
     me.drawSingleAxis = (scale) ->
       if scale.showAxis()
-        a = _spacedContainer.select(".axis.#{scale.axis().orient()}")
+        a = _spacedContainer.select(".wk-chart-axis.#{scale.axis().orient()}")
         a.call(scale.axis())
 
         if scale.showGrid()

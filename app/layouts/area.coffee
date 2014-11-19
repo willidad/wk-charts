@@ -26,8 +26,8 @@ angular.module('wk.chart').directive 'area', ($log) ->
         @layers = @layers.concat(ttLayers)
 
       ttMoveMarker = (idx) ->
-        _circles = this.selectAll(".marker-#{_id}").data(_layout, (d) -> d.key)
-        _circles.enter().append('circle').attr('class',"marker-#{_id}")
+        _circles = this.selectAll(".wk-chart-marker-#{_id}").data(_layout, (d) -> d.key)
+        _circles.enter().append('circle').attr('class',"wk-chart-marker-#{_id}")
           .attr('r', if _showMarkers then 8 else 5)
           .style('fill', (d)-> d.color)
           .style('fill-opacity', 0.6)
@@ -53,18 +53,18 @@ angular.module('wk.chart').directive 'area', ($log) ->
         .y0((d) ->  y.scale()(d.y))
         .y1((d) ->  y.scale()(0))
 
-        layers = this.selectAll(".layer")
+        layers = this.selectAll(".wk-chart-layer")
           .data(_layout, (d) -> d.key)
         layers.enter().append('g')
-          .attr('class', "layer")
+          .attr('class', "wk-chart-layer")
           .append('path')
-          .attr('class','line')
+          .attr('class','wk-chart-line')
           .attr('transfrom', "translate(#{offset})")
           .style('stroke', (d) -> d.color)
           .style('fill', (d) -> d.color)
           .style('opacity', 0)
           .style('pointer-events', 'none')
-        layers.select('.line').transition().duration(options.duration)
+        layers.select('.wk-chart-line').transition().duration(options.duration)
           .attr('d', (d) -> area(d.value))
           .style('opacity', 0.7).style('pointer-events', 'none')
         layers.exit().transition().duration(options.duration)
@@ -72,8 +72,8 @@ angular.module('wk.chart').directive 'area', ($log) ->
           .remove()
 
       brush = (data, options,x,y,color) ->
-        layers = this.selectAll(".layer")
-        layers.select('.line')
+        layers = this.selectAll(".wk-chart-layer")
+        layers.select('.wk-chart-line')
           .attr('d', (d) ->
             null
             area(d.value))

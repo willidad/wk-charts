@@ -40,7 +40,7 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
       r = Math.min(options.width, options.height) / 2
 
       if not pieBox
-        pieBox= @append('g').attr('class','pieBox')
+        pieBox= @append('g').attr('class','wk-chart-pieBox')
       pieBox.attr('transform', "translate(#{options.width / 2},#{options.height / 2})")
 
       innerArc = d3.svg.arc()
@@ -70,14 +70,14 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
       #--- Draw Pie segments -------------------------------------------------------------------------------------------
 
       if not inner
-        inner = pieBox.selectAll('.innerArc')
+        inner = pieBox.selectAll('.wk-chart-innerArc')
 
       inner = inner
         .data(segments,key)
 
       inner.enter().append('path')
         .each((d) -> this._current = if initialShow then d else {startAngle:_merge.addedPred(d).endAngle, endAngle:_merge.addedPred(d).endAngle})
-        .attr('class','innerArc selectable')
+        .attr('class','wk-chart-innerArc wk-chart-selectable')
         .style('fill', (d) ->  color.map(d.data))
         .style('opacity', if initialShow then 0 else 1)
         .call(_tooltip.tooltip)
@@ -100,9 +100,9 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
 
       if _showLabels
 
-        labels = pieBox.selectAll('.label').data(segments, key)
+        labels = pieBox.selectAll('.wk-chart-label').data(segments, key)
 
-        labels.enter().append('text').attr('class', 'label')
+        labels.enter().append('text').attr('class', 'wk-chart-label')
           .each((d) -> @_current = d)
           .attr("dy", ".35em")
           .style('font-size','1.3em')
@@ -132,10 +132,10 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
 
       #--- Draw Connector Lines ----------------------------------------------------------------------------------------
 
-        polyline = pieBox.selectAll("polyline").data(segments, key)
+        polyline = pieBox.selectAll("wk-chart-polyline").data(segments, key)
 
         polyline.enter()
-        . append("polyline")
+        . append("polyline").attr('class','wk-chart-polyline')
           .style("opacity", 0)
           .each((d) ->  this._current = d)
 
@@ -159,8 +159,8 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
           .remove();
 
       else
-        pieBox.selectAll('polyline').remove()
-        pieBox.selectAll('.label').remove()
+        pieBox.selectAll('.wk-chart-polyline').remove()
+        pieBox.selectAll('.wk-chart-label').remove()
 
       initialShow = false
 

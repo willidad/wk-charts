@@ -39,26 +39,26 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
 
       # position resize-handles into the right corners
       if _brushXY
-        _overlay.selectAll('.n').attr('transform', "translate(#{left},#{top})").select('rect').attr('width', width)
-        _overlay.selectAll('.s').attr('transform', "translate(#{left},#{bottom})").select('rect').attr('width', width)
-        _overlay.selectAll('.w').attr('transform', "translate(#{left},#{top})").select('rect').attr('height', height)
-        _overlay.selectAll('.e').attr('transform', "translate(#{right},#{top})").select('rect').attr('height', height)
-        _overlay.selectAll('.ne').attr('transform', "translate(#{right},#{top})")
-        _overlay.selectAll('.nw').attr('transform', "translate(#{left},#{top})")
-        _overlay.selectAll('.se').attr('transform', "translate(#{right},#{bottom})")
-        _overlay.selectAll('.sw').attr('transform', "translate(#{left},#{bottom})")
+        _overlay.selectAll('.wk-chart-n').attr('transform', "translate(#{left},#{top})").select('rect').attr('width', width)
+        _overlay.selectAll('.wk-chart-s').attr('transform', "translate(#{left},#{bottom})").select('rect').attr('width', width)
+        _overlay.selectAll('.wk-chart-w').attr('transform', "translate(#{left},#{top})").select('rect').attr('height', height)
+        _overlay.selectAll('.wk-chart-e').attr('transform', "translate(#{right},#{top})").select('rect').attr('height', height)
+        _overlay.selectAll('.wk-chart-ne').attr('transform', "translate(#{right},#{top})")
+        _overlay.selectAll('.wk-chart-nw').attr('transform', "translate(#{left},#{top})")
+        _overlay.selectAll('.wk-chart-se').attr('transform', "translate(#{right},#{bottom})")
+        _overlay.selectAll('.wk-chart-sw').attr('transform', "translate(#{left},#{bottom})")
         _extent.attr('width', width).attr('height', height).attr('x', left).attr('y', top)
       if _brushX
-        _overlay.selectAll('.w').attr('transform', "translate(#{left},0)").select('rect').attr('height', height)
-        _overlay.selectAll('.e').attr('transform', "translate(#{right},0)").select('rect').attr('height', height)
-        _overlay.selectAll('.e').select('rect').attr('height', _areaBox.height)
-        _overlay.selectAll('.w').select('rect').attr('height', _areaBox.height)
+        _overlay.selectAll('.wk-chart-w').attr('transform', "translate(#{left},0)").select('rect').attr('height', height)
+        _overlay.selectAll('.wk-chart-e').attr('transform', "translate(#{right},0)").select('rect').attr('height', height)
+        _overlay.selectAll('.wk-chart-e').select('rect').attr('height', _areaBox.height)
+        _overlay.selectAll('.wk-chart-w').select('rect').attr('height', _areaBox.height)
         _extent.attr('width', width).attr('height', _areaBox.height).attr('x', left).attr('y', 0)
       if _brushY
-        _overlay.selectAll('.n').attr('transform', "translate(0,#{top})").select('rect').attr('width', width)
-        _overlay.selectAll('.s').attr('transform', "translate(0,#{bottom})").select('rect').attr('width', width)
-        _overlay.selectAll('.n').select('rect').attr('width', _areaBox.width)
-        _overlay.selectAll('.s').select('rect').attr('width', _areaBox.width)
+        _overlay.selectAll('.wk-chart-n').attr('transform', "translate(0,#{top})").select('rect').attr('width', width)
+        _overlay.selectAll('.wk-chart-s').attr('transform', "translate(0,#{bottom})").select('rect').attr('width', width)
+        _overlay.selectAll('.wk-chart-n').select('rect').attr('width', _areaBox.width)
+        _overlay.selectAll('.wk-chart-s').select('rect').attr('width', _areaBox.width)
         _extent.attr('width', _areaBox.width).attr('height', height).attr('x', 0).attr('y', top)
 
     #-------------------------------------------------------------------------------------------------------------------
@@ -69,9 +69,9 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
           cr = this.getBoundingClientRect()
           xHit = er.left < cr.right - cr.width / 3 and cr.left + cr.width / 3 < er.right
           yHit = er.top < cr.bottom - cr.height / 3 and cr.top + cr.height / 3 < er.bottom
-          d3.select(this).classed('selected', yHit and xHit)
+          d3.select(this).classed('wk-chart-selected', yHit and xHit)
         )
-      return _container.selectAll('.selected').data()
+      return _container.selectAll('.wk-chart-selected').data()
 
     #-------------------------------------------------------------------------------------------------------------------
 
@@ -109,14 +109,14 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       startLeft = left
       startRight = right
       startBottom = bottom
-      d3.select(_area).style('pointer-events','none').selectAll(".resize").style("display", null)
+      d3.select(_area).style('pointer-events','none').selectAll(".wk-chart-resize").style("display", null)
       d3.select('body').style('cursor', d3.select(d3.event.target).style('cursor'))
 
       d3.select($window).on('mousemove.brush', brushMove).on('mouseup.brush', brushEnd)
 
       _tooltip.hide(true)
       _boundsIdx = undefined
-      _selectables = _container.selectAll('.selectable')
+      _selectables = _container.selectAll('.wk-chart-selectable')
       _brushEvents.brushStart()
       timing.clear()
       timing.init()
@@ -128,11 +128,11 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
 
       d3.select($window).on 'mousemove.brush', null
       d3.select($window).on 'mouseup.brush', null
-      d3.select(_area).style('pointer-events','all').selectAll('.resize').style('display', null) # show the resize handlers
+      d3.select(_area).style('pointer-events','all').selectAll('.wk-chart-resize').style('display', null) # show the resize handlers
       d3.select('body').style('cursor', null)
       if bottom - top is 0 or right - left is 0
         #brush is empty
-        d3.select(_area).selectAll('.resize').style('display', 'none')
+        d3.select(_area).selectAll('.wk-chart-resize').style('display', 'none')
       _tooltip.hide(false)
       _brushEvents.brushEnd(_boundsIdx)
       timing.report()
@@ -248,28 +248,27 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
         _brushY = me.y() and not me.x()
         # create the handler elements and register the handlers
         s.style({'pointer-events': 'all', cursor: 'crosshair'})
-        #s.append('rect').attr('class', 'background').style({visibility:'hidden'}).datum({name:'background', cursor:''})
-        _extent = s.append('rect').attr({class:'extent', x:0, y:0, width:0, height:0}).style('cursor','move').datum({name:'extent'})
+        _extent = s.append('rect').attr({class:'wk-chart-extent', x:0, y:0, width:0, height:0}).style('cursor','move').datum({name:'extent'})
         # resize handles for the sides
         if _brushY or _brushXY
-          s.append('g').attr('class', 'resize n').style({cursor:'ns-resize', display:'none'})
+          s.append('g').attr('class', 'wk-chart-resize wk-chart-n').style({cursor:'ns-resize', display:'none'})
             .append('rect').attr({x:0, y: -3, width:0, height:6}).datum({name:'n'})
-          s.append('g').attr('class', 'resize s').style({cursor:'ns-resize', display:'none'})
+          s.append('g').attr('class', 'wk-chart-resize wk-chart-s').style({cursor:'ns-resize', display:'none'})
             .append('rect').attr({x:0, y: -3, width:0, height:6}).datum({name:'s'})
         if _brushX or _brushXY
-          s.append('g').attr('class', 'resize w').style({cursor:'ew-resize', display:'none'})
+          s.append('g').attr('class', 'wk-chart-resize wk-chart-w').style({cursor:'ew-resize', display:'none'})
             .append('rect').attr({y:0, x: -3, width:6, height:0}).datum({name:'w'})
-          s.append('g').attr('class', 'resize e').style({cursor:'ew-resize', display:'none'})
+          s.append('g').attr('class', 'wk-chart-resize wk-chart-e').style({cursor:'ew-resize', display:'none'})
             .append('rect').attr({y:0, x: -3, width:6, height:0}).datum({name:'e'})
         # resize handles for the corners
         if _brushXY
-          s.append('g').attr('class', 'resize nw').style({cursor:'nwse-resize', display:'none'})
+          s.append('g').attr('class', 'wk-chart-resize wk-chart-nw').style({cursor:'nwse-resize', display:'none'})
           .append('rect').attr({x: -3, y: -3, width:6, height:6}).datum({name:'nw'})
-          s.append('g').attr('class', 'resize ne').style({cursor:'nesw-resize', display:'none'})
+          s.append('g').attr('class', 'wk-chart-resize wk-chart-ne').style({cursor:'nesw-resize', display:'none'})
           .append('rect').attr({x: -3, y: -3, width:6, height:6}).datum({name:'ne'})
-          s.append('g').attr('class', 'resize sw').style({cursor:'nesw-resize', display:'none'})
+          s.append('g').attr('class', 'wk-chart-resize wk-chart-sw').style({cursor:'nesw-resize', display:'none'})
           .append('rect').attr({x: -3, y: -3, width:6, height:6}).datum({name:'sw'})
-          s.append('g').attr('class', 'resize se').style({cursor:'nwse-resize', display:'none'})
+          s.append('g').attr('class', 'wk-chart-resize wk-chart-se').style({cursor:'nwse-resize', display:'none'})
           .append('rect').attr({x: -3, y: -3, width:6, height:6}).datum({name:'se'})
         #register handler. Please note, brush wants the mouse down exclusively !!!
         s.on 'mousedown.brush', brushStart
@@ -338,7 +337,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       if arguments.length is 0 then return _container
       else
         _container = val
-        _selectables = _container.selectAll('.selectable')
+        _selectables = _container.selectAll('.wk-chart-selectable')
         return me #to enable chaining
 
     me.data = (val) ->

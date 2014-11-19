@@ -12,10 +12,10 @@ angular.module('wk.chart').factory 'behaviorSelect', ($log) ->
       if not _active then return
       obj = d3.select(this)
       if not _active then return
-      if obj.classed('selectable')
-        isSelected = obj.classed('selected')
-        obj.classed('selected', not isSelected)
-        allSelected = _container.selectAll('.selected').data().map((d) -> if d.data then d.data else d)
+      if obj.classed('wk-chart-selectable')
+        isSelected = obj.classed('wk-chart-selected')
+        obj.classed('wk-chart-selected', not isSelected)
+        allSelected = _container.selectAll('.wk-chart-selected').data().map((d) -> if d.data then d.data else d)
         # ensure that only the original values are reported back
 
         _selectionEvents.selected(allSelected)

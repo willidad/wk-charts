@@ -17,7 +17,7 @@ angular.module('wk.chart').directive 'scatter', ($log, utils) ->
             value: scale.formattedValue(data),
             color: if sName is 'color' then {'background-color':scale.map(data)} else undefined,
             path: if sName is 'shape' then d3.svg.symbol().type(scale.map(data)).size(80)() else undefined
-            class: if sName is 'shape' then 'tt-svg-shape' else ''
+            class: if sName is 'shape' then 'wk-chart-tt-svg-shape' else ''
           })
 
       #-----------------------------------------------------------------------------------------------------------------
@@ -34,10 +34,10 @@ angular.module('wk.chart').directive 'scatter', ($log, utils) ->
             .attr('transform', (d)-> "translate(#{x.map(d)},#{y.map(d)})").style('opacity', 1)
           initialShow = false
 
-        points = @selectAll('.points')
+        points = @selectAll('.wk-chart-points')
           .data(data)
         points.enter()
-          .append('path').attr('class', 'points selectable')
+          .append('path').attr('class', 'wk-chart-points wk-chart-selectable')
           .attr('transform', (d)-> "translate(#{x.map(d)},#{y.map(d)})")
           .call(init)
           .call(_tooltip.tooltip)

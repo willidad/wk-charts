@@ -27,7 +27,6 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
 
     positionBox = () ->
       rect = _compiledTempl[0].getBoundingClientRect()
-      #d3.select(_compiledTempl[0]).style('height',height).style('width', width)
       clientX = if bodyRect.right - 20 > d3.event.clientX + rect.width + 10 then d3.event.clientX + 10 else d3.event.clientX - rect.width - 10
       clientY = if bodyRect.bottom - 20 > d3.event.clientY + rect.height + 10 then d3.event.clientY + 10 else d3.event.clientY - rect.height - 10
       _templScope.position = {
@@ -74,15 +73,15 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       # create a marker line if required
       if _showMarkerLine
         #_area = this
-        _areaBox = _areaSelection.select('.background').node().getBBox()
+        _areaBox = _areaSelection.select('.wk-chart-background').node().getBBox()
         _pos = d3.mouse(_area)
         _markerG = _container.append('g')  # need to append marker to chart area to ensure it is on top of the chart elements Fix 10
-          .attr('class', 'tooltipMarker')
+          .attr('class', 'wk-chart-tooltip-marker')
         _markerLine = _markerG.append('line')
         if _markerScale.isHorizontal()
-          _markerLine.attr({class:'markerLine', x0:0, x1:0, y0:0,y1:_areaBox.height})
+          _markerLine.attr({class:'wk-chart-marker-line', x0:0, x1:0, y0:0,y1:_areaBox.height})
         else
-          _markerLine.attr({class:'markerLine', x0:0, x1:_areaBox.width, y0:0,y1:0})
+          _markerLine.attr({class:'wk-chart-marker-line', x0:0, x1:_areaBox.width, y0:0,y1:0})
 
         _markerLine.style({stroke: 'darkgrey', 'pointer-events': 'none'})
 

@@ -54,12 +54,12 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig)->
         _mergeLayers(cluster[0].layers).first({y:0, height:0}).last({y:cluster[0].height, height:0})
 
         if not layers
-          layers = @selectAll('.layer')
+          layers = @selectAll('.wk-chart-layer')
 
         layers = layers.data(cluster, (d) -> d.key)
 
         layers.enter().append('g')
-          .attr('class', 'layer').call(_tooltip.tooltip)
+          .attr('class', 'wk-chart-layer').call(_tooltip.tooltip)
           .attr('transform', (d)->
             null
             "translate(0, #{if initial then d.y else _merge.addedPred(d).y - barPaddingOld / 2}) scale(1,#{if initial then 1 else 0})")
@@ -75,14 +75,14 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig)->
             .attr('transform',(d) -> "translate(0, #{_merge.deletedSucc(d).y + _merge.deletedSucc(d).height + barPadding / 2}) scale(1,0)")
             .remove()
 
-        bars = layers.selectAll('.bar')
+        bars = layers.selectAll('.wk-chart-bar')
           .data(
             (d) -> d.layers
           , (d) -> d.layerKey + '|' + d.key
           )
 
         bars.enter().append('rect')
-          .attr('class', 'bar selectable')
+          .attr('class', 'wk-chart-bar wk-chart-selectable')
           .attr('y', (d) -> if initial then d.y else _mergeLayers.addedPred(d).y + _mergeLayers.addedPred(d).height)
           .attr('height', (d) -> if initial then d.height else 0)
           .attr('x', x.scale()(0))

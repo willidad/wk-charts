@@ -84,7 +84,7 @@ angular.module('wk.chart').factory 'legend', ($log, $compile, $rootScope, $templ
       #$log.info 'drawing Legend'
       _containerDiv = _legendDiv or d3.select(me.scale().parent().container().element()).select('.wk-chart')
       if me.show()
-        if _containerDiv.select('.d3ChartColorLegend').empty()
+        if _containerDiv.select('.wk-chart-legend').empty()
           angular.element(_containerDiv.node()).append(_parsedTemplate)
 
         if me.showValues()
@@ -106,7 +106,7 @@ angular.module('wk.chart').factory 'legend', ($log, $compile, $rootScope, $templ
         }
         if not _legendDiv
           containerRect = _containerDiv.node().getBoundingClientRect()
-          chartAreaRect = _containerDiv.select('.overlay rect').node().getBoundingClientRect()
+          chartAreaRect = _containerDiv.select('.wk-chart-overlay rect').node().getBoundingClientRect()
           for p in _position.split('-')
               _legendScope.position[p] = "#{Math.abs(containerRect[p] - chartAreaRect[p])}px"
         _legendScope.title = _title

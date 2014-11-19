@@ -33,9 +33,9 @@ angular.module('wk.chart').directive 'spider', ($log, utils) ->
         arc = Math.PI * 2 / nbrAxis
         degr = 360 / nbrAxis
 
-        axisG = this.select('.axis')
+        axisG = this.select('.wk-chart-axis')
         if axisG.empty()
-          axisG = this.append('g').attr('class', 'axis')
+          axisG = this.append('g').attr('class', 'wk-chart-axis')
 
         ticks = y.scale().ticks(y.ticks())
         y.scale().range([radius,0]) # tricks the way axis are drawn. Not pretty, but works :-)
@@ -43,9 +43,9 @@ angular.module('wk.chart').directive 'spider', ($log, utils) ->
         axisG.call(axis).attr('transform', "translate(#{centerX},#{centerY-radius})")
         y.scale().range([0,radius])
 
-        lines = this.selectAll('.axisLine').data(data,(d) -> d.axis)
+        lines = this.selectAll('.wk-chart-axis-line').data(data,(d) -> d.axis)
         lines.enter()
-          .append('line').attr('class', 'axisLine')
+          .append('line').attr('class', 'wk-chart-axis-line')
           .style('stroke', 'darkgrey')
 
         lines
@@ -56,8 +56,8 @@ angular.module('wk.chart').directive 'spider', ($log, utils) ->
 
         #draw tick lines
         tickLine = d3.svg.line().x((d) -> d.x).y((d)->d.y)
-        tickPath = this.selectAll('.tickPath').data(ticks)
-        tickPath.enter().append('path').attr('class', 'tickPath')
+        tickPath = this.selectAll('.wk-chart-tickPath').data(ticks)
+        tickPath.enter().append('path').attr('class', 'wk-chart-tickPath')
           .style('fill', 'none').style('stroke', 'lightgrey')
 
         tickPath
@@ -68,9 +68,9 @@ angular.module('wk.chart').directive 'spider', ($log, utils) ->
 
         tickPath.exit().remove()
 
-        axisLabels = this.selectAll('.axisText').data(data,(d) -> x.value(d))
+        axisLabels = this.selectAll('.wk-chart-axis-text').data(data,(d) -> x.value(d))
         axisLabels.enter().append('text')
-          .attr('class', 'axisText')
+          .attr('class', 'wk-chart-axis-text')
           .style('fill', 'black')
           .attr('dy', '0.8em')
           .attr('text-anchor', 'middle')
@@ -85,8 +85,8 @@ angular.module('wk.chart').directive 'spider', ($log, utils) ->
 
         dataPath = d3.svg.line().x((d) -> d.x).y((d) -> d.y)
 
-        dataLine = this.selectAll('.dataLine').data(y.layerKeys(data))
-        dataLine.enter().append('path').attr('class', 'dataLine')
+        dataLine = this.selectAll('.wk-chart-data-line').data(y.layerKeys(data))
+        dataLine.enter().append('path').attr('class', 'wk-chart-data-line')
           .style({
             stroke:(d) -> color.scale()(d)
             fill:(d) -> color.scale()(d)

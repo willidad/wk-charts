@@ -34,7 +34,7 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig)->
     draw = (data, options, x, y, color) ->
 
       if not bars
-        bars = @selectAll('.bars')
+        bars = @selectAll('.wk-chart-bars')
       #$log.log "rendering stacked-bar"
 
       barPadding = x.scale().rangeBand() / (1 - config.padding) * config.padding
@@ -47,7 +47,7 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig)->
       bars = bars.data(layout, (d) -> d.key)
 
       bars.enter().append('rect')
-        .attr('class', 'bar selectable')
+        .attr('class', 'wk-chart-bar wk-chart-selectable')
         .attr('x', (d) -> if initial then d.x else _merge.addedPred(d).x  + _merge.addedPred(d).width  + barPaddingOld / 2)
         .attr('width', (d) -> if initial then d.width else 0)
         .style('opacity', if initial then 0 else 1)

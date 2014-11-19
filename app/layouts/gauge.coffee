@@ -29,14 +29,14 @@ angular.module('wk.chart').directive 'gauge', ($log, utils) ->
 
         #draw color scale
 
-        bar = @selectAll('.bar')
+        bar = @selectAll('.wk-chart-bar')
         bar = bar.data(ranges, (d, i) -> i)
         if initalShow
-          bar.enter().append('rect').attr('class', 'bar')
+          bar.enter().append('rect').attr('class', 'wk-chart-bar')
             .attr('x', 0).attr('width', 50)
             .style('opacity', 0)
         else
-          bar.enter().append('rect').attr('class', 'bar')
+          bar.enter().append('rect').attr('class', 'wk-chart-bar')
             .attr('x', 0).attr('width', 50)
 
         bar.transition().duration(options.duration)
@@ -53,9 +53,9 @@ angular.module('wk.chart').directive 'gauge', ($log, utils) ->
           s.append('rect').attr('width', 55).attr('height', 4).style('fill', 'black')
           s.append('circle').attr('r', 10).attr('cx', 65).attr('cy',2).style('stroke', 'black')
 
-        marker = @selectAll('.marker')
-        marker = marker.data(dat, (d) -> 'marker')
-        marker.enter().append('g').attr('class','marker').call(addMarker)
+        marker = @selectAll('.wk-chart-marker')
+        marker = marker.data(dat, (d) -> 'wk-chart-marker')
+        marker.enter().append('g').attr('class','wk-chart-marker').call(addMarker)
 
         if initalShow
           marker.attr('transform', (d) -> "translate(0,#{y.scale()(d.value)})").style('opacity', 0)
