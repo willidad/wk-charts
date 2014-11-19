@@ -121,7 +121,7 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig) ->
       host.lifeCycle().on 'configure', ->
         _scaleList = @getScales(['x', 'y', 'color'])
         @getKind('x').domainCalc('total').resetOnNewData(true)
-        @getKind('y').resetOnNewData(true).rangePadding(config)
+        @getKind('y').resetOnNewData(true).rangePadding(config).scaleType('ordinal')
         @layerScale('color')
         _tooltip = host.behavior().tooltip
         _selected = host.behavior().selected

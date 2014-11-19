@@ -120,7 +120,7 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig) -
       host.lifeCycle().on 'configure', ->
         _scaleList = @getScales(['x', 'y', 'color'])
         @getKind('y').domainCalc('total').resetOnNewData(true)
-        @getKind('x').resetOnNewData(true).rangePadding(config)
+        @getKind('x').resetOnNewData(true).rangePadding(config).scaleType('ordinal')
         @layerScale('color')
         _tooltip = host.behavior().tooltip
         _selected = host.behavior().selected

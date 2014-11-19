@@ -79,7 +79,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig)->
     host.lifeCycle().on 'configure', ->
       _scaleList = @getScales(['x', 'y', 'color'])
       @getKind('x').domainCalc('max').resetOnNewData(true)
-      @getKind('y').resetOnNewData(true).rangePadding(config)
+      @getKind('y').resetOnNewData(true).rangePadding(config).scaleType('ordinal')
       _tooltip = host.behavior().tooltip
       _selected = host.behavior().selected
       _tooltip.on "enter.#{_id}", ttEnter

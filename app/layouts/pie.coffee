@@ -11,11 +11,17 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
 
     _id = "pie#{pieCntr++}"
 
-    arcs = null
-    oldKeys = []
+    inner = undefined
+    outer = undefined
+    labels = undefined
+    pieBox = undefined
+    polyline = undefined
     _scaleList = []
     _selected = undefined
     _tooltip = undefined
+    _showLabels = false
+
+    _merge = utils.mergeData()
 
     #-------------------------------------------------------------------------------------------------------------------
 
@@ -28,21 +34,24 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
 
     initialShow = true
 
-    init = (s) ->
-      if initialShow
-        s.style('opacity', 0)
-
     draw = (data, options, x, y, color, size) ->
       #$log.debug 'drawing pie chart v2'
 
-      if not arcs
-        arcs = @selectAll('.arc')
+      r = Math.min(options.width, options.height) / 2
 
-      r = Math.min(options.width, options.height) / 2 - 10 #for glow shadow
+      if not pieBox
+        pieBox= @append('g').attr('class','pieBox')
+      pieBox.attr('transform', "translate(#{options.width / 2},#{options.height / 2})")
 
-      arc = d3.svg.arc()
-        .outerRadius(r)
+      innerArc = d3.svg.arc()
+        .outerRadius(r * if _showLabels then 0.8 else 1)
         .innerRadius(0)
+
+      outerArc = d3.svg.arc()
+        .outerRadius(r * 0.9)
+        .innerRadius(r * 0.9)
+
+      key = (d) -> _scaleList.color.value(d.data)
 
       pie = d3.layout.pie()
         .sort(null)
@@ -52,81 +61,126 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
         i = d3.interpolate(this._current, a)
         this._current = i(0)
         return (t) ->
-          arc(i(t))
+          innerArc(i(t))
 
-      oldPie = arcs.data()
-      newPie = pie(data)
+      segments = pie(data) # pie computes for each segment the start angle and the end angle
+      _merge.key(key)
+      _merge(segments).first({startAngle:0, endAngle:0}).last({startAngle:Math.PI * 2, endAngle: Math.PI * 2})
 
-      getNeighbour = (d, i, from) ->
-        # find neighbour in the data
-        domain = color.scale.domain()
-        domIdx = domain.indexOf(key(d))
-        a = findArc(domain, domIdx, from)
-        #$log.info a
-        return a or d
+      #--- Draw Pie segments -------------------------------------------------------------------------------------------
 
-      #-----------------------------------------------------------------------------------------------------------------
+      if not inner
+        inner = pieBox.selectAll('.innerArc')
 
-      findArcByKey = (key, pie) ->
-        for a in pie
-          if color.value(a.data) is key
-            return a
+      inner = inner
+        .data(segments,key)
 
-      getPred = (key, d) ->
-        pred = findArcByKey(key, oldPie)
-        if pred then {startAngle:pred.endAngle, endAngle:pred.endAngle} else if oldPie.length >0 then {startAngle:0, endAngle:0} else d
-
-      getSucc = (key,d) ->
-        succ = findArcByKey(key, newPie)
-        if succ
-          d.startAngle = succ.startAngle
-          d.endAngle = succ.startAngle
-        else
-          d.startAngle = Math.PI * 2
-          d.endAngle = Math.PI * 2
-        return d
-
-      newKeys = color.value(data)
-
-      deletedSucc = utils.diff(oldKeys, newKeys, 1)
-      addedPred = utils.diff(newKeys, oldKeys, -1)
-
-      #$log.info 'Pie: deleted, added', deletedSucc, addedPred
-
-      #-----------------------------------------------------------------------------------------------------------------
-
-      arcs = arcs
-        .data(newPie,(d) -> color.value(d.data))
-
-      arcs.enter().append('path')
-        .each((d) -> this._current = getPred(addedPred[color.value(d.data)], d))
-        .attr('class','arc selectable')
+      inner.enter().append('path')
+        .each((d) -> this._current = if initialShow then d else {startAngle:_merge.addedPred(d).endAngle, endAngle:_merge.addedPred(d).endAngle})
+        .attr('class','innerArc selectable')
         .style('fill', (d) ->  color.map(d.data))
-        .call(init)
+        .style('opacity', if initialShow then 0 else 1)
         .call(_tooltip.tooltip)
         .call(_selected)
 
-      arcs
-        .attr('transform', "translate(#{options.width / 2},#{options.height / 2})")
+      inner
+        #.attr('transform', "translate(#{options.width / 2},#{options.height / 2})")
         .transition().duration(options.duration)
           .style('opacity', 1)
           .attrTween('d',arcTween)
 
-      arcs.exit().datum((d) -> getSucc(deletedSucc[color.value(d.data)],d))
+      inner.exit().datum((d) ->  {startAngle:_merge.deletedSucc(d).startAngle, endAngle:_merge.deletedSucc(d).startAngle})
         .transition().duration(options.duration)
-        .attrTween('d',arcTween)
-      .remove()
+          .attrTween('d',arcTween)
+          .remove()
 
-      oldKeys = newKeys
+      #--- Draw Segment Label Text -------------------------------------------------------------------------------------
+
+      midAngle = (d) -> d.startAngle + (d.endAngle - d.startAngle) / 2
+
+      if _showLabels
+
+        labels = pieBox.selectAll('.label').data(segments, key)
+
+        labels.enter().append('text').attr('class', 'label')
+          .each((d) -> @_current = d)
+          .attr("dy", ".35em")
+          .style('font-size','1.3em')
+          .style('opacity', 0)
+          .text((d) -> size.formattedValue(d.data))
+
+        labels.transition().duration(options.duration)
+          .style('opacity',1)
+          .attrTween('transform', (d) ->
+            _this = this
+            interpolate = d3.interpolate(_this._current, d)
+            return (t) ->
+              d2 = interpolate(t)
+              _this._current = d2
+              pos = outerArc.centroid(d2)
+              pos[0] += 15 * (if midAngle(d2) < Math.PI then  1 else -1)
+              return "translate(#{pos})")
+          .styleTween('text-anchor', (d) ->
+            interpolate = d3.interpolate(@_current, d)
+            return (t) ->
+              d2 = interpolate(t)
+              return if midAngle(d2) < Math.PI then  "start" else "end"
+        )
+
+        labels.exit()
+          .transition().duration(options.duration).style('opacity',0).remove()
+
+      #--- Draw Connector Lines ----------------------------------------------------------------------------------------
+
+        polyline = pieBox.selectAll("polyline").data(segments, key)
+
+        polyline.enter()
+        . append("polyline")
+          .style("opacity", 0)
+          .each((d) ->  this._current = d)
+
+        polyline.transition().duration(options.duration)
+          .style("opacity", (d) -> if d.data.value is 0 then  0 else .5)
+          .attrTween("points", (d) ->
+            this._current = this._current
+            interpolate = d3.interpolate(this._current, d)
+            _this = this
+            return (t) ->
+              d2 = interpolate(t)
+              _this._current = d2;
+              pos = outerArc.centroid(d2)
+              pos[0] += 10 * (if midAngle(d2) < Math.PI then  1 else -1)
+              return [innerArc.centroid(d2), outerArc.centroid(d2), pos];
+          )
+
+        polyline.exit()
+          .transition().duration(options.duration)
+          .style('opacity',0)
+          .remove();
+
+      else
+        pieBox.selectAll('polyline').remove()
+        pieBox.selectAll('.label').remove()
+
       initialShow = false
 
     #-------------------------------------------------------------------------------------------------------------------
 
     layout.lifeCycle().on 'configure', ->
       _scaleList = this.getScales(['size', 'color'])
+      _scaleList.color.scaleType('category20')
       _tooltip = layout.behavior().tooltip
       _selected = layout.behavior().selected
       _tooltip.on "enter.#{_id}", ttEnter
 
     layout.lifeCycle().on 'draw', draw
+
+    #-------------------------------------------------------------------------------------------------------------------
+
+    attrs.$observe 'labels', (val) ->
+      if val is 'false'
+        _showLabels = false
+      else if val is 'true' or val is ""
+        _showLabels = true
+      layout.lifeCycle().update()
   }

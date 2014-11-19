@@ -106,7 +106,7 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig)
       host.lifeCycle().on 'configure', ->
         _scaleList = @getScales(['x', 'y', 'color'])
         @getKind('y').domainCalc('max').resetOnNewData(true)
-        @getKind('x').resetOnNewData(true).rangePadding(config)
+        @getKind('x').resetOnNewData(true).rangePadding(config).scaleType('ordinal')
         @layerScale('color')
         _tooltip = host.behavior().tooltip
         _tooltip.on "enter.#{_id}", ttEnter
