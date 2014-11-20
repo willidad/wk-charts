@@ -132,7 +132,7 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
 
       #--- Draw Connector Lines ----------------------------------------------------------------------------------------
 
-        polyline = pieBox.selectAll("wk-chart-polyline").data(segments, key)
+        polyline = pieBox.selectAll(".wk-chart-polyline").data(segments, key)
 
         polyline.enter()
         . append("polyline").attr('class','wk-chart-polyline')
