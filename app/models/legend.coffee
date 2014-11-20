@@ -104,6 +104,7 @@ angular.module('wk.chart').factory 'legend', ($log, $compile, $rootScope, $templ
         _legendScope.position = {
           position: if _legendDiv then 'relative' else 'absolute'
         }
+
         if not _legendDiv
           containerRect = _containerDiv.node().getBoundingClientRect()
           chartAreaRect = _containerDiv.select('.wk-chart-overlay rect').node().getBoundingClientRect()

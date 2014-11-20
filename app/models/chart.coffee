@@ -23,7 +23,7 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
 
     #--- LifeCycle Dispatcher ------------------------------------------------------------------------------------------
 
-    _lifeCycle = d3.dispatch('configure', 'resize', 'prepareData', 'scaleDomains', 'sizeContainer', 'drawAxis', 'drawChart', 'newData', 'update', 'updateAttrs' )
+    _lifeCycle = d3.dispatch('configure', 'resize', 'prepareData', 'scaleDomains', 'sizeContainer', 'drawAxis', 'drawChart', 'newData', 'update', 'updateAttrs', 'scopeApply' )
     _brush = d3.dispatch('draw', 'change')
 
     #--- Getter/Setter Functions ---------------------------------------------------------------------------------------
@@ -103,6 +103,7 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
 
     me.execLifeCycleFull = (data, noAnimation) ->
       if data
+        $log.log 'executing full life cycle'
         _data = data
         _lifeCycle.prepareData(data, noAnimation)    # calls the registered layout types
         _lifeCycle.scaleDomains(data, noAnimation)   # calls registered the scales
@@ -112,12 +113,15 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
 
     me.resizeLifeCycle = (noAnimation) ->
       if _data
+        $log.log 'executing resize life cycle'
         _lifeCycle.sizeContainer(_data, noAnimation)  # calls container
         _lifeCycle.drawAxis(noAnimation)              # calls container
         _lifeCycle.drawChart(_data, noAnimation)
+        _lifeCycle.scopeApply()
 
     me.newDataLifeCycle = (data, noAnimation) ->
       if data
+        $log.log 'executing new data life cycle'
         _data = data
         _lifeCycle.prepareData(data, noAnimation)    # calls the registered layout types
         _lifeCycle.scaleDomains(data, noAnimation)
@@ -126,6 +130,7 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
 
     me.attributeChange = (noAnimation) ->
       if _data
+        $log.log 'executing attribute change life cycle'
         _lifeCycle.sizeContainer(_data, noAnimation)
         _lifeCycle.drawAxis(noAnimation)              # calls container
         _lifeCycle.drawChart(_data, noAnimation)

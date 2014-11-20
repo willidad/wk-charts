@@ -110,11 +110,13 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
       dim.scale().range([0,100])
       axis.call(dim.axis())
 
+
+
       if dim.rotateTickLabels()
         axis.selectAll("text")
         .attr({dy:'-0.71em', x:-9})
         .attr('transform',"translate(0,9) rotate(#{dim.rotateTickLabels()})")
-        .style('text-anchor','end')
+        .style('text-anchor', if dim.axisOrient() is 'bottom' then 'end' else 'start')
 
       box = axis.node().getBBox()
       axis.remove()
@@ -127,12 +129,12 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
       axis.transition().duration(_duration).call(dim.axis())
 
       if dim.rotateTickLabels()
-        axis.selectAll(".#{dim.axisOrient()}.wk-chart-axis wk-chart-text")
+        axis.selectAll(".wk-chart-#{dim.axisOrient()}.wk-chart-axis text")
           .attr({dy:'-0.71em', x:-9})
           .attr('transform',"translate(0,9) rotate(#{dim.rotateTickLabels()})")
-          .style('text-anchor','end')
+          .style('text-anchor', if dim.axisOrient() is 'bottom' then 'end' else 'start')
       else
-        axis.selectAll(".#{dim.axisOrient()}.wk-chart-axis wk-chart-text").attr('transform', null)
+        axis.selectAll(".wk-chart-#{dim.axisOrient()}.wk-chart-axis text").attr('transform', null)
 
     _removeAxis = (orient) ->
       _container.select(".wk-chart-axis.wk-chart-#{orient}").remove()
@@ -215,9 +217,18 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
 
 
       #--- compute size of the drawing area  ---------------------------------------------------------------------------
+      _frameHeight = titleAreaHeight + axisRect.top.height + labelHeight.top + axisRect.bottom.height + labelHeight.bottom + _margin.top + _margin.bottom
+      _frameWidth = axisRect.right.width + labelHeight.right + axisRect.left.width + labelHeight.left + _margin.left + _margin.right
 
-      _innerHeight = _height - titleAreaHeight -  axisRect.top.height - labelHeight.top  - axisRect.bottom.height - labelHeight.bottom - _margin.top - _margin.bottom
-      _innerWidth = _width - axisRect.right.width - labelHeight.right  - axisRect.left.width  - labelHeight.left - _margin.left - _margin.right
+      if _frameHeight < _height
+        _innerHeight = _height - _frameHeight
+      else
+        _innerHeight = 0
+
+      if _frameWidth < _width
+        _innerWidth = _width - _frameWidth
+      else
+        _innerWidth = 0
 
       #--- reset scale ranges and redraw axis with adjusted range ------------------------------------------------------
 
@@ -238,7 +249,6 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
       _spacedContainer = _container.attr('transform', "translate(#{leftMargin}, #{topMargin})")
       _svg.select("#wk-chart-clip-#{_containerId} rect").attr('width', _innerWidth).attr('height', _innerHeight)
       _spacedContainer.select('.wk-chart-overlay>.wk-chart-background').attr('width', _innerWidth).attr('height', _innerHeight)
-          #TODO Fix the potentially negative _innerWidth and _innerHeight case (width:-18, height:-16)
       _spacedContainer.select('.wk-chart-area').style('clip-path', "url(#wk-chart-clip-#{_containerId})")
       _spacedContainer.select('.wk-chart-overlay').style('clip-path', "url(#wk-chart-clip-#{_containerId})")
 

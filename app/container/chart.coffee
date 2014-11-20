@@ -1,4 +1,4 @@
-angular.module('wk.chart').directive 'chart', ($log, chart, $filter, container) ->
+angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
   chartCnt = 0
   return {
     restrict: 'E'
@@ -22,6 +22,9 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter, container) 
       me.container().element(element[0])
 
       me.lifeCycle().configure()
+
+      me.lifeCycle().on 'scopeApply', () ->
+        scope.$apply()
 
       attrs.$observe 'tooltips', (val) ->
         if val isnt undefined and (val is '' or val is 'true')
