@@ -354,12 +354,19 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
 
         # bisect.left never returns 0 in this specific scenario. We need to move the val by an interval to hit the middle of the range and to ensure
         # that the first element will be captured. Also ensures better visual experience with tooltips
+        if me.kind() is 'rangeX' or me.kind() is 'rangeY'
+          val = me.scale().invert(mappedValue)
+          if me.upperProperty()
+            bisect = d3.bisector(me.upperValue).left
+          else
+            step = me.lowerValue(_data[1]) - me.lowerValue(_data[0])
+            bisect = d3.bisector((d) -> me.lowerValue(d) + step).left
+        else
+          range = _scale.range()
+          interval = (range[1] - range[0]) / _data.length
+          val = me.scale().invert(mappedValue - interval/2)
+          bisect = d3.bisector(me.value).left
 
-        range = _scale.range()
-        interval = (range[1] - range[0]) / _data.length
-        val = me.scale().invert(mappedValue - interval/2)
-
-        bisect = d3.bisector(me.value).left
         idx = bisect(_data, val)
         idx = if idx < 0 then 0 else if idx >= _data.length then _data.length - 1 else idx
         return idx # the inverse value does not necessarily correspond to a value in the data

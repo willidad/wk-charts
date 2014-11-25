@@ -1,7 +1,7 @@
 angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior) ->
   return {
     restrict: 'A'
-    require: ['^chart', '^layout', '?x', '?y']
+    require: ['^chart', '^layout', '?x', '?y','?rangeX', '?rangeY']
     scope:
       brushExtent: '='
       selectedValues: '='
@@ -13,6 +13,8 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       layout = controllers[1]?.me
       x = controllers[2]?.me
       y = controllers[3]?.me
+      rangeX = controllers[4]?.me
+      rangeY = controllers[5]?.me
       xScale = undefined
       yScale = undefined
       _selectables = undefined
@@ -21,14 +23,14 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       _brushGroup = undefined
 
       brush = chart.behavior().brush
-      if not x and not y
+      if not x and not y and not rangeX and not rangeY
         #layout brush, get x and y from layout scales
         scales = layout.scales().getScales(['x', 'y'])
         brush.x(scales.x)
         brush.y(scales.y)
       else
-        brush.x(x)
-        brush.y(y)
+        brush.x(x or rangeX)
+        brush.y(y or rangeY)
       brush.active(true)
 
       brush.events().on 'brush', (idxRange, valueRange, domain) ->
