@@ -141,6 +141,18 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales) ->
         if val isnt undefined
           me.legend().title(val).redraw()
 
+    #--- Observe Range attributes --------------------------------------------------------------------------------------
+
+    observerRangeAttributes: (attrs, me) ->
+      attrs.$observe 'lowerProperty', (val) ->
+        null
+        me.lowerProperty(parseList(val)).update()
+
+      attrs.$observe 'upperProperty', (val) ->
+        null
+        me.upperProperty(parseList(val)).update()
+
+
 
   }
 

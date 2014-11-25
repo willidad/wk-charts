@@ -234,10 +234,13 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
 
       for l in _layouts
         for k, s of l.scales().allKinds()
-          if k is 'x'
+          if k is 'x' or k is 'rangeX'
             s.range([0, _innerWidth])
-          else if k is 'y'
-            s.range([_innerHeight, 0])
+          else if k is 'y' or k is 'rangeY'
+            if l.showLabels()
+              s.range([_innerHeight, 20])
+            else
+              s.range([_innerHeight, 0])
           if s.showAxis()
             drawAxis(s)
 

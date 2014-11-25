@@ -13,6 +13,8 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
     _property = ''
     _layerProp = ''
     _layerExclude = []
+    _lowerProperty = ''
+    _upperProperty = ''
     _range = undefined
     _rangePadding = 0.3
     _rangeOuterPadding = 0.3
@@ -85,6 +87,23 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
           layerKeys = me.layerKeys(data)
           return [0, d3.max(data.map((d) ->
             layerTotal(d, layerKeys)))]
+      rangeExtent: (data) ->
+        if me.upperProperty()
+          return [d3.min(me.lowerValue(data)), d3.max(me.upperValue(data))]
+        else
+          if data.length > 1
+            start = me.lowerValue(data[0])
+            step = me.lowerValue(data[1]) - start
+            return [me.lowerValue(data[0]), start + step * (data.length) ]
+      rangeMin: (data) ->
+        return [0, d3.min(me.lowerValue(data))]
+      rangeMax: (data) ->
+        if me.upperProperty()
+          return [0, d3.max(me.upperValue(data))]
+        else
+          start = me.lowerValue(data[0])
+          step = me.lowerValue(data[1]) - start
+          return [0, start + step * (data.length) ]
       }
 
     #-------------------------------------------------------------------------------------------------------------------
@@ -197,10 +216,10 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
       if arguments.length is 0
         return if _isOrdinal then undefined else _domainCalc
       else
-        if rule in ['min', 'max', 'extent', 'total', 'totalExtent']
+        if calcDomain.hasOwnProperty(rule)
           _domainCalc = rule
         else
-          $log.error 'illegal domain calculation rule:', rule, " expected 'min', 'max', 'extent', 'total' or 'totalExtent'"
+          $log.error 'illegal domain calculation rule:', rule, " expected", _.keys(calcDomain)
         return me
 
     me.getDomain = (data) ->
@@ -269,6 +288,18 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
       else
         _.reject(keys(data), (d) -> d in _layerExclude)
 
+    me.lowerProperty = (name) ->
+      if arguments.length is 0 then return _lowerProperty
+      else
+        _lowerProperty = name
+        return me
+
+    me.upperProperty = (name) ->
+      if arguments.length is 0 then return _upperProperty
+      else
+        _upperProperty = name
+        return me
+
     #--- Data Formatting -----------------------------------------------------------------------------------------------
 
     me.dataFormat = (format) ->
@@ -294,6 +325,12 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
         parsedValue(data[layerKey][_layerProp])
       else
         parsedValue(data[layerKey])
+
+    me.lowerValue = (data) ->
+      if _.isArray(data) then data.map((d) -> parsedValue(d[_lowerProperty])) else parsedValue(data[_lowerProperty])
+
+    me.upperValue = (data) ->
+      if _.isArray(data) then data.map((d) -> parsedValue(d[_upperProperty])) else parsedValue(data[_upperProperty])
 
     me.formattedValue = (data) ->
       me.formatValue(me.value(data))

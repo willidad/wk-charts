@@ -8,6 +8,7 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
     _data = undefined
     _chart = undefined
     _scaleList = scaleList()
+    _showLabels = false
     _layoutLifeCycle = d3.dispatch('configure', 'draw', 'prepareData', 'brush', 'redraw', 'drawAxis', 'update', 'updateAttrs', 'brushDraw')
 
     me = () ->
@@ -37,12 +38,18 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
         _container = obj
         return me
 
+    me.showLabels = (trueFalse) ->
+      if arguments.length is 0 then return _showLabels
+      else
+        _showLabels = trueFalse
+        return me
+
     me.behavior = () ->
       me.chart().behavior()
 
     me.prepareData = (data) ->
       args = []
-      for kind in ['x','y', 'color']
+      for kind in ['x','y', 'color', 'size', 'shape', 'rangeX', 'rangeY']
         args.push(_scaleList.getKind(kind))
       _layoutLifeCycle.prepareData.apply(data, args)
 
@@ -67,7 +74,7 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
         duration: if notAnimated then 0 else me.chart().animationDuration()
       }
       args = [data, options]
-      for kind in ['x','y', 'color', 'size', 'shape']
+      for kind in ['x','y', 'color', 'size', 'shape', 'rangeX', 'rangeY']
         args.push(_scaleList.getKind(kind))
       return args
 
