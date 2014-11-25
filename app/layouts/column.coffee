@@ -18,7 +18,8 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig)->
     barPaddingOld = 0
     barOuterPaddingOld = 0
 
-    config = barConfig
+    config = {}
+    _.merge(config, barConfig)
 
     #--- Tooltip Event Handlers --------------------------------------------------------------------------------------
 

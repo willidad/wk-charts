@@ -1,4 +1,4 @@
-angular.module('wk.chart').service 'scaleUtils', ($log) ->
+angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales) ->
 
   parseList = (val) ->
     if val
@@ -11,7 +11,7 @@ angular.module('wk.chart').service 'scaleUtils', ($log) ->
     observeSharedAttributes: (attrs, me) ->
       attrs.$observe 'type', (val) ->
         if val isnt undefined
-          if d3.scale.hasOwnProperty(val) or val is 'time'
+          if d3.scale.hasOwnProperty(val) or val is 'time' or wkChartScales.hasOwnProperty(val)
             me.scaleType(val)
           else
             if val isnt ''
@@ -140,6 +140,7 @@ angular.module('wk.chart').service 'scaleUtils', ($log) ->
       attrs.$observe 'legendTitle', (val) ->
         if val isnt undefined
           me.legend().title(val).redraw()
+
 
   }
 

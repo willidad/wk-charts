@@ -1,4 +1,4 @@
-angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults) ->
+angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkChartScales) ->
 
   scale = () ->
     _id = ''
@@ -158,6 +158,9 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults) ->
           if _inputFormatString
             me.dataFormat(_inputFormatString)
           me.format(formatDefaults.date)
+        else if wkChartScales.hasOwnProperty(type)
+          _scaleType = type
+          _scale = wkChartScales[type]()
         else
           $log.error 'Error: illegal scale type:', type
 
