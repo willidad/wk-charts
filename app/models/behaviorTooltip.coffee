@@ -113,6 +113,19 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
 
     #--- Interface to brush --------------------------------------------------------------------------------------------
 
+    forwardToBrush = (e) ->
+      # forward the mousdown event to the brush overlay to ensure that brushing can start at any point in the drawing area
+
+      brush_elm = d3.select(_container.node().parentElement).select(".wk-chart-overlay").node();
+      if d3.event.target isnt brush_elm #do not dispatch if target is overlay
+        new_click_event = new Event('mousedown');
+        new_click_event.pageX = d3.event.pageX;
+        new_click_event.clientX = d3.event.clientX;
+        new_click_event.pageY = d3.event.pageY;
+        new_click_event.clientY = d3.event.clientY;
+        brush_elm.dispatchEvent(new_click_event);
+
+
     me.hide = (val) ->
       if arguments.length is 0 then return _hide
       else
@@ -174,6 +187,8 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         s.on 'mouseenter.tooltip', tooltipEnter
           .on 'mousemove.tooltip', tooltipMove
           .on 'mouseleave.tooltip', tooltipLeave
+        if not s.empty() and not s.classed('wk-chart-overlay')
+          s.on 'mousedown.tooltip', forwardToBrush
 
     return me
 

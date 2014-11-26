@@ -103,6 +103,8 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       #register a mouse handlers for the brush
       d3.event.preventDefault()
       _evTargetData = d3.select(d3.event.target).datum()
+      _ if not _evTargetData
+        _evTargetData = {name:'forwarded'}
       _areaBox = _area.getBBox()
       _startPos = d3.mouse(_area)
       startTop = top
@@ -193,7 +195,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
           bottom = startBottom - startTop
 
       switch _evTargetData.name
-        when 'background'
+        when 'background', 'forwarded'
           if deltaX + _startPos[0] > 0
             left = if deltaX < 0 then _startPos[0] + deltaX else _startPos[0]
             if left + Math.abs(deltaX) < _areaBox.width
@@ -211,7 +213,6 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
               bottom = _areaBox.height
           else
             top = 0
-
         when 'extent'
           vertMv(deltaY); horMv(deltaX)
         when 'n'

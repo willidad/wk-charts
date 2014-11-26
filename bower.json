@@ -1,12 +1,12 @@
 {
   "name": "wk-charts",
-  "version": "0.3.107",
+  "version": "0.3.124",
   "authors": [
     "Willi Klenk <willi@klenk-bondorf.de>"
   ],
   "main": [
-    "dist/wk-charts.js",
-    "dist/wk-charts.css"
+    "dist/lib/wk-charts.js",
+    "dist/lib/wk-charts.css"
   ],
   "license": "MIT",
   "private": true,

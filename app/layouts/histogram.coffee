@@ -43,7 +43,8 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils)
           if data.length > 0
             start = xRange.lowerValue(data[0])
             step = xRange.lowerValue(data[1]) - start
-            layout = data.map((d, i) -> {x:xRange.scale()(start + step * i), xVal:xRange.lowerValue(d), width:xRange.scale()(step), y:y.map(d), height:options.height - y.map(d), color:color.map(d), data:d})
+            width = options.width / data.length
+            layout = data.map((d, i) -> {x:xRange.scale()(start + step * i), xVal:xRange.lowerValue(d), width:width, y:y.map(d), height:options.height - y.map(d), color:color.map(d), data:d})
 
         _merge(layout).first({x:0}).last({x:options.width, width: 0})
 
