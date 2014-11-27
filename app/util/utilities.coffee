@@ -35,6 +35,9 @@ angular.module('wk.chart').service 'utils', ($log) ->
       return if l.length is 1 then return l[0] else l
     return undefined
 
+  @parseTrueFalse = (val) ->
+    if val is '' or val is 'true' then true else (if val is 'false' then false else undefined)
+
   #---------------------------------------------------------------------------------------------------------------------
 
   @mergeData = () ->
@@ -113,6 +116,13 @@ angular.module('wk.chart').service 'utils', ($log) ->
       while !_common[predIdx]
         if predIdx-- < 0 then return _first
       return _prevData[_prevHash[_key(_data[predIdx])]]
+
+    me.addedPred.left = (added) ->
+      me.addedPred(added).x
+
+    me.addedPred.right = (added) ->
+      obj = me.addedPred(added)
+      if _.has(obj, 'width') then obj.x + obj.width else obj.x
 
     me.deletedSucc = (deleted) ->
       succIdx = _prevHash[_key(deleted)]

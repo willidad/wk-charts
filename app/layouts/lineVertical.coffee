@@ -112,6 +112,7 @@ angular.module('wk.chart').directive 'lineVertical', ($log) ->
           _showMarkers = true
         else
           _showMarkers = false
-
-
   }
+
+#TODO implement enter / exit animations like in line
+#TODO implement external brushing optimizations

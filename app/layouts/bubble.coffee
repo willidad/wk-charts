@@ -53,3 +53,5 @@ angular.module('wk.chart').directive 'bubble', ($log, utils) ->
       layout.lifeCycle().on 'draw', draw
 
   }
+
+  #TODO verify and test custom tooltips behavior

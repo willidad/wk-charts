@@ -42,7 +42,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig)->
       barPadding = y.scale().rangeBand() / (1 - config.padding) * config.padding
       barOuterPadding = y.scale().rangeBand() / (1 - config.outerPadding) * config.outerPadding
 
-      layout = data.map((d) -> {data:d, key:y.value(d), x:x.map(d), y:y.map(d), color:color.map(d), height:y.scale().rangeBand(y.value(d))})
+      layout = data.map((d) -> {key:y.value(d), x:x.map(d), y:y.map(d), color:color.map(d), height:y.scale().rangeBand(y.value(d)), data:d})
 
       _merge(layout).first({y:options.height + barPaddingOld / 2 - barOuterPadding}).last({y:0, height:barOuterPaddingOld - barPaddingOld / 2})  #y.scale().range()[y.scale().range().length-1]
 
@@ -105,3 +105,5 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig)->
       _scaleList.y.rangePadding(config)
       host.lifeCycle().update()
   }
+
+#TODO implement external brushing optimizations

@@ -108,3 +108,6 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils)
           host.showLabels(true)
         host.lifeCycle().update()
   }
+
+#TODO implement external brushing optimizations
+#TODO test selection behavior

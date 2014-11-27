@@ -62,7 +62,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
         _pathValuesNew = {}
 
         for key in _layerKeys
-          _pathValuesNew[key] = data.map((d)-> {x:x.map(d),y:y.scale()(y.layerValue(d, key)), xv:x.value(d), yv:y.layerValue(d,key), key:key, color:color.scale()(key)})
+          _pathValuesNew[key] = data.map((d)-> {x:x.map(d),y:y.scale()(y.layerValue(d, key)), xv:x.value(d), yv:y.layerValue(d,key), key:key, color:color.scale()(key), data:d})
 
           layer = {key:key, color:color.scale()(key), value:[]}
           # find starting value for old

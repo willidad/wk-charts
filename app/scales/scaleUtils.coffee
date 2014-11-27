@@ -1,4 +1,4 @@
-angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales) ->
+angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
 
   parseList = (val) ->
     if val
@@ -62,6 +62,9 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales) ->
       attrs.$observe 'format', (val) ->
         if val isnt undefined
           me.format(val)
+
+      attrs.$observe 'reset', (val) ->
+        me.resetOnNewData(utils.parseTrueFalse(val))
 
     #-------------------------------------------------------------------------------------------------------------------
 

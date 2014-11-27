@@ -120,3 +120,5 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig)->
       host.lifeCycle().update()
 
   }
+
+#TODO implement external brushing optimizations

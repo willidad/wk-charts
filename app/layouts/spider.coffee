@@ -114,3 +114,9 @@ angular.module('wk.chart').directive 'spider', ($log, utils) ->
       layout.lifeCycle().on 'draw', draw
 
   }
+
+#TODO verify behavior with custom tooltips
+#TODO fix 'tooltip attribute list too long' problem
+#TODO add enter / exit animation behavior
+#TODO Implement data labels
+#TODO implement and test object selection

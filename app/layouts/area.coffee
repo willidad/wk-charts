@@ -42,7 +42,7 @@ angular.module('wk.chart').directive 'area', ($log) ->
       draw = (data, options, x, y, color) ->
 
         layerKeys = y.layerKeys(data)
-        _layout = layerKeys.map((key) => {key:key, color:color.scale()(key), value:data.map((d)-> {x:x.value(d),y:y.layerValue(d, key)})})
+        _layout = layerKeys.map((key) => {key:key, color:color.scale()(key), value:data.map((d)-> {x:x.value(d),y:y.layerValue(d, key), data:d})})
 
         offset = if x.isOrdinal() then x.scale().rangeBand() / 2 else 0
 
@@ -104,3 +104,5 @@ angular.module('wk.chart').directive 'area', ($log) ->
           _showMarkers = false
 
   }
+
+  #TODO implement enter / exit animations like in line

@@ -133,3 +133,6 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig)
         _scaleList.x.rangePadding(config)
         host.lifeCycle().update()
   }
+
+
+#TODO implement external brushing optimizations

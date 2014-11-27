@@ -43,7 +43,7 @@ angular.module('wk.chart').directive 'areaVertical', ($log) ->
         $log.log 'x-range', x.scale().range(), 'x-domain', x.scale().domain()
         $log.log 'color-range', color.scale().range(), 'color-domain', color.scale().domain()
         layerKeys = x.layerKeys(data)
-        _layout = layerKeys.map((key) => {key:key, color:color.scale()(key), value:data.map((d)-> {y:y.value(d),x:x.layerValue(d, key)})})
+        _layout = layerKeys.map((key) => {key:key, color:color.scale()(key), value:data.map((d)-> {y:y.value(d),x:x.layerValue(d, key), data:d})})
 
         offset = if y.isOrdinal() then y.scale().rangeBand() / 2 else 0
 
@@ -95,7 +95,7 @@ angular.module('wk.chart').directive 'areaVertical', ($log) ->
           _showMarkers = true
         else
           _showMarkers = false
-
-
-
   }
+
+#TODO implement enter / exit animations like in line
+#TODO implement external brushing optimizations

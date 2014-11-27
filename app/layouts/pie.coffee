@@ -184,3 +184,5 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
         _showLabels = true
       layout.lifeCycle().update()
   }
+
+  #TODO verify behavior with custom tooltips

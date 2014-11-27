@@ -116,3 +116,5 @@ angular.module('wk.chart').directive 'geoMap', ($log, utils) ->
 
 
   }
+
+  #TODO re-test and verify in new applicaiton.

@@ -137,3 +137,5 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig)->
         _scaleList.y.rangePadding(config)
         host.lifeCycle().update()
   }
+
+#TODO implement external brushing optimizations

@@ -77,3 +77,5 @@ angular.module('wk.chart').directive 'gauge', ($log, utils) ->
       layout.lifeCycle().on 'draw', draw
 
   }
+
+  #todo refector

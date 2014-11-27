@@ -81,7 +81,7 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils) ->
         deletedSucc = utils.diff(layerKeysOld, layerKeys, 1)
         addedPred = utils.diff(layerKeys, layerKeysOld, -1)
 
-        layerData = layerKeys.map((k) => {key: k, color:color.scale()(k), layer: data.map((d) -> {x: x.value(d), yy: +y.layerValue(d,k), y0: 0})}) # yy: need to avoid overwriting by layout calc -> see stack y accessor
+        layerData = layerKeys.map((k) => {key: k, color:color.scale()(k), layer: data.map((d) -> {x: x.value(d), yy: +y.layerValue(d,k), y0: 0, data:d})}) # yy: need to avoid overwriting by layout calc -> see stack y accessor
         layoutNew = layout(layerData)
 
         offs = if x.isOrdinal() then x.scale().rangeBand() / 2 else 0
@@ -166,3 +166,6 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils) ->
         else
           _showMarkers = false
   }
+
+#TODO implement enter / exit animations like in line
+#TODO implement external brushing optimizations
