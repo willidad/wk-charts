@@ -46,7 +46,7 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils)
             width = options.width / data.length
             layout = data.map((d, i) -> {x:xRange.scale()(start + step * i), xVal:xRange.lowerValue(d), width:width, y:y.map(d), height:options.height - y.map(d), color:color.map(d), data:d})
 
-        _merge(layout).first({x:0}).last({x:options.width, width: 0})
+        _merge(layout).first({x:0, width:0}).last({x:options.width, width: 0})
 
         if not buckets
           buckets = @selectAll('.wk-chart-bucket')
@@ -57,7 +57,7 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils)
           .attr('transform', (d) -> "translate(#{if initial then d.x else _merge.addedPred(d).x  + _merge.addedPred(d).width},#{d.y}) scale(#{if initial then 1 else 0},1)")
         enter.append('rect')
           .attr('height', (d) -> d.height)
-          .attr('width', (d) -> if initial then d.width else 0)
+          .attr('width', (d) -> d.width)
           .style('fill',(d) -> d.color)
           .style('opacity', if initial then 0 else 1)
           .call(_tooltip.tooltip)
