@@ -39,9 +39,7 @@ angular.module('wk.chart').directive 'areaVertical', ($log) ->
       #-----------------------------------------------------------------------------------------------------------------
 
       draw = (data, options, x, y, color) ->
-        $log.log 'y-range', y.scale().range(), 'y-domain', y.scale().domain()
-        $log.log 'x-range', x.scale().range(), 'x-domain', x.scale().domain()
-        $log.log 'color-range', color.scale().range(), 'color-domain', color.scale().domain()
+
         layerKeys = x.layerKeys(data)
         _layout = layerKeys.map((key) => {key:key, color:color.scale()(key), value:data.map((d)-> {y:y.value(d),x:x.layerValue(d, key), data:d})})
 
