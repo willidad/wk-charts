@@ -27,6 +27,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
     _axis = undefined
     _ticks = undefined
     _tickFormat = undefined
+    _tickValues = undefined
     _rotateTickLabels = undefined
     _showLabel = false
     _axisLabel = undefined
@@ -438,6 +439,14 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
         if me.axis()
           me.axis().tickFormat(val)
         return me #to enable chaining
+
+    me.tickValues = (val) ->
+      if arguments.length is 0 then return _tickValues
+      else
+        _tickValues = val
+        if me.axis()
+          me.axis().tickValues(val)
+        return me
 
     me.showLabel = (val) ->
       if arguments.length is 0 then return _showLabel

@@ -65,7 +65,7 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales) ->
 
     #-------------------------------------------------------------------------------------------------------------------
 
-    observeAxisAttributes: (attrs, me) ->
+    observeAxisAttributes: (attrs, me, scope) ->
 
       attrs.$observe 'tickFormat', (val) ->
         if val isnt undefined
@@ -84,6 +84,18 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales) ->
       attrs.$observe 'showLabel', (val) ->
         if val isnt undefined
           me.showLabel(val is '' or val is 'true').update(true)
+
+
+      scope.$watch attrs.axisFormatters,  (val) ->
+        if _.isObject(val)
+          if _.has(val, 'tickFormat') and _.isFunction(val.tickFormat)
+            me.tickFormat(val.tickFormat)
+          else if _.isString(val.tickFormat)
+            me.tickFormat(d3.format(val))
+          if _.has(val,'tickValues') and _.isArray(val.tickValues)
+            me.tickValues(val.tickValues)
+          me.update()
+
 
     #-------------------------------------------------------------------------------------------------------------------
 
@@ -151,8 +163,6 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales) ->
       attrs.$observe 'upperProperty', (val) ->
         null
         me.upperProperty(parseList(val)).update()
-
-
 
   }
 

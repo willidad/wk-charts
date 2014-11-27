@@ -126,6 +126,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
       axis = _container.select(".wk-chart-axis.wk-chart-#{dim.axisOrient()}")
       if axis.empty()
         axis = _container.append('g').attr('class', 'wk-chart-axis wk-chart-' + dim.axisOrient())
+
       axis.transition().duration(_duration).call(dim.axis())
 
       if dim.rotateTickLabels()
