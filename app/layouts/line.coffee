@@ -49,7 +49,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
           .style('pointer-events','none')
         _circles.attr('cy', (d) -> d[idx].y)
         _circles.exit().remove()
-        this.attr('transform', "translate(#{_pathArray[0][idx].x + offset})")
+        this.attr('transform', "translate(#{_scaleList.x.scale()(_pathArray[0][idx].xv) + offset})")
 
       #--- Draw --------------------------------------------------------------------------------------------------------
 

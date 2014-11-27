@@ -29,22 +29,22 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils)
       _tooltip = undefined
 
       ttEnter = (data) ->
-        @headerName = _scaleList.x.axisLabel()
+        @headerName = _scaleList.rangeX.axisLabel()
         @headerValue = _scaleList.y.axisLabel()
         @layers.push({name: _scaleList.color.formattedValue(data.data), value: _scaleList.y.formattedValue(data.data), color:{'background-color': _scaleList.color.map(data.data)}})
 
       #--- Draw --------------------------------------------------------------------------------------------------------
 
-      draw = (data, options, x, y, color, size, shape, xRange) ->
+      draw = (data, options, x, y, color, size, shape, rangeX) ->
 
-        if xRange.upperProperty()
-          layout = data.map((d) -> {x:xRange.scale()(xRange.lowerValue(d)), xVal:xRange.lowerValue(d), width:xRange.scale()(xRange.upperValue(d)) - xRange.scale()(xRange.lowerValue(d)), y:y.map(d), height:options.height - y.map(d), color:color.map(d), data:d})
+        if rangeX.upperProperty()
+          layout = data.map((d) -> {x:rangeX.scale()(rangeX.lowerValue(d)), xVal:rangeX.lowerValue(d), width:rangeX.scale()(rangeX.upperValue(d)) - rangeX.scale()(rangeX.lowerValue(d)), y:y.map(d), height:options.height - y.map(d), color:color.map(d), data:d})
         else
           if data.length > 0
-            start = xRange.lowerValue(data[0])
-            step = xRange.lowerValue(data[1]) - start
+            start = rangeX.lowerValue(data[0])
+            step = rangeX.lowerValue(data[1]) - start
             width = options.width / data.length
-            layout = data.map((d, i) -> {x:xRange.scale()(start + step * i), xVal:xRange.lowerValue(d), width:width, y:y.map(d), height:options.height - y.map(d), color:color.map(d), data:d})
+            layout = data.map((d, i) -> {x:rangeX.scale()(start + step * i), xVal:rangeX.lowerValue(d), width:width, y:y.map(d), height:options.height - y.map(d), color:color.map(d), data:d})
 
         _merge(layout).first({x:0, width:0}).last({x:options.width, width: 0})
 

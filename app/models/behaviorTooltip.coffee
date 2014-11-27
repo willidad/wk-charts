@@ -3,6 +3,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
   behaviorTooltip = () ->
 
     _active = false
+    _path = ''
     _hide = false
     _showMarkerLine = undefined
     _markerG = undefined
@@ -94,7 +95,6 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       _pos = d3.mouse(_area)
       positionBox()
       if _showMarkerLine
-        #_markerG.attr('transform', "translate(#{_pos[0]})")
         dataIdx = _markerScale.invert(if _markerScale.isHorizontal() then _pos[0] else _pos[1])
         _tooltipDispatch.moveMarker.apply(_markerG, [dataIdx])
         _templScope.layers = []
@@ -144,6 +144,12 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       else
         _active = val
         return me #to enable chaining
+
+    me.template = (path) ->
+      if arguments is 0 then return _path
+      else
+        _path = path
+        return me
 
     me.area = (val) ->
       if arguments.length is 0 then return _areaSelection

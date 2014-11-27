@@ -16,6 +16,7 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
     _ownedScales = undefined  # holds the scles owned by chart, i.e. share scales
     _data = undefined           # pointer to the last data set bound to chart
     _showTooltip = false        # tooltip property
+    _toolTipTemplate = ''
     _title = undefined
     _subTitle = undefined
     _behavior = behavior()
@@ -36,6 +37,13 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
       else
         _showTooltip = trueFalse
         _behavior.tooltip.active(_showTooltip)
+        return me
+
+    me.toolTipTemplate = (path) ->
+      if arguments.length is 0 then return _toolTipTemplate
+      else
+        _toolTipTemplate = path
+        _behavior.tooltip.template(path)
         return me
 
     me.title = (val) ->
