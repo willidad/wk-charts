@@ -68,6 +68,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         value = d3.select(this).datum()
 
       _templScope.ttShow = true
+      _templScope.ttData = value
       _tooltipDispatch.enter.apply(_templScope, [value]) # call layout to fill in data
       positionInitial()
 
@@ -149,6 +150,12 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       if arguments is 0 then return _path
       else
         _path = path
+        if _path.length > 0
+          _customTempl = $templateCache.get('templates/' + _path)
+          # wrap template into positioning div
+          _customTemplWrapped = "<div class=\"wk-chart-tooltip\" ng-show=\"ttShow\" ng-style=\"position\">#{_customTempl}</div>"
+          _compiledTempl = $compile(_customTemplWrapped)(_templScope)
+
         return me
 
     me.area = (val) ->
