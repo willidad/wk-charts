@@ -53,58 +53,36 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils)
 
         buckets = buckets.data(layout, (d) -> d.xVal)
 
-        buckets.enter().append('rect').attr('class','wk-chart-bucket')
-          .style('fill',(d) -> d.color)
-          .attr('x', (d) -> if initial then d.x else _merge.addedPred(d).x  + _merge.addedPred(d).width)
-          .attr('width', (d) -> if initial then d.width else 0)
-          .attr('y', (d) -> d.y)
+        enter = buckets.enter().append('g').attr('class','wk-chart-bucket')
+          .attr('transform', (d) -> "translate(#{if initial then d.x else _merge.addedPred(d).x  + _merge.addedPred(d).width},#{d.y}) scale(#{if initial then 1 else 0},1)")
+        enter.append('rect')
           .attr('height', (d) -> d.height)
+          .attr('width', (d) -> if initial then d.width else 0)
+          .style('fill',(d) -> d.color)
           .style('opacity', if initial then 0 else 1)
           .call(_tooltip.tooltip)
           .call(_selected)
+        enter.append('text')
+          .attr('x', (d) -> d.width / 2)
+          .attr('y', -20)
+          .attr({dy: '1em', 'text-anchor':'middle'})
+          .style({'font-size':'1.3em', opacity: 0})
 
         buckets.transition().duration(options.duration)
-          .attr('x', (d) -> d.x)
+          .attr("transform", (d) -> "translate(#{d.x}, #{d.y}) scale(1,1)")
+        buckets.select('rect').transition().duration(options.duration)
           .attr('width', (d) -> d.width)
-          .attr('y', (d) -> d.y)
           .attr('height', (d) -> d.height)
           .style('opacity',1)
-
-        buckets.exit().transition().duration(options.duration)
-          .attr('x', (d) -> _merge.deletedSucc(d).x)
-          .attr('width', 0)
-          .remove()
-
-        #if host.showLabels()
-
-        if not labels
-          labels = @selectAll('.wk-chart-label')
-        labels = labels.data((if host.showLabels() then layout else []), (d) -> d.xVal)
-
-        labels.enter().append('text').attr('class', 'wk-chart-label')
-          .style('opacity', 0)
-
-        labels
-          .attr('x', (d) -> d.x + d.width / 2)
-          .attr('y', (d) -> d.y - 20)
-          .attr('dy', '1em')
-          .style('text-anchor', 'middle')
-          .style('font-size', '1.3em')
+        buckets.select('text')
           .text((d) -> y.formattedValue(d.data))
           .transition().duration(options.duration)
-            .style('opacity', 1)
+            .style('opacity', if host.showLabels() then 1 else 0)
 
-        labels.exit()
-          .transition().duration(options.duration)
-            .style('opacity', 0)
-            .remove()
-        ###
-        else
-          if labels
-            labels = labels.transition().duration(options.duration)
-              .style('opacity', 0)
-              .remove()
-        ###
+        buckets.exit().transition().duration(options.duration)
+          .attr('transform', (d) -> "translate(#{_merge.deletedSucc(d).x},#{d.y}) scale(0,1)")
+          .remove()
+
         initial = false
 
       #-----------------------------------------------------------------------------------------------------------------
