@@ -9,7 +9,7 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig)->
 
     _id = "simpleColumn#{sBarCntr++}"
 
-    bars = null
+    columns = null
     _scaleList = {}
     _selected = undefined
     _merge = utils.mergeData()
@@ -34,38 +34,48 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig)->
 
     draw = (data, options, x, y, color) ->
 
-      if not bars
-        bars = @selectAll('.wk-chart-bars')
+      if not columns
+        columns = @selectAll('.wk-chart-columns')
       #$log.log "rendering stacked-bar"
 
       barPadding = x.scale().rangeBand() / (1 - config.padding) * config.padding
       barOuterPadding = x.scale().rangeBand() / (1 - config.outerPadding) * config.outerPadding
 
-      layout = data.map((d) -> {data:d, key:x.value(d), x:x.map(d), y:y.map(d), color:color.map(d), width:x.scale().rangeBand(x.value(d))})
+      layout = data.map((d) -> {data:d, key:x.value(d), x:x.map(d), y:Math.min(y.scale()(0), y.map(d)), color:color.map(d), width:x.scale().rangeBand(x.value(d)), height:Math.abs(y.scale()(0) - y.map(d))})
 
-      _merge(layout).first({x:barPaddingOld / 2 - barOuterPadding}).last({x:options.width + barPadding/2 - barOuterPaddingOld, width: 0})
+      _merge(layout).first({x:0, width:0}).last({x:options.width + barPadding/2 - barOuterPaddingOld, width: barOuterPadding})
 
-      bars = bars.data(layout, (d) -> d.key)
 
-      bars.enter().append('rect')
-        .attr('class', 'wk-chart-bar wk-chart-selectable')
-        .attr('x', (d) -> if initial then d.x else _merge.addedPred(d).x  + _merge.addedPred(d).width  + barPaddingOld / 2)
-        .attr('width', (d) -> if initial then d.width else 0)
+      columns = columns.data(layout, (d) -> d.key)
+
+      enter = columns.enter().append('g').attr('class','wk-chart-columns wk-chart-selectable')
+        .attr('transform', (d,i) -> "translate(#{if initial then d.x else _merge.addedPred(d).x  + _merge.addedPred(d).width + if i then barPaddingOld / 2 else barOuterPaddingOld},#{d.y}) scale(#{if initial then 1 else 0},1)")
+      enter.append('rect')
+        .attr('height', (d) -> d.height)
+        .attr('width', (d) -> d.width)
+        .style('fill',(d) -> d.color)
         .style('opacity', if initial then 0 else 1)
         .call(_tooltip.tooltip)
         .call(_selected)
+      enter.append('text')
+        .attr('x', (d) -> d.width / 2)
+        .attr('y', -20)
+        .attr({dy: '1em', 'text-anchor':'middle'})
+        .style({'font-size':'1.3em', opacity: 0})
 
-      bars.style('fill', (d) -> d.color).transition().duration(options.duration)
-        .attr('y', (d) -> Math.min(y.scale()(0), d.y))
+      columns.transition().duration(options.duration)
+        .attr("transform", (d) -> "translate(#{d.x}, #{d.y}) scale(1,1)")
+      columns.select('rect').transition().duration(options.duration)
         .attr('width', (d) -> d.width)
-        .attr('height', (d) -> Math.abs(y.scale()(0) - d.y))
-        .attr('x', (d) -> d.x)
-        .style('opacity', 1)
-
-      bars.exit()
+        .attr('height', (d) -> d.height)
+        .style('opacity',1)
+      columns.select('text')
+        .text((d) -> y.formattedValue(d.data))
         .transition().duration(options.duration)
-        .attr('x', (d) -> _merge.deletedSucc(d).x - barPadding / 2)
-        .attr('width', 0)
+        .style('opacity', if host.showLabels() then 1 else 0)
+
+      columns.exit().transition().duration(options.duration)
+        .attr('transform', (d) -> "translate(#{_merge.deletedSucc(d).x - barPadding / 2},#{d.y}) scale(0,1)")
         .remove()
 
       initial = false
@@ -100,6 +110,13 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig)->
             config.padding = values[0]/100
             config.outerPadding = values[1]/100
       _scaleList.x.rangePadding(config)
+      host.lifeCycle().update()
+
+    attrs.$observe 'labels', (val) ->
+      if val is 'false'
+        host.showLabels(false)
+      else if val is 'true' or val is ""
+        host.showLabels(true)
       host.lifeCycle().update()
 
   }

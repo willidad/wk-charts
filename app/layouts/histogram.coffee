@@ -53,7 +53,7 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils)
 
         buckets = buckets.data(layout, (d) -> d.xVal)
 
-        enter = buckets.enter().append('g').attr('class','wk-chart-bucket')
+        enter = buckets.enter().append('g').attr('class','wk-chart-bucket wk-chart-selectable')
           .attr('transform', (d) -> "translate(#{if initial then d.x else _merge.addedPred(d).x  + _merge.addedPred(d).width},#{d.y}) scale(#{if initial then 1 else 0},1)")
         enter.append('rect')
           .attr('height', (d) -> d.height)
