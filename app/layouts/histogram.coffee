@@ -73,6 +73,7 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils)
         buckets.select('rect').transition().duration(options.duration)
           .attr('width', (d) -> d.width)
           .attr('height', (d) -> d.height)
+          .style('fill',(d) -> d.color)
           .style('opacity',1)
         buckets.select('text')
           .text((d) -> y.formattedValue(d.data))
@@ -91,6 +92,7 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils)
         _scaleList = @getScales(['rangeX', 'y', 'color'])
         @getKind('y').domainCalc('max').resetOnNewData(true)
         @getKind('rangeX').resetOnNewData(true).scaleType('linear').domainCalc('rangeExtent')
+        @getKind('color').resetOnNewData(true)
         _tooltip = host.behavior().tooltip
         _selected = host.behavior().selected
         _tooltip.on "enter.#{_id}", ttEnter
