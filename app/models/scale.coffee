@@ -1,4 +1,4 @@
-angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkChartScales) ->
+angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkChartScales, wkChartLocale) ->
 
   scale = () ->
     _id = ''
@@ -41,6 +41,17 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
     _legend = legend()
     _outputFormatString = undefined
     _outputFormatFn = undefined
+
+    _tickFormat = wkChartLocale.timeFormat.multi([
+      [".%L", (d) ->  d.getMilliseconds()],
+      [":%S", (d) ->  d.getSeconds()],
+      ["%I:%M", (d) ->  d.getMinutes()],
+      ["%I %p", (d) ->  d.getHours()],
+      ["%a %d", (d) ->  d.getDay() and d.getDate() isnt 1],
+      ["%b %d", (d) ->  d.getDate() isnt 1],
+      ["%B", (d) ->  d.getMonth()],
+      ["%Y", () ->  true]
+    ])
 
     me = () ->
 
@@ -308,7 +319,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
       else
         _inputFormatString = format
         if _scaleType is 'time'
-          _inputFormatFn = d3.time.format(format)
+          _inputFormatFn = wkChartLocale.timeFormat(format)
         else
           _inputFormatFn = (d) -> d
         return me
@@ -404,6 +415,8 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
         _showAxis = trueFalse
         if trueFalse
           _axis = d3.svg.axis()
+          if me.scaleType() is 'time'
+            _axis.tickFormat(_tickFormat)
         else
           _axis = undefined
         return me
@@ -474,8 +487,8 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
           _outputFormatString = val
         else
           _outputFormatString = if me.scaleType() is 'time' then formatDefaults.date else formatDefaults.number
-        _outputFormatFn = if me.scaleType() is 'time' then d3.time.format(_outputFormatString) else d3.format(_outputFormatString)
-        return me #to enable chaining
+        _outputFormatFn = if me.scaleType() is 'time' then wkChartLocale.timeFormat(_outputFormatString) else wkChartLocale.numberFormat(_outputFormatString)
+        return me #to enable chainingF
 
     me.showGrid = (trueFalse) ->
       if arguments.length is 0 then return _showGrid

@@ -20,6 +20,7 @@ angular.module('wk.chart').directive 'area', ($log, utils) ->
       offset = 0
       _id = 'line' + lineCntr++
       area = undefined
+      areaBrush = undefined
 
       #--- Tooltip handlers --------------------------------------------------------------------------------------------
 

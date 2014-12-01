@@ -135,6 +135,11 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils) ->
         layoutOld = layoutNew.map((d) -> {key: d.key, path: area(d.layer.map((p) -> {x: p.x, y: 0, y0: p.y + p.y0}))})
         layerKeysOld = layerKeys
 
+      brush = (data, options,x,y,color) ->
+        layers = this.selectAll(".wk-chart-layer")
+        layers.select('.wk-chart-area')
+        .attr('d', (d) -> area(d.layer))
+
       #--- Configuration and registration ------------------------------------------------------------------------------
 
       host.lifeCycle().on 'configure', ->

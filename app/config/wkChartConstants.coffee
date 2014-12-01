@@ -75,7 +75,7 @@ angular.module('wk.chart').constant 'd3Animation', {
 angular.module('wk.chart').constant 'templateDir', 'templates/'
 
 angular.module('wk.chart').constant 'formatDefaults', {
-  date: '%d.%m.%Y'
+  date: '%x' # '%d.%m.%Y'
   number :  ',.2f'
 }
 
