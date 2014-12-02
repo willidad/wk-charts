@@ -83,7 +83,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
             v = {color:layer.color, x:val[2]}
             # set x and y values for old values. If there is a added value, maintain the last valid position
             if val[1] is undefined #ie an old value is deleted, maintain the last new position
-              v.yNew = _pathValuesOld[key][val[0]].y
+              v.yNew = newLast.y
               v.xNew = newLast.x # animate to the predesessors new position
               v.deleted = true
             else
@@ -94,7 +94,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
 
             if _dataOld.length > 0
               if  val[0] is undefined # ie a new value has been added
-                v.yOld = _pathValuesNew[key][val[1]].y
+                v.yOld = oldLast.y
                 v.xOld = oldLast.x # start x-animation from the predecessors old position
               else
                 v.yOld = _pathValuesOld[key][val[0]].y
