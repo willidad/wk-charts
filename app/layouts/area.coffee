@@ -50,7 +50,7 @@ angular.module('wk.chart').directive 'area', ($log, utils) ->
 
       draw = (data, options, x, y, color) ->
 
-        mergedX = utils.mergeSeries(x.value(_dataOld), x.value(data))
+        mergedX = utils.mergeSeriesSorted(x.value(_dataOld), x.value(data))
         _layerKeys = y.layerKeys(data)
         _layout = []
 
@@ -148,10 +148,12 @@ angular.module('wk.chart').directive 'area', ($log, utils) ->
         _dataOld = data
         _pathValuesOld = _pathValuesNew
 
-      brush = (data, options,x,y,color) ->
-        layers = this.selectAll(".wk-chart-layer")
-        layers.select('.wk-chart-line')
-          .attr('d', (d) -> areaBrush(d.value))
+      brush = (axis, idxRange) ->
+        layers = this.select('.wk-chart-line')
+        if axis.isOrdinal()
+          layers.attr('d', (d) -> areaBrush(d.value.slice(idxRange[0],idxRange[1] + 1)))
+        else
+          layers.attr('d', (d) -> areaBrush(d.value))
 
 
       #--- Configuration and registration ------------------------------------------------------------------------------

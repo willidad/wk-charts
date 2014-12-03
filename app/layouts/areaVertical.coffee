@@ -1,4 +1,4 @@
-angular.module('wk.chart').directive 'areaVertical', ($log) ->
+angular.module('wk.chart').directive 'areaVertical', ($log, utils) ->
   lineCntr = 0
   return {
     restrict: 'A'
@@ -8,49 +8,126 @@ angular.module('wk.chart').directive 'areaVertical', ($log) ->
       #$log.log 'linking s-line'
       layerKeys = []
       _layout = []
+      _dataOld = []
+      _pathValuesOld = []
+      _pathValuesNew = []
+      _pathArray = []
       _tooltip = undefined
       _ttHighlight = undefined
       _circles = undefined
       _scaleList = {}
       _showMarkers = false
       offset = 0
-      _id = 'line' + lineCntr++
+      areaBrush = undefined
+      brushStartIdx = 0
+      _id = 'area' + lineCntr++
 
       #--- Tooltip handlers --------------------------------------------------------------------------------------------
 
+      ttEnter = (idx) ->
+        _pathArray = _.toArray(_pathValuesNew)
+        ttMoveData.apply(this, [idx])
+
       ttMoveData = (idx) ->
-        ttLayers = _layout.map((l) -> {name:l.key, value:_scaleList.x.formatValue(l.value[idx].x), color:{'background-color': l.color}})
+        offs = idx + brushStartIdx
+        ttLayers = _pathArray.map((l) -> {name:l[offs].key, value:_scaleList.x.formatValue(l[offs].xv), color:{'background-color': l[offs].color}, yv:l[offs].yv})
         @headerName = _scaleList.y.axisLabel()
-        @headerValue = _scaleList.y.formatValue(_layout[0].value[idx].y)
+        @headerValue = _scaleList.y.formatValue(ttLayers[0].yv)
         @layers = @layers.concat(ttLayers)
 
       ttMoveMarker = (idx) ->
-        _circles = this.selectAll('circle').data(_layout, (d) -> d.key)
-        _circles.enter().append('circle')
+        offs = idx + brushStartIdx
+        _circles = this.selectAll(".wk-chart-marker-#{_id}").data(_pathArray, (d) -> d[offs].key)
+        _circles.enter().append('circle').attr('class',"wk-chart-marker-#{_id}")
         .attr('r', if _showMarkers then 8 else 5)
-        .style('fill', (d)-> d.color)
+        .style('fill', (d)-> d[offs].color)
         .style('fill-opacity', 0.6)
         .style('stroke', 'black')
         .style('pointer-events','none')
-        _circles.attr('cx', (d) -> _scaleList.x.scale()(d.value[idx].x))
+        _circles.attr('cx', (d) -> d[offs].x)
         _circles.exit().remove()
-        this.attr('transform', "translate(0, #{_scaleList.y.scale()(_layout[0].value[idx].y) + offset})")
+        this.attr('transform', "translate(0,#{_scaleList.y.scale()(_pathArray[0][offs].yv) + offset})") # need to compute form scale because of brushing
 
       #-----------------------------------------------------------------------------------------------------------------
 
       draw = (data, options, x, y, color) ->
 
-        layerKeys = x.layerKeys(data)
-        _layout = layerKeys.map((key) => {key:key, color:color.scale()(key), value:data.map((d)-> {y:y.value(d),x:x.layerValue(d, key), data:d})})
+        if y.isOrdinal()
+          mergedY = utils.mergeSeriesUnsorted(y.value(_dataOld), y.value(data))
+        else
+          mergedY = utils.mergeSeriesSorted(y.value(_dataOld), y.value(data))
+        _layerKeys = x.layerKeys(data)
+        _layout = []
+        _pathValuesNew = {}
+
+        #_layout = layerKeys.map((key) => {key:key, color:color.scale()(key), value:data.map((d)-> {y:y.value(d),x:x.layerValue(d, key)})})
+
+        for key in _layerKeys
+          _pathValuesNew[key] = data.map((d)-> {y:y.map(d), x:x.scale()(x.layerValue(d, key)), yv:y.value(d), xv:x.layerValue(d,key), key:key, color:color.scale()(key), data:d})
+
+          layer = {key:key, color:color.scale()(key), value:[]}
+          # find starting value for old
+          i = 0
+          while i < mergedY.length
+            if mergedY[i][0] isnt undefined
+              oldFirst = _pathValuesOld[key][mergedY[i][0]]
+              break
+            i++
+
+          while i < mergedY.length
+            if mergedY[i][1] isnt undefined
+              newFirst = _pathValuesNew[key][mergedY[i][1]]
+              break
+            i++
+
+          for val, i in mergedY
+            v = {color:layer.color, y:val[2]}
+            # set x and y values for old values. If there is a added value, maintain the last valid position
+            if val[1] is undefined #ie an old value is deleted, maintain the last new position
+              v.yNew = newFirst.y
+              v.xNew = newFirst.x # animate to the predesessors new position
+              v.deleted = true
+            else
+              v.yNew = _pathValuesNew[key][val[1]].y
+              v.xNew = _pathValuesNew[key][val[1]].x
+              newFirst = _pathValuesNew[key][val[1]]
+              v.deleted = false
+
+            if _dataOld.length > 0
+              if  val[0] is undefined # ie a new value has been added
+                v.yOld = oldFirst.y
+                v.xOld = oldFirst.x # start x-animation from the predecessors old position
+              else
+                v.yOld = _pathValuesOld[key][val[0]].y
+                v.xOld = _pathValuesOld[key][val[0]].x
+                oldFirst = _pathValuesOld[key][val[0]]
+            else
+              v.xOld = v.xNew
+              v.yOld = v.yNew
+
+
+            layer.value.push(v)
+
+          _layout.push(layer)
 
         offset = if y.isOrdinal() then y.scale().rangeBand() / 2 else 0
 
         if _tooltip then _tooltip.data(data)
 
-        area = d3.svg.area()    # tricky. Draw this like a vertical chart and then rotate and position it.
-        .x((d) -> options.width - y.scale()(d.y))
-        .y0((d) ->  x.scale()(d.x))
-        .y1((d) ->  x.scale()(0))
+        areaOld = d3.svg.area()    # tricky. Draw this like a vertical chart and then rotate and position it.
+          .x((d) -> options.width - d.yOld)
+          .y0((d) ->  d.xOld)
+          .y1((d) ->  x.scale()(0))
+
+        areaNew = d3.svg.area()    # tricky. Draw this like a vertical chart and then rotate and position it.
+          .x((d) -> options.width - d.yNew)
+          .y0((d) ->  d.xNew)
+          .y1((d) ->  x.scale()(0))
+
+        areaBrush = d3.svg.area()    # tricky. Draw this like a vertical chart and then rotate and position it.
+          .x((d) -> options.width - y.scale()(d.y))
+          .y0((d) ->  d.xNew)
+          .y1((d) ->  x.scale()(0))
 
         layers = this.selectAll(".wk-chart-layer")
           .data(_layout, (d) -> d.key)
@@ -64,12 +141,25 @@ angular.module('wk.chart').directive 'areaVertical', ($log) ->
           .style('pointer-events', 'none')
         layers.select('.wk-chart-line')
           .attr('transform', "translate(0,#{options.width + offset})rotate(-90)") #rotate and position chart
-          .transition().duration(options.duration)
-          .attr('d', (d) -> area(d.value))
-          .style('opacity', 0.7).style('pointer-events', 'none')
+            .attr('d', (d) -> areaOld(d.value))
+            .transition().duration(options.duration)
+              .attr('d', (d) -> areaNew(d.value))
+              .style('opacity', 0.7).style('pointer-events', 'none')
         layers.exit().transition().duration(options.duration)
           .style('opacity', 0)
           .remove()
+
+        _dataOld = data
+        _pathValuesOld = _pathValuesNew
+
+      brush = (axis, idxRange) ->
+        layers = this.selectAll(".wk-chart-line")
+        if axis.isOrdinal()
+          layers.attr('d', (d) ->  areaBrush(d.value.slice(idxRange[0], idxRange[1] + 1)))
+          brushStartIdx = idxRange[0]
+        else
+          layers.attr('d', (d) -> areaBrush(d.value))
+        #layers.call(markers, 0)
 
       #--- Configuration and registration ------------------------------------------------------------------------------
 
@@ -80,11 +170,12 @@ angular.module('wk.chart').directive 'areaVertical', ($log) ->
         @getKind('x').resetOnNewData(true).domainCalc('extent')
         _tooltip = host.behavior().tooltip
         _tooltip.markerScale(_scaleList.y)
-        _tooltip.on "enter.#{_id}", ttMoveData
+        _tooltip.on "enter.#{_id}", ttEnter
         _tooltip.on "moveData.#{_id}", ttMoveData
         _tooltip.on "moveMarker.#{_id}", ttMoveMarker
 
       host.lifeCycle().on 'draw', draw
+      host.lifeCycle().on 'brushDraw', brush
 
       #--- Property Observers ------------------------------------------------------------------------------------------
 
@@ -94,6 +185,3 @@ angular.module('wk.chart').directive 'areaVertical', ($log) ->
         else
           _showMarkers = false
   }
-
-#TODO implement enter / exit animations like in line
-#TODO implement external brushing optimizations

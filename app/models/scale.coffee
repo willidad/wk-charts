@@ -396,6 +396,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
         if _isVertical
           interval = range[0] - range[1]
           idx = range.length - Math.floor(mappedValue / interval) - 1
+          if idx < 0 then idx = 0
         else
           interval = range[1] - range[0]
           idx = Math.floor(mappedValue / interval)

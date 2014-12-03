@@ -24,7 +24,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
       line = undefined
       markers = undefined
 
-      brushLine = undefined
+      lineBrush = undefined
 
 
       #--- Tooltip Event Handlers --------------------------------------------------------------------------------------
@@ -34,7 +34,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
         ttMoveData.apply(this, [idx])
 
       ttMoveData = (idx) ->
-        ttLayers = _pathArray.map((l) -> {name:l[idx].key, value:_scaleList.y.formatValue(l[idx].y), color:{'background-color': l[idx].color}, xv:l[idx].xv})
+        ttLayers = _pathArray.map((l) -> {name:l[idx].key, value:_scaleList.y.formatValue(l[idx].yv), color:{'background-color': l[idx].color}, xv:l[idx].xv})
         @headerName = _scaleList.x.axisLabel()
         @headerValue = _scaleList.x.formatValue(ttLayers[0].xv)
         @layers = @layers.concat(ttLayers)
@@ -49,13 +49,13 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
           .style('pointer-events','none')
         _circles.attr('cy', (d) -> d[idx].y)
         _circles.exit().remove()
-        this.attr('transform', "translate(#{_scaleList.x.scale()(_pathArray[0][idx].xv) + offset})")
+        this.attr('transform', "translate(#{_scaleList.x.scale()(_pathArray[0][idx].xv) + offset})") # need to compute form scale because of brushing
 
       #--- Draw --------------------------------------------------------------------------------------------------------
 
       draw = (data, options, x, y, color) ->
 
-        mergedX = utils.mergeSeries(x.value(_dataOld), x.value(data))
+        mergedX = utils.mergeSeriesSorted(x.value(_dataOld), x.value(data))
         _layerKeys = y.layerKeys(data)
         _layout = []
 
@@ -122,7 +122,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
             m.enter().append('circle').attr('class','wk-chart-marker wk-chart-selectable')
               .attr('r', 5)
               .style('pointer-events','none')
-              #.style('opacity', _initialOpacity)
+              .style('opacity', 0)
               .style('fill', (d) -> d.color)
             m
               .attr('cy', (d) -> d.yOld)
@@ -147,7 +147,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
           .x((d) -> d.xNew)
           .y((d) -> d.yNew)
 
-        brushLine = d3.svg.line()
+        lineBrush = d3.svg.line()
           .x((d) -> x.scale()(d.x))
           .y((d) -> d.yNew)
 
@@ -177,9 +177,12 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
         _dataOld = data
         _pathValuesOld = _pathValuesNew
 
-      brush = (data, options, x, y, color) ->
+      brush = (axis, idxRange) ->
         layers = this.selectAll(".wk-chart-line")
-          .attr('d', (d) -> brushLine(d.value))
+        if axis.isOrdinal()
+          layers.attr('d', (d) -> lineBrush(d.value.slice(idxRange[0],idxRange[1] + 1)))
+        else
+          layers.attr('d', (d) -> lineBrush(d.value))
         layers.call(markers, 0)
 
       #--- Configuration and registration ------------------------------------------------------------------------------

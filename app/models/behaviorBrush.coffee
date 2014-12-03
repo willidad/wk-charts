@@ -235,7 +235,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       positionBrushElements(left, right, top, bottom)
       setSelection(left, right, top, bottom)
       _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain)
-      selectionSharing.setSelection _boundsValues, _brushGroup
+      selectionSharing.setSelection _boundsValues, _boundsIdx, _brushGroup
 
     #--- Brush ---------------------------------------------------------------------------------------------------------
 

@@ -1,16 +1,18 @@
 angular.module('wk.chart').service 'selectionSharing', ($log) ->
-  selection = {}
+  _selection = {}
+  _selectionIdxRange = {}
   callbacks = {}
 
   this.createGroup = (group) ->
 
 
-  this.setSelection = (selection, group) ->
+  this.setSelection = (selection, selectionIdxRange, group) ->
     if group
-      selection[group] = selection
+      _selection[group] = selection
+      _selectionIdxRange[group] = selectionIdxRange
       if callbacks[group]
         for cb in callbacks[group]
-          cb(selection)
+          cb(selection, selectionIdxRange)
 
   this.getSelection = (group) ->
     grp = group or 'default'
