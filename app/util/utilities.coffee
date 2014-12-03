@@ -132,7 +132,7 @@ angular.module('wk.chart').service 'utils', ($log) ->
 
     return me;
 
-  @mergeSeriesSorted =  (aOld, aNew)  ->  #TODO current version does not handle ordinal scales correctly. Assumes keys are sorted and can be to numeric
+  @mergeSeriesSorted =  (aOld, aNew)  ->
     iOld = 0
     iNew = 0
     lOldMax = aOld.length - 1

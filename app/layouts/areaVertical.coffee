@@ -39,14 +39,15 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils) ->
         offs = idx + brushStartIdx
         _circles = this.selectAll(".wk-chart-marker-#{_id}").data(_pathArray, (d) -> d[offs].key)
         _circles.enter().append('circle').attr('class',"wk-chart-marker-#{_id}")
-        .attr('r', if _showMarkers then 8 else 5)
-        .style('fill', (d)-> d[offs].color)
-        .style('fill-opacity', 0.6)
-        .style('stroke', 'black')
-        .style('pointer-events','none')
+          .attr('r', if _showMarkers then 8 else 5)
+          .style('fill', (d)-> d[offs].color)
+          .style('fill-opacity', 0.6)
+          .style('stroke', 'black')
+          .style('pointer-events','none')
         _circles.attr('cx', (d) -> d[offs].x)
         _circles.exit().remove()
-        this.attr('transform', "translate(0,#{_scaleList.y.scale()(_pathArray[0][offs].yv) + offset})") # need to compute form scale because of brushing
+        o = if _scaleList.y.isOrdinal then _scaleList.y.scale().rangeBand() / 2 else 0
+        this.attr('transform', "translate(0,#{_scaleList.y.scale()(_pathArray[0][offs].yv) + o})") # need to compute form scale because of brushing
 
       #-----------------------------------------------------------------------------------------------------------------
 
@@ -152,9 +153,10 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils) ->
         _dataOld = data
         _pathValuesOld = _pathValuesNew
 
-      brush = (axis, idxRange) ->
+      brush = (axis, idxRange, width, height) ->
         layers = this.selectAll(".wk-chart-line")
         if axis.isOrdinal()
+          layers.attr('transform', "translate(0,#{width + axis.scale().rangeBand() / 2})rotate(-90)")
           layers.attr('d', (d) ->  areaBrush(d.value.slice(idxRange[0], idxRange[1] + 1)))
           brushStartIdx = idxRange[0]
         else

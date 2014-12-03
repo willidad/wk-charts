@@ -24,7 +24,7 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils) ->
       _scaleList = {}
       scaleY = undefined
       offs = 0
-      _id = 'area' + stackedAreaCntr++
+      _id = 'areaStacked' + stackedAreaCntr++
 
       #--- Tooltip Event Handlers --------------------------------------------------------------------------------------
 
@@ -54,23 +54,8 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils) ->
           if l.key is key
             return l
 
-      layout = stack.values((d)->d.layer).y((d) -> d.yy)
+      stackLayout = stack.values((d)->d.layer).y((d) -> d.yy)
 
-
-      #-------------------------------------------------------------------------------------------------------------------
-      ###
-      prepData = (x,y,color) ->
-
-        layoutOld = layoutNew.map((d) -> {key: d.key, path: area(d.layer.map((p) -> {x: p.x, y: 0, y0: p.y + p.y0}))})
-        layerKeysOld = layerKeys
-
-        layerKeys = y.layerKeys(@)
-        layerData = layerKeys.map((k) => {key: k, color:color.scale()(k), layer: @map((d) -> {x: x.value(d), yy: +y.layerValue(d,k), y0: 0})}) # yy: need to avoid overwriting by layout calc -> see stack y accessor
-        #layoutNew = layout(layerData)
-
-        deletedSucc = utils.diff(layerKeysOld, layerKeys, 1)
-        addedPred = utils.diff(layerKeys, layerKeysOld, -1)
-      ###
       #--- Draw --------------------------------------------------------------------------------------------------------
 
       draw = (data, options, x, y, color) ->
@@ -82,7 +67,7 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils) ->
         addedPred = utils.diff(layerKeys, layerKeysOld, -1)
 
         layerData = layerKeys.map((k) => {key: k, color:color.scale()(k), layer: data.map((d) -> {x: x.value(d), yy: +y.layerValue(d,k), y0: 0, data:d})}) # yy: need to avoid overwriting by layout calc -> see stack y accessor
-        layoutNew = layout(layerData)
+        layoutNew = stackLayout(layerData)
 
         offs = if x.isOrdinal() then x.scale().rangeBand() / 2 else 0
 
@@ -135,10 +120,10 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils) ->
         layoutOld = layoutNew.map((d) -> {key: d.key, path: area(d.layer.map((p) -> {x: p.x, y: 0, y0: p.y + p.y0}))})
         layerKeysOld = layerKeys
 
-      brush = (data, options,x,y,color) ->
-        layers = this.selectAll(".wk-chart-layer")
-        layers.select('.wk-chart-area')
-        .attr('d', (d) -> area(d.layer))
+      brush = (axis, idxRange) ->
+        layers = this.selectAll(".wk-chart-area")
+        layers
+          .attr('d', (d) -> area(d.layer))
 
       #--- Configuration and registration ------------------------------------------------------------------------------
 

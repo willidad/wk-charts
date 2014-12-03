@@ -48,7 +48,8 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils) ->
           .style('pointer-events','none')
         _circles.attr('cx', (d) -> d[offs].x)
         _circles.exit().remove()
-        this.attr('transform', "translate(0,#{_scaleList.y.scale()(_pathArray[0][offs].yv) + offset})") # need to compute form scale because of brushing
+        o = if _scaleList.y.isOrdinal then _scaleList.y.scale().rangeBand() / 2 else 0
+        this.attr('transform', "translate(0,#{_scaleList.y.scale()(_pathArray[0][offs].yv) + o})") # need to compute form scale because of brushing
 
       #-----------------------------------------------------------------------------------------------------------------
 
@@ -184,6 +185,7 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils) ->
         if axis.isOrdinal()#
           brushStartIdx = idxRange[0]
           layers.attr('d', (d) -> lineBrush(d.value.slice(idxRange[0],idxRange[1] + 1)))
+            .attr('transform', "translate(0,#{axis.scale().rangeBand() / 2})")
         else
           layers.attr('d', (d) -> lineBrush(d.value))
         layers.call(markers, 0)

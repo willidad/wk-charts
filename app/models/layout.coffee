@@ -92,7 +92,7 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
 
       _layoutLifeCycle.on 'brush', (axis, notAnimated, idxRange) ->
         _container.drawSingleAxis(axis)
-        _layoutLifeCycle.brushDraw.apply(getDrawArea(), [axis, idxRange])
+        _layoutLifeCycle.brushDraw.apply(getDrawArea(), [axis, idxRange, _container.width(), _container.height()])
 
     return me
 
