@@ -182,7 +182,7 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils) ->
 
       brush = (axis, idxRange) ->
         layers = this.selectAll(".wk-chart-line")
-        if axis.isOrdinal()#
+        if axis.isOrdinal()
           brushStartIdx = idxRange[0]
           layers.attr('d', (d) -> lineBrush(d.value.slice(idxRange[0],idxRange[1] + 1)))
             .attr('transform', "translate(0,#{axis.scale().rangeBand() / 2})")
