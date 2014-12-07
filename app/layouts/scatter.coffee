@@ -61,7 +61,7 @@ angular.module('wk.chart').directive 'scatter', ($log, utils) ->
         _selected = layout.behavior().selected
         _tooltip.on "enter.#{_id}", ttEnter
 
-      layout.lifeCycle().on 'draw', draw
+      layout.lifeCycle().on 'drawChart', draw
   }
 
 #TODO verify behavior with custom tooltips

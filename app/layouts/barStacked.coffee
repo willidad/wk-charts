@@ -127,7 +127,7 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig) ->
         _selected = host.behavior().selected
         _tooltip.on "enter.#{_id}", ttEnter
 
-      host.lifeCycle().on 'draw', draw
+      host.lifeCycle().on 'drawChart', draw
       host.lifeCycle().on 'brushDraw', draw
 
 

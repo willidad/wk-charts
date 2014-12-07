@@ -42,7 +42,7 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
           scope.selectedDomain = domain
         scope.$apply()
 
-      layout.lifeCycle().on 'draw.brush', (data) ->
+      layout.lifeCycle().on 'drawChart.brush', (data) ->
         brush.data(data)
 
 

@@ -111,7 +111,7 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig)
         _tooltip = host.behavior().tooltip
         _tooltip.on "enter.#{_id}", ttEnter
 
-      host.lifeCycle().on 'draw', draw
+      host.lifeCycle().on 'drawChart', draw
       host.lifeCycle().on 'brushDraw', draw
 
 

@@ -84,7 +84,7 @@ angular.module('wk.chart').directive 'geoMap', ($log, utils) ->
         _scaleList = @getScales(['color'])
         _scaleList.color.resetOnNewData(true)
 
-      layout.lifeCycle().on 'draw', draw
+      layout.lifeCycle().on 'drawChart', draw
       _tooltip = layout.behavior().tooltip
       _selected = layout.behavior().selected
       _tooltip.on "enter.#{_id}", ttEnter

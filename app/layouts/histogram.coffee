@@ -97,7 +97,7 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils)
         _selected = host.behavior().selected
         _tooltip.on "enter.#{_id}", ttEnter
 
-      host.lifeCycle().on 'draw', draw
+      host.lifeCycle().on 'drawChart', draw
 
       #-------------------------------------------------------------------------------------------------------------------
 

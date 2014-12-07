@@ -84,7 +84,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig)->
       _selected = host.behavior().selected
       _tooltip.on "enter.#{_id}", ttEnter
 
-    host.lifeCycle().on 'draw', draw
+    host.lifeCycle().on 'drawChart', draw
 
 
     attrs.$observe 'padding', (val) ->

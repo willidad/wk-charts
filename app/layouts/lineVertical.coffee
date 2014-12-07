@@ -203,7 +203,7 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils) ->
         _tooltip.on "moveData.#{_id}", ttMoveData
         _tooltip.on "moveMarker.#{_id}", ttMoveMarker
 
-      host.lifeCycle().on 'draw', draw
+      host.lifeCycle().on 'drawChart', draw
       host.lifeCycle().on 'brushDraw', brush
 
       #--- Property Observers ------------------------------------------------------------------------------------------

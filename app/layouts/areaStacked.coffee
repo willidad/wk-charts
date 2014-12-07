@@ -138,7 +138,7 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils) ->
         _tooltip.on "moveData.#{_id}", ttMoveData
         _tooltip.on "moveMarker.#{_id}", ttMoveMarker
 
-      host.lifeCycle().on 'draw', draw
+      host.lifeCycle().on 'drawChart', draw
 
       #--- Property Observers ------------------------------------------------------------------------------------------
 

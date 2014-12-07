@@ -173,7 +173,7 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
       _selected = layout.behavior().selected
       _tooltip.on "enter.#{_id}", ttEnter
 
-    layout.lifeCycle().on 'draw', draw
+    layout.lifeCycle().on 'drawChart', draw
 
     #-------------------------------------------------------------------------------------------------------------------
 

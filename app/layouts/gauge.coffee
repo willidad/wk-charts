@@ -74,7 +74,7 @@ angular.module('wk.chart').directive 'gauge', ($log, utils) ->
         this.requiredScales(['y', 'color'])
         @getKind('color').resetOnNewData(true)
 
-      layout.lifeCycle().on 'draw', draw
+      layout.lifeCycle().on 'drawChart', draw
 
   }
 
