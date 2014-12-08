@@ -80,4 +80,11 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
             me.lifeCycle().newData(val)
 
       watcherRemoveFn = scope.$watch 'data', dataWatchFn, deepWatch
+
+      # cleanup when destroyed
+
+      element.on '$destroy', () ->
+        if watcherRemoveFn
+          watcherRemoveFn()
+        $log.log 'Destroying chart'
   }

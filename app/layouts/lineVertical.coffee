@@ -13,6 +13,7 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils) ->
       _pathValuesNew = []
       _pathArray = []
       lineBrush = undefined
+      markersBrushed = undefined
       brushStartIdx = 0
       _tooltip = undefined
       _ttHighlight = undefined
@@ -142,6 +143,14 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils) ->
 
         offset = if y.isOrdinal() then y.scale().rangeBand() / 2 else 0
 
+        markersBrushed = (layer) ->
+          if _showMarkers
+            layer
+            .attr('cy', (d) ->
+              null
+              y.scale()(d.y) + if y.isOrdinal() then y.scale().rangeBand() / 2 else 0
+            )
+
         if _tooltip then _tooltip.data(data)
 
         lineOld = d3.svg.line()
@@ -188,7 +197,7 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils) ->
             .attr('transform', "translate(0,#{axis.scale().rangeBand() / 2})")
         else
           layers.attr('d', (d) -> lineBrush(d.value))
-        layers.call(markers, 0)
+        markers = this.selectAll('.wk-chart-marker').call(markersBrushed)
 
       #--- Configuration and registration ------------------------------------------------------------------------------
 

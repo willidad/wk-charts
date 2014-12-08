@@ -18,7 +18,10 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig)
       barPaddingOld = 0
       barOuterPaddingOld = 0
 
-      config = barConfig
+      config = {}
+      _.merge(config, barConfig)
+      drawBrush = undefined
+      clusterX = undefined
 
       initial = true
 
@@ -101,6 +104,15 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig)
         barPaddingOld = barPadding
         barOuterPaddingOld = barOuterPadding
 
+      drawBrush = (axis, idxRange) ->
+        clusterX.rangeBands([0,axis.scale().rangeBand()], 0, 0)
+        width = clusterX.rangeBand()
+        layers
+          .attr('transform',(d) -> "translate(#{if (x = axis.scale()(d.key)) >= 0 then x else -1000},0)")
+          .selectAll('.wk-chart-bar')
+            .attr('width', width)
+            .attr('x', (d) -> clusterX(d.layerKey))
+
       #-------------------------------------------------------------------------------------------------------------------
 
       host.lifeCycle().on 'configure', ->
@@ -112,7 +124,7 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig)
         _tooltip.on "enter.#{_id}", ttEnter
 
       host.lifeCycle().on 'drawChart', draw
-      host.lifeCycle().on 'brushDraw', draw
+      host.lifeCycle().on 'brushDraw', drawBrush
 
 
       attrs.$observe 'padding', (val) ->
@@ -133,6 +145,3 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig)
         _scaleList.x.rangePadding(config)
         host.lifeCycle().update()
   }
-
-
-#TODO implement external brushing optimizations

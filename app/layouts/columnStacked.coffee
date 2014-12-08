@@ -25,7 +25,8 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig) -
 
       initial = true
 
-      config = barConfig
+      config = {}
+      _.merge(config,barConfig)
 
       ttEnter = (data) ->
         ttLayers = data.layers.map((l) -> {name:l.layerKey, value:_scaleList.y.formatValue(l.value), color: {'background-color': l.color}})
@@ -115,6 +116,14 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig) -
         barPaddingOld = barPadding
         barOuterPaddingOld = barOuterPadding
 
+      drawBrush = (axis, idxRange) ->
+        layers
+          .attr('transform',(d) -> "translate(#{if (x = axis.scale()(d.key)) >= 0 then x else -1000},0)")
+          .selectAll('.wk-chart-bar')
+            .attr('width', (d) -> axis.scale().rangeBand())
+
+
+
       #-----------------------------------------------------------------------------------------------------------------
 
       host.lifeCycle().on 'configure', ->
@@ -127,7 +136,7 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig) -
         _tooltip.on "enter.#{_id}", ttEnter
 
       host.lifeCycle().on 'drawChart', draw
-      host.lifeCycle().on 'brushDraw', draw
+      host.lifeCycle().on 'brushDraw', drawBrush
 
 
       attrs.$observe 'padding', (val) ->
@@ -145,8 +154,6 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig) -
             if values.length is 2
               config.padding = values[0]/100
               config.outerPadding = values[1]/100
-        _scaleList.y.rangePadding(config)
+        _scaleList.x.rangePadding(config)
         host.lifeCycle().update()
   }
-
-#TODO implement external brushing optimizations

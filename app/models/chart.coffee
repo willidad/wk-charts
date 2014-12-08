@@ -109,7 +109,7 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
 
     #--- Chart drawing life cycle --------------------------------------------------------------------------------------
 
-    me.execLifeCycleFull = (data, noAnimation) ->
+    lifecycleFull = (data,noAnimation) ->
       if data
         $log.log 'executing full life cycle'
         _data = data
@@ -118,6 +118,11 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
         _lifeCycle.sizeContainer(data, noAnimation)  # calls container
         _lifeCycle.drawAxis(noAnimation)             # calls container
         _lifeCycle.drawChart(data, noAnimation)     # calls layout
+        _lifeCycle.scopeApply()                     # need a digest cycle after the debouce to ensure legend animations execute
+
+    debounced = _.debounce(lifecycleFull, 100)
+
+    me.execLifeCycleFull = debounced
 
     me.resizeLifeCycle = (noAnimation) ->
       if _data

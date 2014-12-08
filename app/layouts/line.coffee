@@ -23,6 +23,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
       _id = 'line' + lineCntr++
       line = undefined
       markers = undefined
+      markersBrushed = undefined
 
       lineBrush = undefined
 
@@ -135,9 +136,16 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
 
             m.exit()
               .remove()
-
           else
             layer.selectAll('.wk-chart-marker').transition().duration(duration).style('opacity', 0).remove()
+
+        markersBrushed = (layer) ->
+          if _showMarkers
+            layer
+              .attr('cx', (d) ->
+                null
+                x.scale()(d.x)
+            )
 
         lineOld = d3.svg.line()
           .x((d) -> d.xOld)
@@ -178,12 +186,12 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
         _pathValuesOld = _pathValuesNew
 
       brush = (axis, idxRange) ->
-        layers = this.selectAll(".wk-chart-line")
+        lines = this.selectAll(".wk-chart-line")
         if axis.isOrdinal()
-          layers.attr('d', (d) -> lineBrush(d.value.slice(idxRange[0],idxRange[1] + 1)))
+          lines.attr('d', (d) -> lineBrush(d.value.slice(idxRange[0],idxRange[1] + 1)))
         else
-          layers.attr('d', (d) -> lineBrush(d.value))
-        layers.call(markers, 0)
+          lines.attr('d', (d) -> lineBrush(d.value))
+        markers = this.selectAll('.wk-chart-marker').call(markersBrushed)
 
       #--- Configuration and registration ------------------------------------------------------------------------------
 

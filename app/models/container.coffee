@@ -147,6 +147,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
       duration = if noAnimation then 0 else _duration
       kind = s.kind()
       ticks = if s.isOrdinal() then s.scale().range() else s.scale().ticks()
+      offset = if s.isOrdinal() then s.scale().rangeBand() / 2 else 0
       gridLines = _container.selectAll(".wk-chart-grid.wk-chart-#{kind}").data(ticks, (d) -> d)
       gridLines.enter().append('line').attr('class', "wk-chart-grid wk-chart-#{kind}")
         .style('pointer-events', 'none')
@@ -156,8 +157,8 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
           .attr({
             x1:0,
             x2: _innerWidth,
-            y1:(d) -> if s.isOrdinal() then  d else s.scale()(d),
-            y2:(d) -> if s.isOrdinal() then d else s.scale()(d)
+            y1:(d) -> if s.isOrdinal() then d + offset else s.scale()(d),
+            y2:(d) -> if s.isOrdinal() then d + offset else s.scale()(d)
           })
           .style('opacity',1)
       else
@@ -165,8 +166,8 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
           .attr({
             y1:0,
             y2: _innerHeight,
-            x1:(d) -> if s.isOrdinal() then d else s.scale()(d),
-            x2:(d) -> if s.isOrdinal() then d else s.scale()(d)
+            x1:(d) -> if s.isOrdinal() then d + offset else s.scale()(d),
+            x2:(d) -> if s.isOrdinal() then d + offset else s.scale()(d)
           })
           .style('opacity',1)
       gridLines.exit().transition().duration(duration).style('opacity',0).remove()
