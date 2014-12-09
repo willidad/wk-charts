@@ -81,14 +81,25 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
         if me.x().isOrdinal()
           _boundsValues = _data.map((d) -> me.x().value(d)).slice(_boundsIdx[0], _boundsIdx[1] + 1)
         else
-          _boundsValues = [me.x().value(_data[_boundsIdx[0]]), me.x().value(_data[_boundsIdx[1]])]
+          if me.x().kind() is 'rangeX'
+            if me.x().upperProperty()
+              _boundsValues = [me.x().lowerValue(_data[_boundsIdx[0]]), me.x().upperValue(_data[_boundsIdx[1]])]
+            else
+              step = me.x().lowerValue(_data[1]) - me.x().lowerValue(_data[0])
+              _boundsValues = [me.x().lowerValue(_data[_boundsIdx[0]]), me.x().lowerValue(_data[_boundsIdx[1]]) + step]
+          else
+            _boundsValues = [me.x().value(_data[_boundsIdx[0]]), me.x().value(_data[_boundsIdx[1]])]
         _boundsDomain = _data.slice(_boundsIdx[0], _boundsIdx[1] + 1)
       if _brushY
         _boundsIdx = [me.y().invert(bottom), me.y().invert(top)]
         if me.y().isOrdinal()
           _boundsValues = _data.map((d) -> me.y().value(d)).slice(_boundsIdx[0], _boundsIdx[1] + 1)
         else
-          _boundsValues = [me.y().value(_data[_boundsIdx[0]]), me.y().value(_data[_boundsIdx[1]])]
+          if me.y().kind() is 'rangeY'
+            step = me.y().lowerValue(_data[1]) - me.y().lowerValue(_data[0])
+            _boundsValues = [me.y().lowerValue(_data[_boundsIdx[0]]), me.y().lowerValue(_data[_boundsIdx[1]]) + step]
+          else
+            _boundsValues = [me.y().value(_data[_boundsIdx[0]]), me.y().value(_data[_boundsIdx[1]])]
         _boundsDomain = _data.slice(_boundsIdx[0], _boundsIdx[1] + 1)
       if _brushXY
         _boundsIdx = []

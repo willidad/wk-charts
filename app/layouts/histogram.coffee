@@ -31,7 +31,14 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils)
       ttEnter = (data) ->
         @headerName = _scaleList.rangeX.axisLabel()
         @headerValue = _scaleList.y.axisLabel()
-        @layers.push({name: _scaleList.color.formattedValue(data.data), value: _scaleList.y.formattedValue(data.data), color:{'background-color': _scaleList.color.map(data.data)}})
+        lower = _scaleList.rangeX.formatValue(_scaleList.rangeX.lowerValue(data.data))
+        if _scaleList.rangeX.upperProperty()
+          upper = _scaleList.rangeX.formatValue(_scaleList.rangeX.upperValue(data.data))
+          name = lower + ' - ' + upper
+        else
+          name = _scaleList.rangeX.formatValue(_scaleList.rangeX.lowerValue(data.data))
+
+        @layers.push({name: name, value: _scaleList.y.formattedValue(data.data), color:{'background-color': _scaleList.color.map(data.data)}})
 
       #--- Draw --------------------------------------------------------------------------------------------------------
 
@@ -53,9 +60,10 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils)
 
         buckets = buckets.data(layout, (d) -> d.xVal)
 
-        enter = buckets.enter().append('g').attr('class','wk-chart-bucket wk-chart-selectable')
+        enter = buckets.enter().append('g').attr('class','wk-chart-bucket')
           .attr('transform', (d) -> "translate(#{if initial then d.x else _merge.addedPred(d).x  + _merge.addedPred(d).width},#{d.y}) scale(#{if initial then 1 else 0},1)")
         enter.append('rect')
+          .attr('class', 'wk-chart-selectable')
           .attr('height', (d) -> d.height)
           .attr('width', (d) -> d.width)
           .style('fill',(d) -> d.color)
@@ -63,6 +71,7 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils)
           .call(_tooltip.tooltip)
           .call(_selected)
         enter.append('text')
+          .attr('class','wk-chart-data-label')
           .attr('x', (d) -> d.width / 2)
           .attr('y', -20)
           .attr({dy: '1em', 'text-anchor':'middle'})
@@ -78,6 +87,7 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils)
         buckets.select('text')
           .text((d) -> y.formattedValue(d.data))
           .transition().duration(options.duration)
+            .attr('x', (d) -> d.width / 2)
             .style('opacity', if host.showDataLabels() then 1 else 0)
 
         buckets.exit().transition().duration(options.duration)
@@ -85,6 +95,22 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils)
           .remove()
 
         initial = false
+
+      brush = (axis, idxRange, width, height) ->
+        bucketWidth = (axis, d) ->
+          if axis.upperProperty()
+            return axis.scale()(axis.upperValue(d.data)) - axis.scale()(axis.lowerValue(d.data))
+          else
+            return width / Math.max(idxRange[1] - idxRange[0] + 1, 1)
+
+        buckets
+          .attr('transform',(d) ->
+            null
+            "translate(#{if (x = axis.scale()(d.xVal)) >= 0 then x else -1000}, #{d.y})")
+        buckets.select('rect')
+          .attr('width', (d) -> bucketWidth(axis, d))
+        buckets.selectAll('text')
+          .attr('x',(d) -> bucketWidth(axis, d) / 2)
 
       #-----------------------------------------------------------------------------------------------------------------
 
@@ -98,6 +124,7 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils)
         _tooltip.on "enter.#{_id}", ttEnter
 
       host.lifeCycle().on 'drawChart', draw
+      host.lifeCycle().on 'brushDraw', brush
 
       #-------------------------------------------------------------------------------------------------------------------
 
@@ -108,6 +135,3 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils)
           host.showDataLabels('y')
         host.lifeCycle().update()
   }
-
-#TODO implement external brushing optimizations
-#TODO test selection behavior

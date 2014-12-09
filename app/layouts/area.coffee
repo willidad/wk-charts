@@ -29,7 +29,7 @@ angular.module('wk.chart').directive 'area', ($log, utils) ->
         ttMoveData.apply(this, [idx])
 
       ttMoveData = (idx) ->
-        ttLayers = _pathArray.map((l) -> {name:l[idx].key, value:_scaleList.y.formatValue(l[idx].y), color:{'background-color': l[idx].color}, xv:l[idx].xv})
+        ttLayers = _pathArray.map((l) -> {name:l[idx].key, value:_scaleList.y.formatValue(l[idx].yv), color:{'background-color': l[idx].color}, xv:l[idx].xv})
         @headerName = _scaleList.x.axisLabel()
         @headerValue = _scaleList.x.formatValue(ttLayers[0].xv)
         @layers = @layers.concat(ttLayers)

@@ -100,9 +100,9 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
 
       if _showLabels
 
-        labels = pieBox.selectAll('.wk-chart-label').data(segments, key)
+        labels = pieBox.selectAll('.wk-chart-data-label').data(segments, key)
 
-        labels.enter().append('text').attr('class', 'wk-chart-label')
+        labels.enter().append('text').attr('class', 'wk-chart-data-label')
           .each((d) -> @_current = d)
           .attr("dy", ".35em")
           .style('font-size','1.3em')
@@ -160,7 +160,7 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
 
       else
         pieBox.selectAll('.wk-chart-polyline').remove()
-        pieBox.selectAll('.wk-chart-label').remove()
+        pieBox.selectAll('.wk-chart-data-label').remove()
 
       initialShow = false
 

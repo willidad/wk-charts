@@ -122,6 +122,13 @@ li.wk-chart-legend-shapeItem span {
     fill-opacity:0.6;
 }
 
+.wk-chart-data-label {
+    user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-select: none;
+    pointer-events: none;
+}
 
 .wk-chart-selected {
     stroke:red;

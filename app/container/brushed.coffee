@@ -2,14 +2,16 @@ angular.module('wk.chart').directive 'brushed', ($log,selectionSharing, timing) 
   sBrushCnt = 0
   return {
     restrict: 'A'
-    require: ['^chart', '?^layout', '?x', '?y']
+    require: ['^chart', '?^layout', '?x', '?y', '?rangeX', '?rangeY']
     link: (scope, element, attrs, controllers) ->
       chart = controllers[0].me
       layout = controllers[1]?.me
       x = controllers[2]?.me
       y = controllers[3]?.me
+      rangeX = controllers[4]?.me
+      rangeY = controllers[5]?.me
 
-      axis = x or y
+      axis = x or y or rangeX or rangeY
       _brushGroup = undefined
 
       brusher = (extent, idxRange) ->

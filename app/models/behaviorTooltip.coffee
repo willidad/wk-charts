@@ -64,11 +64,13 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       if _showMarkerLine
         _pos = d3.mouse(this)
         value = _markerScale.invert(if _markerScale.isHorizontal() then _pos[0] else _pos[1])
+        _templScope.ttData = me.data()[value]
       else
         value = d3.select(this).datum()
+        _templScope.ttData = if value.data then value.data else value
 
       _templScope.ttShow = true
-      _templScope.ttData = value
+
       _tooltipDispatch.enter.apply(_templScope, [value]) # call layout to fill in data
       positionInitial()
 
@@ -99,6 +101,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         dataIdx = _markerScale.invert(if _markerScale.isHorizontal() then _pos[0] else _pos[1])
         _tooltipDispatch.moveMarker.apply(_markerG, [dataIdx])
         _templScope.layers = []
+        _templScope.ttData = me.data()[dataIdx]
         _tooltipDispatch.moveData.apply(_templScope, [dataIdx])
       _templScope.$apply()
 

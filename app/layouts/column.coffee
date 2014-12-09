@@ -59,6 +59,7 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig)->
         .call(_tooltip.tooltip)
         .call(_selected)
       enter.append('text')
+        .attr('class', 'wk-chart-data-label')
         .attr('x', (d) -> d.width / 2)
         .attr('y', -20)
         .attr({dy: '1em', 'text-anchor':'middle'})

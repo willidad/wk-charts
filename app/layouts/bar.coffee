@@ -72,6 +72,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig)->
           .attr('width', (d) -> Math.abs(x.scale()(0) - d.x))
           .style('opacity', 1)
       bars.select('text')
+        .attr('class', 'wk-chart-data-label')
         .text((d) -> x.formattedValue(d.data))
         .transition().duration(options.duration)
           .attr('y', (d) -> d.height / 2)
