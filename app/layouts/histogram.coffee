@@ -78,7 +78,7 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils)
         buckets.select('text')
           .text((d) -> y.formattedValue(d.data))
           .transition().duration(options.duration)
-            .style('opacity', if host.showLabels() then 1 else 0)
+            .style('opacity', if host.showDataLabels() then 1 else 0)
 
         buckets.exit().transition().duration(options.duration)
           .attr('transform', (d) -> "translate(#{_merge.deletedSucc(d).x},#{d.y}) scale(0,1)")
@@ -103,9 +103,9 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils)
 
       attrs.$observe 'labels', (val) ->
         if val is 'false'
-          host.showLabels(false)
+          host.showDataLabels(false)
         else if val is 'true' or val is ""
-          host.showLabels(true)
+          host.showDataLabels('y')
         host.lifeCycle().update()
   }
 

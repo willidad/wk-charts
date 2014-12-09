@@ -38,7 +38,7 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
         _container = obj
         return me
 
-    me.showLabels = (trueFalse) ->
+    me.showDataLabels = (trueFalse) ->
       if arguments.length is 0 then return _showLabels
       else
         _showLabels = trueFalse

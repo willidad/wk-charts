@@ -48,31 +48,55 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig)->
 
       bars = bars.data(layout, (d) -> d.key)
 
-      bars.enter().append('rect')
-        .attr('class', 'wk-chart-bar wk-chart-selectable')
-        .attr('y', (d) -> if initial then d.y else _merge.addedPred(d).y - barPaddingOld / 2)
-        .attr('height', (d) -> if initial then d.height else 0)
+      enter = bars.enter().append('g').attr('class','wk-chart-bar')
+        .attr('transform', (d)-> "translate(0, #{if initial then d.y else _merge.addedPred(d).y - barPaddingOld / 2}) scale(1, #{if initial then 1 else 0})")
+      enter.append('rect')
+        .attr('class', 'wk-chart-rect wk-chart-selectable')
+        #.attr('y', (d) -> if initial then d.y else _merge.addedPred(d).y - barPaddingOld / 2)
+        .attr('height', (d) -> d.height)
         .style('opacity', if initial then 0 else 1)
         .call(_tooltip.tooltip)
         .call(_selected)
+      enter.append('text')
+        .attr('y', (d) -> d.height / 2 )
+        .attr('x', (d) -> d.x + 10)
+        .attr({dy: '0.35em', 'text-anchor':'start'})
+        .style({'font-size':'1.3em', opacity: 0})
 
-      bars.style('fill', (d) -> d.color).transition().duration(options.duration)
-        .attr('x', (d) -> Math.min(x.scale()(0), d.x))
-        .attr('height', (d) -> d.height)
-        .attr('width', (d) -> Math.abs(x.scale()(0) - d.x))
-        .attr('y', (d) -> d.y)
-        .style('opacity', 1)
+      bars.transition().duration(options.duration)
+        .attr('transform', (d) -> "translate(0, #{d.y}) scale(1,1)")
+      bars.select('rect')
+        .style('fill', (d) -> d.color)
+        .transition().duration(options.duration)
+          .attr('height', (d) -> d.height)
+          .attr('width', (d) -> Math.abs(x.scale()(0) - d.x))
+          .style('opacity', 1)
+      bars.select('text')
+        .text((d) -> x.formattedValue(d.data))
+        .transition().duration(options.duration)
+          .attr('y', (d) -> d.height / 2)
+          .attr('x', (d) -> d.x + 10)
+          .style('opacity', if host.showDataLabels() then 1 else 0)
+
 
       bars.exit()
         .transition().duration(options.duration)
-        .attr('y', (d) -> _merge.deletedSucc(d).y + _merge.deletedSucc(d).height + barPadding / 2)
-        .attr('height', 0)
-        .remove()
+          .attr('transform', (d) -> "translate(0,#{_merge.deletedSucc(d).y + _merge.deletedSucc(d).height + barPadding / 2}) scale(1,0)")
+          .attr('height', 0)
+          .remove()
 
       initial = false
 
       barPaddingOld = barPadding
       barOuterPaddingOld = barOuterPadding
+
+    brush = (axis, idxRange) ->
+      bars
+        .attr('transform',(d) -> "translate(0, #{if (y = axis.scale()(d.key)) >= 0 then y else -1000})")
+        .selectAll('.wk-chart-rect')
+        .attr('height', (d) -> axis.scale().rangeBand())
+      bars.selectAll('text')
+        .attr('y',axis.scale().rangeBand() / 2)
 
     #--- Configuration and registration ------------------------------------------------------------------------------
 
@@ -85,6 +109,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig)->
       _tooltip.on "enter.#{_id}", ttEnter
 
     host.lifeCycle().on 'drawChart', draw
+    host.lifeCycle().on 'brushDraw', brush
 
 
     attrs.$observe 'padding', (val) ->
@@ -104,6 +129,11 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig)->
             config.outerPadding = values[1]/100
       _scaleList.y.rangePadding(config)
       host.lifeCycle().update()
-  }
 
-#TODO implement external brushing optimizations
+    attrs.$observe 'labels', (val) ->
+      if val is 'false'
+        host.showDataLabels(false)
+      else if val is 'true' or val is ""
+        host.showDataLabels('x')
+      host.lifeCycle().update()
+  }

@@ -35,7 +35,7 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig)->
     draw = (data, options, x, y, color) ->
 
       if not columns
-        columns = @selectAll('.wk-chart-columns')
+        columns = @selectAll('.wk-chart-column')
       #$log.log "rendering stacked-bar"
 
       barPadding = x.scale().rangeBand() / (1 - config.padding) * config.padding
@@ -48,9 +48,10 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig)->
 
       columns = columns.data(layout, (d) -> d.key)
 
-      enter = columns.enter().append('g').attr('class','wk-chart-columns wk-chart-selectable')
+      enter = columns.enter().append('g').attr('class','wk-chart-column')
         .attr('transform', (d,i) -> "translate(#{if initial then d.x else _merge.addedPred(d).x  + _merge.addedPred(d).width + if i then barPaddingOld / 2 else barOuterPaddingOld},#{d.y}) scale(#{if initial then 1 else 0},1)")
       enter.append('rect')
+        .attr('class', 'wk-chart-rect wk-chart-selectable')
         .attr('height', (d) -> d.height)
         .attr('width', (d) -> d.width)
         .style('fill',(d) -> d.color)
@@ -72,7 +73,8 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig)->
       columns.select('text')
         .text((d) -> y.formattedValue(d.data))
         .transition().duration(options.duration)
-        .style('opacity', if host.showLabels() then 1 else 0)
+          .attr('x', (d) -> d.width / 2)
+          .style('opacity', if host.showDataLabels() then 1 else 0)
 
       columns.exit().transition().duration(options.duration)
         .attr('transform', (d) -> "translate(#{_merge.deletedSucc(d).x - barPadding / 2},#{d.y}) scale(0,1)")
@@ -81,6 +83,14 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig)->
       initial = false
       barPaddingOld = barPadding
       barOuterPaddingOld = barOuterPadding
+
+    brush = (axis, idxRange) ->
+      columns
+        .attr('transform',(d) -> "translate(#{if (x = axis.scale()(d.key)) >= 0 then x else -1000}, #{d.y})")
+        .selectAll('.wk-chart-rect')
+        .attr('width', (d) -> axis.scale().rangeBand())
+      columns.selectAll('text')
+          .attr('x',axis.scale().rangeBand() / 2)
 
     #--- Configuration and registration ------------------------------------------------------------------------------
 
@@ -93,6 +103,7 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig)->
       _tooltip.on "enter.#{_id}", ttEnter
 
     host.lifeCycle().on 'drawChart', draw
+    host.lifeCycle().on 'brushDraw', brush
 
     attrs.$observe 'padding', (val) ->
       if val is 'false'
@@ -114,11 +125,9 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig)->
 
     attrs.$observe 'labels', (val) ->
       if val is 'false'
-        host.showLabels(false)
+        host.showDataLabels(false)
       else if val is 'true' or val is ""
-        host.showLabels(true)
+        host.showDataLabels('y')
       host.lifeCycle().update()
 
   }
-
-#TODO implement external brushing optimizations

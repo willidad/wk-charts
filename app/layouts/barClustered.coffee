@@ -11,6 +11,7 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig)->
       _id = "clusteredBar#{clusteredBarCntr++}"
 
       layers = null
+      clusterY = undefined
 
       _merge = utils.mergeData().key((d) -> d.key)
       _mergeLayers = utils.mergeData().key((d) -> d.layerKey)
@@ -105,6 +106,15 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig)->
         barPaddingOld = barPadding
         barOuterPaddingOld = barOuterPadding
 
+      drawBrush = (axis, idxRange) ->
+        clusterY.rangeBands([0,axis.scale().rangeBand()], 0, 0)
+        height = clusterY.rangeBand()
+        layers
+          .attr('transform',(d) -> "translate(0, #{if (y = axis.scale()(d.key)) >= 0 then y else -1000})")
+          .selectAll('.wk-chart-bar')
+            .attr('height', height)
+            .attr('y', (d) -> clusterY(d.layerKey))
+
       #-------------------------------------------------------------------------------------------------------------------
 
       host.lifeCycle().on 'configure', ->
@@ -116,7 +126,7 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig)->
         _tooltip.on "enter.#{_id}", ttEnter
 
       host.lifeCycle().on 'drawChart', draw
-      host.lifeCycle().on 'brushDraw', draw
+      host.lifeCycle().on 'brushDraw', drawBrush
 
 
       attrs.$observe 'padding', (val) ->
@@ -138,4 +148,3 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig)->
         host.lifeCycle().update()
   }
 
-#TODO implement external brushing optimizations

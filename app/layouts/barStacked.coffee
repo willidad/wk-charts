@@ -115,6 +115,12 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig) ->
         barPaddingOld = barPadding
         barOuterPaddingOld = barOuterPadding
 
+      drawBrush = (axis, idxRange) ->
+        layers
+          .attr('transform',(d) -> "translate(0, #{if (x = axis.scale()(d.key)) >= 0 then x else -1000})")
+          .selectAll('.wk-chart-bar')
+            .attr('height', (d) -> axis.scale().rangeBand())
+
       #-----------------------------------------------------------------------------------------------------------------
 
 
@@ -128,7 +134,7 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig) ->
         _tooltip.on "enter.#{_id}", ttEnter
 
       host.lifeCycle().on 'drawChart', draw
-      host.lifeCycle().on 'brushDraw', draw
+      host.lifeCycle().on 'brushDraw', drawBrush
 
 
       attrs.$observe 'padding', (val) ->
@@ -149,5 +155,3 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig) ->
         _scaleList.y.rangePadding(config)
         host.lifeCycle().update()
   }
-
-#TODO implement external brushing optimizations
