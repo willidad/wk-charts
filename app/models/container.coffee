@@ -105,9 +105,18 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
 
       return area.node().getBBox().height
 
+    measureText = (textList, container, textClasses) ->
+      measureContainer = container.append('g')
+      for t in textList
+        measureContainer.append('text').attr('class':textClasses).text(t)
+
+      bounds = measureContainer.node().getBBox()
+      measureContainer.remove()
+      return bounds
+
     getAxisRect = (dim) ->
       axis = _container.append('g')
-      dim.scale().range([0,500])
+      dim.range([0,500])
       axis.call(dim.axis())
 
       if dim.rotateTickLabels()
@@ -201,6 +210,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
         for k, s of l.scales().allKinds()
           if s.showAxis()
             s.axis().scale(s.scale()).orient(s.axisOrient())  # ensure the axis works on the right scale
+            axis = _container.select(".wk-chart-axis.wk-chart-#{s.axisOrient()}")
             axisRect[s.axisOrient()] = getAxisRect(s)
             #--- draw label ---
             label = _container.select(".wk-chart-label.wk-chart-#{s.axisOrient()}")
