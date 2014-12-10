@@ -1,4 +1,4 @@
-angular.module('wk.chart').directive 'column', ($log, utils, barConfig)->
+angular.module('wk.chart').directive 'column', ($log, utils, barConfig, wkChartMargins)->
   sBarCntr = 0
   return {
   restrict: 'A'
@@ -61,9 +61,9 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig)->
       enter.append('text')
         .attr('class', 'wk-chart-data-label')
         .attr('x', (d) -> d.width / 2)
-        .attr('y', -20)
-        .attr({dy: '1em', 'text-anchor':'middle'})
-        .style({'font-size':'1.3em', opacity: 0})
+        .attr('y', - wkChartMargins.dataLabelPadding.vert)
+        .attr({'text-anchor':'middle'})
+        .style({opacity: 0})
 
       columns.transition().duration(options.duration)
         .attr("transform", (d) -> "translate(#{d.x}, #{d.y}) scale(1,1)")

@@ -8,7 +8,7 @@ angular.module('wk.chart').constant 'd3OrdinalScales', [
   'category20c'
 ]
 
-angular.module('wk.chart').constant 'd3ChartMargins', {
+angular.module('wk.chart').constant 'wkChartMargins', {
   top: 10
   left: 50
   bottom: 40
@@ -31,6 +31,10 @@ angular.module('wk.chart').constant 'd3ChartMargins', {
     bottom:18
     left:20
     right:20
+  dataLabelPadding: {
+    hor:5
+    vert:5
+  }
 }
 
 angular.module('wk.chart').constant 'd3Shapes', [

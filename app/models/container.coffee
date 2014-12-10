@@ -1,4 +1,4 @@
-angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, scaleList, axisConfig, d3Animation, behavior) ->
+angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, scaleList, axisConfig, d3Animation, behavior) ->
 
   containerCnt = 0
 
@@ -19,7 +19,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
     _spacedContainer = undefined
     _chartArea = undefined
     _chartArea = undefined
-    _margin = angular.copy(d3ChartMargins.default)
+    _margin = angular.copy(wkChartMargins.default)
     _innerWidth = 0
     _innerHeight = 0
     _titleHeight = 0
@@ -38,8 +38,8 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
       else
         _chart = chart
         # register to lifecycle events
-        #_chart.lifeCycle().on "sizeContainer.#{me.id()}", me.sizeContainer
-        _chart.lifeCycle().on "drawAxis.#{me.id()}", me.drawChartFrame
+        _chart.lifeCycle().on "sizeContainer.#{me.id()}", me.drawChartFrame
+        #_chart.lifeCycle().on "drawAxis.#{me.id()}", me.drawChartFrame
         return me
 
     me.element = (elem) ->
@@ -194,7 +194,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
 
     #--- chart frame (title, axis, grid) -------------------------------------------------------------------------------
 
-    me.drawChartFrame = (notAnimated) ->
+    me.drawChartFrame = (data, notAnimated) ->
       bounds = _elementSelection.node().getBoundingClientRect()
       _duration = if notAnimated then 0 else me.chart().animationDuration()
       _height = bounds.height
@@ -205,8 +205,11 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
 
       axisRect = {top:{height:0, width:0},bottom:{height:0, width:0},left:{height:0, width:0},right:{height:0, width:0}}
       labelHeight = {top:0 ,bottom:0, left:0, right:0}
+      dataLabelRect = {width:0, height:0}
 
       for l in _layouts
+        dataLabelHeight = dataLabelWidth = 0
+
         for k, s of l.scales().allKinds()
           if s.showAxis()
             s.axis().scale(s.scale()).orient(s.axisOrient())  # ensure the axis works on the right scale
@@ -224,10 +227,19 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
             _removeAxis(s.axisOrientOld())
             _removeLabel(s.axisOrientOld())
 
+          # calculate space required for data labels
 
+
+
+          if l.showDataLabels() is k
+            if s.isHorizontal()
+              dataLabelWidth = wkChartMargins.dataLabelPadding.hor + measureText(s.formattedValue(data), _container, 'wk-chart-data-label').width
+            else
+              dataLabelHeight = wkChartMargins.dataLabelPadding.vert + measureText(s.formattedValue(data), _container, 'wk-chart-data-label').height
 
       #--- compute size of the drawing area  ---------------------------------------------------------------------------
       _frameHeight = titleAreaHeight + axisRect.top.height + labelHeight.top + axisRect.bottom.height + labelHeight.bottom + _margin.top + _margin.bottom
+
       _frameWidth = axisRect.right.width + labelHeight.right + axisRect.left.width + labelHeight.left + _margin.left + _margin.right
 
       if _frameHeight < _height
@@ -246,12 +258,12 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
         for k, s of l.scales().allKinds()
           if k is 'x' or k is 'rangeX'
             if l.showDataLabels() is 'x'
-              s.range([0, _innerWidth - 50]) #TODO compute space requirement from font size
+              s.range([0, _innerWidth - dataLabelWidth])
             else
               s.range([0, _innerWidth])
           else if k is 'y' or k is 'rangeY'
             if l.showDataLabels() is 'y'
-              s.range([_innerHeight, 20]) #TODO compute space requirement from font size
+              s.range([_innerHeight, dataLabelHeight])
             else
               s.range([_innerHeight, 0])
           if s.showAxis()

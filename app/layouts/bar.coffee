@@ -1,4 +1,4 @@
-angular.module('wk.chart').directive 'bars', ($log, utils, barConfig)->
+angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, wkChartMargins)->
   sBarCntr = 0
   return {
   restrict: 'A'
@@ -58,10 +58,11 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig)->
         .call(_tooltip.tooltip)
         .call(_selected)
       enter.append('text')
+        .attr('class':'wk-chart-data-label')
         .attr('y', (d) -> d.height / 2 )
-        .attr('x', (d) -> d.x + 10)
+        .attr('x', (d) -> d.x + wkChartMargins.dataLabelPadding.hor)
         .attr({dy: '0.35em', 'text-anchor':'start'})
-        .style({'font-size':'1.3em', opacity: 0})
+        .style({opacity: 0})
 
       bars.transition().duration(options.duration)
         .attr('transform', (d) -> "translate(0, #{d.y}) scale(1,1)")
@@ -72,11 +73,10 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig)->
           .attr('width', (d) -> Math.abs(x.scale()(0) - d.x))
           .style('opacity', 1)
       bars.select('text')
-        .attr('class', 'wk-chart-data-label')
         .text((d) -> x.formattedValue(d.data))
         .transition().duration(options.duration)
           .attr('y', (d) -> d.height / 2)
-          .attr('x', (d) -> d.x + 10)
+          .attr('x', (d) -> d.x + wkChartMargins.dataLabelPadding.hor)
           .style('opacity', if host.showDataLabels() then 1 else 0)
 
 

@@ -139,4 +139,8 @@ li.wk-chart-legend-shapeItem span {
     stroke: lightgrey;
 }
 
+.wk-chart-data-label {
+    font-size: 1.3em;
+}
+
 /*# sourceMappingURL=app.css.map*/

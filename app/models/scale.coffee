@@ -345,7 +345,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
       if _.isArray(data) then data.map((d) -> parsedValue(d[_upperProperty])) else parsedValue(data[_upperProperty])
 
     me.formattedValue = (data) ->
-      me.formatValue(me.value(data))
+      if _.isArray(data) then data.map((d) -> me.formatValue(me.value(d))) else me.formatValue(me.value(data))
 
     me.formatValue = (val) ->
       if _outputFormatString and val and  (val.getUTCDate or not isNaN(val))
