@@ -107,15 +107,13 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
 
     getAxisRect = (dim) ->
       axis = _container.append('g')
-      dim.scale().range([0,100])
+      dim.scale().range([0,500])
       axis.call(dim.axis())
-
-
 
       if dim.rotateTickLabels()
         axis.selectAll("text")
-        .attr({dy:'-0.71em', x:-9})
-        .attr('transform',"translate(0,9) rotate(#{dim.rotateTickLabels()})")
+        .attr({dy:'0.35em'})
+        .attr('transform',"rotate(#{dim.rotateTickLabels()}, 0, #{if dim.axisOrient() is 'bottom' then 10 else -10})")
         .style('text-anchor', if dim.axisOrient() is 'bottom' then 'end' else 'start')
 
       box = axis.node().getBBox()
@@ -131,8 +129,8 @@ angular.module('wk.chart').factory 'container', ($log, $window, d3ChartMargins, 
 
       if dim.rotateTickLabels()
         axis.selectAll(".wk-chart-#{dim.axisOrient()}.wk-chart-axis text")
-          .attr({dy:'-0.71em', x:-9})
-          .attr('transform',"translate(0,9) rotate(#{dim.rotateTickLabels()})")
+          .attr({dy:'0.35em'})
+          .attr('transform',"rotate(#{dim.rotateTickLabels()}, 0, #{if dim.axisOrient() is 'bottom' then 10 else -10})")
           .style('text-anchor', if dim.axisOrient() is 'bottom' then 'end' else 'start')
       else
         axis.selectAll(".wk-chart-#{dim.axisOrient()}.wk-chart-axis text").attr('transform', null)
