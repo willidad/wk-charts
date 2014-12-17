@@ -1,3 +1,15 @@
+###*
+  @ngdoc dimension
+  @name size
+  @module wk.chart
+  @restrict E
+  @description
+
+  describes how the chart data is translated into the size of chart objects
+
+
+###
+
 angular.module('wk.chart').directive 'size', ($log, scale, scaleUtils) ->
   scaleCnt = 0
   return {

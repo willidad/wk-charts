@@ -1,3 +1,16 @@
+###*
+  @ngdoc dimension
+  @name y
+  @module wk.chart
+  @restrict E
+  @description
+
+  This dimension defined the vertical axis of the chart
+
+  @param {string} axis
+  Define if a vertical axis should be displayed Possible values:
+
+###
 angular.module('wk.chart').directive 'y', ($log, scale, legend, scaleUtils) ->
   scaleCnt = 0
   return {

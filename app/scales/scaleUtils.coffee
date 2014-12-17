@@ -1,3 +1,5 @@
+
+
 angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
 
   parseList = (val) ->
@@ -9,6 +11,26 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
   return {
 
     observeSharedAttributes: (attrs, me) ->
+      ###*
+        @ngdoc sharedParams
+        @module wk.chart.shared
+        @name generic
+        @param type{expression}
+        @param exponent{expression}
+        @param property{expression}
+        @param layerProperty{expression}
+        @param range{expression}
+        @param dateFormat{expression}
+        @param domain{expression}
+        @param domainRange{expression}
+        @param label{expression}
+        @param format{expression}
+        @paramUse dimension
+
+        @description
+        Generic dimension attributes. All attributes are optional
+
+      ###
       attrs.$observe 'type', (val) ->
         if val isnt undefined
           if d3.scale.hasOwnProperty(val) or val is 'time' or wkChartScales.hasOwnProperty(val)
@@ -69,6 +91,17 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
     #-------------------------------------------------------------------------------------------------------------------
 
     observeAxisAttributes: (attrs, me, scope) ->
+      ###*
+        @ngdoc sharedParams
+        @module wk.chart.shared
+        @name axis
+        @param tickForamt{expression}
+        @param grid{expression}
+        @param showLabel{expression}
+        @param axisFormatters{expression}
+        @paramUse dimension.x, dimension.y
+
+      ###
 
       attrs.$observe 'tickFormat', (val) ->
         if val isnt undefined
@@ -103,6 +136,16 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
     #-------------------------------------------------------------------------------------------------------------------
 
     observeLegendAttributes: (attrs, me, layout) ->
+      ###*
+        @ngdoc sharedParams
+        @module wk.chart.shared
+        @name legend
+        @param legend{expression}
+        @param valuesLegend{expression}
+        @param legendTitle{expression}
+        @paramUse dimension
+
+      ###
 
       attrs.$observe 'legend', (val) ->
         if val isnt undefined
@@ -159,6 +202,15 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
     #--- Observe Range attributes --------------------------------------------------------------------------------------
 
     observerRangeAttributes: (attrs, me) ->
+      ###*
+        @ngdoc sharedParams
+        @module wk.chart.shared
+        @name range
+        @param lowerProperty{expression}
+        @param upperProperty{expression}
+        @paramUse dimension.rangeX, dimension.rangeY
+      ###
+
       attrs.$observe 'lowerProperty', (val) ->
         null
         me.lowerProperty(parseList(val)).update()

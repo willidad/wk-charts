@@ -1,13 +1,35 @@
+
+###*
+  @ngdoc module
+  @name wk.chart
+  @module wk.chart
+  @description
+  wk-charts module - beautiful charts defined through HTML markup, based on AngularJs
+  -----------------------------------------------------------------------------------
+
+  ** wide range of charts
+  ** nicely animated
+  ** implemented as AngularJs Directives  -> defined as markup
+  ** Angular data binding for data an chart attributes
+###
 angular.module('wk.chart', [])
 
+
+
+###*
+   lists the ordinal scale objects,
+ ###
 angular.module('wk.chart').constant 'd3OrdinalScales', [
-  'ordinal'
-  'category10'
-  'category20'
-  'category20b'
-  'category20c'
+    'ordinal'
+    'category10'
+    'category20'
+    'category20b'
+    'category20c'
 ]
 
+###*
+  Sets the default margins and paddings for the chart layout
+###
 angular.module('wk.chart').constant 'wkChartMargins', {
   top: 10
   left: 50

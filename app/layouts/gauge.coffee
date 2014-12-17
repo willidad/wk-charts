@@ -1,3 +1,20 @@
+###*
+  @ngdoc layout
+  @name gauge
+  @module wk.chart
+  @restrict A
+  @area api
+  @description
+
+  draws a area chart layout
+
+  @requires x
+  @requires y
+  @requires color
+  @requires layout
+
+
+###
 angular.module('wk.chart').directive 'gauge', ($log, utils) ->
   return {
     restrict: 'A'

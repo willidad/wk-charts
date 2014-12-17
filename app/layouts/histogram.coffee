@@ -1,3 +1,20 @@
+###*
+  @ngdoc layout
+  @name histogram
+  @module wk.chart
+  @restrict A
+  @area api
+  @description
+
+  draws a area chart layout
+
+  @requires rangeX
+  @requires rangeY
+  @requires color
+  @requires layout
+
+
+###
 angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils, wkChartMargins) ->
 
   sHistoCntr = 0

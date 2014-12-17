@@ -1,3 +1,14 @@
+###*
+  @ngdoc behavior
+  @name brushed
+  @module wk.chart
+  @restrict A
+  @description
+
+  enables an axis to be scaled by a named brush in a different layout
+
+
+###
 angular.module('wk.chart').directive 'brushed', ($log,selectionSharing, timing) ->
   sBrushCnt = 0
   return {

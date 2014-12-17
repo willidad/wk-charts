@@ -1,3 +1,14 @@
+###*
+  @ngdoc dimension
+  @name color
+  @module wk.chart
+  @restrict E
+  @description
+
+  describes how the chart data is translated into colors for chart objects
+
+
+###
 angular.module('wk.chart').directive 'color', ($log, scale, legend, scaleUtils) ->
   scaleCnt = 0
   return {

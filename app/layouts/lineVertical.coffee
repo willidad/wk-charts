@@ -1,3 +1,20 @@
+###*
+  @ngdoc layout
+  @name lineVertical
+  @module wk.chart
+  @restrict A
+  @area api
+  @description
+
+  draws a area chart layout
+
+  @requires x
+  @requires y
+  @requires color
+  @requires layout
+
+
+###
 angular.module('wk.chart').directive 'lineVertical', ($log, utils) ->
   lineCntr = 0
   return {

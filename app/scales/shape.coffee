@@ -1,3 +1,15 @@
+###*
+  @ngdoc dimension
+  @name shape
+  @module wk.chart
+  @restrict E
+  @description
+
+  describes how the chart data is translated into shape objects in teh chart
+
+
+###
+
 angular.module('wk.chart').directive 'shape', ($log, scale, d3Shapes, scaleUtils) ->
   scaleCnt = 0
   return {

@@ -1,3 +1,19 @@
+###*
+  @ngdoc container
+  @name chart
+  @module wk.chart
+  @restrict E
+  @description
+
+  chart is the container directive for all charts.
+  @param {array} data - Data to be graphed, {@link content/data ...more}
+  @param {boolean} [deep-watch=false]
+  @param {string} [filter] - filters the data using the angular filter function
+  @param {string} [tooltip] - Show tooltip
+  @param {string} [title] - The chart title
+  @param {string} [subtitle] - The chart subtitle
+  @param {number} [animation-duration=300] - animation duration in milliseconds
+###
 angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
   chartCnt = 0
   return {

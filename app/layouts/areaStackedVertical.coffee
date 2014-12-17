@@ -1,3 +1,20 @@
+###*
+  @ngdoc layout
+  @name areaStackedVertical
+  @module wk.chart
+  @restrict A
+  @area api
+  @description
+
+  draws a area chart layout
+
+  @requires x
+  @requires y
+  @requires color
+  @requires layout
+
+
+###
 angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils) ->
   areaStackedVertCntr = 0
   return {

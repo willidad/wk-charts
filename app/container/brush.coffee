@@ -1,3 +1,16 @@
+###*
+  @ngdoc behavior
+  @name brush
+  @module wk.chart
+  @restrict A
+  @element layout, x, y, rangeX, rangeY
+  @description
+
+  enable brushing behavior
+
+
+
+###
 angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior) ->
   return {
     restrict: 'A'

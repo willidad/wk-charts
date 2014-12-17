@@ -1,3 +1,20 @@
+###*
+  @ngdoc layout
+  @name geoMap
+  @module wk.chart
+  @restrict A
+  @area api
+  @description
+
+  draws a area chart layout
+
+  @requires x
+  @requires y
+  @requires color
+  @requires layout
+
+
+###
 angular.module('wk.chart').directive 'geoMap', ($log, utils) ->
   mapCntr = 0
 

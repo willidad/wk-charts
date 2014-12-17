@@ -1,3 +1,22 @@
+###*
+  @ngdoc layout
+  @name scatter
+  @module wk.chart
+  @restrict A
+  @area api
+  @description
+
+  draws a area chart layout
+
+  @requires x
+  @requires y
+  @requires color
+  @requires size
+  @requires shape
+  @requires layout
+
+
+###
 angular.module('wk.chart').directive 'scatter', ($log, utils) ->
   scatterCnt = 0
   return {

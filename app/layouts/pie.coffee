@@ -1,3 +1,19 @@
+###*
+  @ngdoc layout
+  @name pie
+  @module wk.chart
+  @restrict A
+  @area api
+  @description
+
+  draws a area chart layout
+
+  @requires size
+  @requires color
+  @requires layout
+
+
+###
 angular.module('wk.chart').directive 'pie', ($log, utils) ->
   pieCntr = 0
 

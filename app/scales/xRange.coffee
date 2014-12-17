@@ -1,3 +1,14 @@
+###*
+  @ngdoc dimension
+  @name rangeX
+  @module wk.chart
+  @restrict E
+  @description
+
+  describes how the chart data is translated into horizontal ranges for the chart objects
+
+
+###
 angular.module('wk.chart').directive 'rangeX', ($log, scale, scaleUtils) ->
   scaleCnt = 0
   return {

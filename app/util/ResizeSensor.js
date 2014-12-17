@@ -3,7 +3,7 @@
  * directory of this distribution and at
  * https://github.com/marcj/css-element-queries/blob/master/LICENSE.
  */
-;
+
 (function() {
     /**
      * Class for dimension change detection.
@@ -124,4 +124,4 @@
             attachResizeEvent(element, callback);
         }
     }
-})();
+})()

@@ -1,3 +1,13 @@
+###*
+  @ngdoc container
+  @name layout
+  @module wk.chart
+  @restrict E
+  @requires chart
+  @description
+
+  Layout is the container for the layout directives. It requires chart as a parent.
+###
 angular.module('wk.chart').directive 'layout', ($log, layout, container) ->
   layoutCnt = 0
   return {
