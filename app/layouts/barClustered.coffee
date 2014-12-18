@@ -8,10 +8,9 @@
 
   draws a area chart layout
 
-  @requires x
-  @requires y
-  @requires color
-  @requires layout
+  @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
+  @usesDimension y [type=linear, domainRange=extent]
+  @usesDimension color [type=category20]
 
 
 ###
@@ -145,7 +144,11 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig)->
       host.lifeCycle().on 'drawChart', draw
       host.lifeCycle().on 'brushDraw', drawBrush
 
-
+      ###*
+          @ngdoc attr
+          @name barClustered#padding
+          @param padding {expression}
+      ###
       attrs.$observe 'padding', (val) ->
         if val is 'false'
           config.padding = 0

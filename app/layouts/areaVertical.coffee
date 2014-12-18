@@ -8,10 +8,9 @@
 
   draws a area chart layout
 
-  @requires x
-  @requires y
-  @requires color
-  @requires layout
+  @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
+  @usesDimension y [type=linear, domainRange=extent]
+  @usesDimension color [type=category20]
 
 
 ###

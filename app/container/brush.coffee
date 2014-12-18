@@ -3,13 +3,9 @@
   @name brush
   @module wk.chart
   @restrict A
-  @element layout, x, y, rangeX, rangeY
   @description
 
   enable brushing behavior
-
-
-
 ###
 angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior) ->
   return {
@@ -58,7 +54,11 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       layout.lifeCycle().on 'drawChart.brush', (data) ->
         brush.data(data)
 
-
+      ###*
+        @ngdoc attr
+        @name brush#brush
+        @param brush {string} Brush name
+      ###
       attrs.$observe 'brush', (val) ->
         if _.isString(val) and val.length > 0
           brush.brushGroup(val)

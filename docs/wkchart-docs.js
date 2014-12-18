@@ -4,7 +4,7 @@ var Package = require('dgeni').Package;
 module.exports = new Package('dgeniDocsPackage', [
     require('dgeni-packages/ngdoc'),
     require('dgeni-packages/jsdoc'),
-    require('./wkChart'),
+    require('./package'),
     require('dgeni-packages/nunjucks')
 ])
 
@@ -49,7 +49,7 @@ module.exports = new Package('dgeniDocsPackage', [
             outputPathTemplate: 'partials/${docType}/${name}.html'
         })
         computeIdsProcessor.idTemplates.push({
-            docTypes: ['dimension', 'container', 'behavior', 'layout', 'content'],
+            docTypes: ['dimension', 'container', 'behavior', 'layout', 'attrs'],
             getId: function(doc) {
                 return doc.name;
             },

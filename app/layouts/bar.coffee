@@ -8,10 +8,9 @@
 
   draws a area chart layout
 
-  @requires x
-  @requires y
-  @requires color
-  @requires layout
+  @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
+  @usesDimension y [type=linear, domainRange=extent]
+  @usesDimension color [type=category20]
 
 
 ###
@@ -130,6 +129,11 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, wkChartMar
     host.lifeCycle().on 'brushDraw', brush
 
 
+    ###*
+        @ngdoc attr
+        @name bars#padding
+        @param padding {expression}
+    ###
     attrs.$observe 'padding', (val) ->
       if val is 'false'
         config.padding = 0
@@ -148,6 +152,11 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, wkChartMar
       _scaleList.y.rangePadding(config)
       host.lifeCycle().update()
 
+    ###*stackedAreaVertical
+        @ngdoc attr
+        @name bars#labels
+        @param labels {expression}
+    ###
     attrs.$observe 'labels', (val) ->
       if val is 'false'
         host.showDataLabels(false)

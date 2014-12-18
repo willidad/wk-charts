@@ -59,6 +59,33 @@
   {%- endif %}
   </div>
   {% endblock -%}
+  {%- if doc.usesDimension -%}
+      <table>
+        <thead>
+          <tr>
+            <td>Dimension</td><td>Attribute</td><td>Default</td><td>Remarks</td>
+          </tr>
+        </thead>
+        <tbody>
+          {%- for dim in doc.usesDimension -%}
+          <tr><td>{$ dim.paramName $}</td>
+            <td colspan="3">
+              <table>
+                <tbody>
+                  {%- for defVal in dim.defaults -%}
+                    <tr>
+                      <td>{$ defVal.param $}</td><td>{$ defVal.value $}</td><td>{$ defVal.description $}</td>
+                    </tr>
+                  {%- endfor -%}
+                </tbody>
+              </table>
+            </td>
+          </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
+
+  {%- endif -%}
 
   {%- if doc.animations %}
   <h2 id="animations">Animations</h2>

@@ -4,25 +4,14 @@
   @module wk.chart
   @restrict A
   @area api
-  @usage
-  ``<layout area> ...  </layout>``
-
-  or
-
-  ``<layout area="expression"> ... </layout>``
 
   @description
 
   draws a area chart layout
 
-  @requires x
-  @requires y
-  @requires color
-  @requires layout
-
-  @param area{expression} Possible Values: zero, silhouette, expand, wiggle
-
-
+  @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
+  @usesDimension y [type=linear, domainRange=extent]
+  @usesDimension color [type=category20]
 ###
 
 angular.module('wk.chart').directive 'area', ($log, utils) ->

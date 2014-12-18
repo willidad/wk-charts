@@ -8,11 +8,9 @@
 
   draws a area chart layout
 
-  @requires x
-  @requires y
-  @requires color
-  @requires layout
-
+  @usesDimension x [type=linear, domainRange=total] The horizontal dimension
+  @usesDimension y [type=linear, domainRange=extent]
+  @usesDimension color [type=category20]
 
 ###
 angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils) ->
@@ -169,6 +167,11 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils) ->
 
       #--- Property Observers ------------------------------------------------------------------------------------------
 
+      ###*
+          @ngdoc attr
+          @name areaStackedVertical#areaStackedVertical
+          @param [areaStackedVertical=zero] {expression}
+      ###
       attrs.$observe 'areaStackedVertical', (val) ->
         if val in ['zero', 'silhouette', 'expand', 'wiggle']
           offset = val
