@@ -1,4 +1,4 @@
-angular.module('wk.chart').factory 'legend', ($log, $compile, $rootScope, $templateCache, templateDir) ->
+angular.module('wk.chart').factory 'legend', ($log, $compile, $rootScope, $templateCache, wkChartTemplates) ->
 
   legendCnt = 0
 
@@ -115,11 +115,11 @@ angular.module('wk.chart').factory 'legend', ($log, $compile, $rootScope, $templ
         _parsedTemplate.remove()
       return me
 
+    _parsedTemplate = $compile(wkChartTemplates.legendTemplate())(_legendScope)
+
     me.register = (layout) ->
       layout.lifeCycle().on "drawChart.#{_id}", me.draw
       return me
-
-    me.template(templateDir + 'legend.html')
 
     me.redraw = () ->
       if _data and _options

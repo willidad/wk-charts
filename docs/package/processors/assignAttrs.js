@@ -78,7 +78,7 @@ module.exports = function assignAttrsProcessor(log) {
             }
 
             function getDocByName (name) {
-                return _.find(docs, {name:name.trim()})
+                return _.find(docs, {name:name.trim(), area:'api'})
             }
         }
     }

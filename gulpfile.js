@@ -1,7 +1,6 @@
 var gulp = require('gulp');
 var Dgeni = require('dgeni');
 var del = require('del');
-var bower = require('bower');
 var runSequence = require('run-sequence');
 
 gulp.task('dgeni', function() {
@@ -14,30 +13,14 @@ gulp.task('dgeni', function() {
   }
 });
 
-gulp.task('bower', function() {
-  var bowerTask = bower.commands.install();
-  bowerTask.on('log', function (result) {
-    console.log('bower:', result.id, result.data.endpoint.name);
-  });
-  bowerTask.on('error', function(error) {
-    console.log(error);
-  });
-  return bowerTask;
-});
-
-gulp.task('assets', ['bower'], function() {
-  return gulp.src('bower_components/**/*')
-    .pipe(gulp.dest('build/lib'));
-});
-
 gulp.task('clean', function(done) {
   del(['./dist/docs'], done);
 });
 
 gulp.task('watch', ['default'], function() {
-  return gulp.watch(['docs/**/*', 'src/**/*'], ['default']);
+  return gulp.watch(['docs/**/*', 'dist/lib/**/*'], ['default']);
 });
 
 gulp.task('default', function(cb) {
-  runSequence('clean', ['dgeni', 'assets'], cb);
+  runSequence('clean', 'dgeni', cb);
 });

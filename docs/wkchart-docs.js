@@ -26,8 +26,8 @@ module.exports = new Package('dgeniDocsPackage', [
     .config(function(computePathsProcessor, computeIdsProcessor) {
         computePathsProcessor.pathTemplates.push({
             docTypes: ['provider', 'service', 'directive', 'input', 'object', 'function', 'filter', 'type' ],
-            pathTemplate: '/${area}/${module}/${docType}/${name}',
-            outputPathTemplate: '/${area}/${module}/${docType}/${name}.html'
+            pathTemplate: '/${docType}/${name}',
+            outputPathTemplate: '${docType}/${name}.html'
         });
         computePathsProcessor.pathTemplates.push({
             docTypes: ['module' ],
