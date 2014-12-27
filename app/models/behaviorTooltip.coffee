@@ -11,6 +11,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
     _areaSelection = undefined
     _area= undefined
     _container = undefined
+    _scales = undefined
     _markerScale = undefined
     _data = undefined
     _tooltipDispatch = d3.dispatch('enter', 'moveData', 'moveMarker', 'leave')
@@ -150,7 +151,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         return me #to enable chaining
 
     me.template = (path) ->
-      if arguments is 0 then return _path
+      if arguments.length is 0 then return _path
       else
         _path = path
         if _path.length > 0
@@ -191,6 +192,11 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       else
         _data = val
         return me #to enable chaining
+
+    me.scales = (val) ->
+      if arguments.length is 0 then return _scales
+      _scales = val
+      return me
 
     me.on = (name, callback) ->
       _tooltipDispatch.on name, callback

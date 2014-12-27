@@ -6,10 +6,9 @@
   @description
 
   chart is the container directive for all charts.
-  @param {array} data - Data to be graphed, {@link content/data ...more}
+  @param {array} data - Data to be graphed, {@link guide/data ...more}
   @param {boolean} [deep-watch=false]
   @param {string} [filter] - filters the data using the angular filter function
-  @param {string} [tooltip] - Show tooltip
   @param {string} [title] - The chart title
   @param {string} [subtitle] - The chart subtitle
   @param {number} [animation-duration=300] - animation duration in milliseconds
@@ -41,7 +40,7 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
 
       me.lifeCycle().on 'scopeApply', () ->
         scope.$apply()
-
+      ###
       attrs.$observe 'tooltips', (val) ->
         me.toolTipTemplate('')
         if val isnt undefined and (val is '' or val is 'true')
@@ -49,8 +48,8 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
         else if val.length > 0 and val isnt 'false'
           me.toolTipTemplate(val)
           me.showTooltip(true)
-        else showToolTip(false)
-
+        else me.showToolTip(false)
+      ###
       attrs.$observe 'animationDuration', (val) ->
         if val and _.isNumber(+val) and +val >= 0
           me.animationDuration(val)

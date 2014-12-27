@@ -8,6 +8,7 @@ module.exports = new Package('dgeni', ['jsdoc'])
   parseTagsProcessor.tagDefinitions = parseTagsProcessor.tagDefinitions.concat(
     getInjectables([
       require('./tags/usedBy'),
-      require('./tags/usesDimension')
+      require('./tags/usesDimension'),
+      require('./tags/values')
     ]));
 });

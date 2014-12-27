@@ -31,7 +31,7 @@ gulp.task('assets', ['bower'], function() {
 });
 
 gulp.task('clean', function(done) {
-  del(['./docs/build'], done);
+  del(['./dist/docs'], done);
 });
 
 gulp.task('watch', ['default'], function() {

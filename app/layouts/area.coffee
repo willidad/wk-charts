@@ -12,6 +12,7 @@
   @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
   @usesDimension y [type=linear, domainRange=extent]
   @usesDimension color [type=category20]
+  @example
 ###
 
 angular.module('wk.chart').directive 'area', ($log, utils) ->

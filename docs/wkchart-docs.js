@@ -13,11 +13,12 @@ module.exports = new Package('dgeniDocsPackage', [
         log.level = 'info';
 
         readFilesProcessor.basePath = path.resolve(__dirname, '..');
+
         readFilesProcessor.sourceFiles = [
             { include: 'dist/lib/**/*.js', basePath:'/'},
-            { include: 'docs/content/**/*.ngdoc', basePath:'/'}
+            { include: 'docs/guide/**/*.ngdoc', basePath:'/'}
         ];
-        writeFilesProcessor.outputFolder = 'docs/build';
+        writeFilesProcessor.outputFolder = 'dist/docs';
 
         templateFinder.templateFolders.unshift(path.resolve(__dirname, 'templates'));
         //templateFinder.templatePatterns.unshift('common.template.html');
@@ -26,28 +27,28 @@ module.exports = new Package('dgeniDocsPackage', [
         computePathsProcessor.pathTemplates.push({
             docTypes: ['provider', 'service', 'directive', 'input', 'object', 'function', 'filter', 'type' ],
             pathTemplate: '/${area}/${module}/${docType}/${name}',
-            outputPathTemplate: 'partials/${area}/${module}/${docType}/${name}.html'
+            outputPathTemplate: '/${area}/${module}/${docType}/${name}.html'
         });
         computePathsProcessor.pathTemplates.push({
             docTypes: ['module' ],
-            pathTemplate: '/${area}/${name}',
-            outputPathTemplate: 'partials/${area}/${name}/index.html'
+            pathTemplate: '/',
+            outputPathTemplate: 'index.html'
         });
         computePathsProcessor.pathTemplates.push({
             docTypes: ['componentGroup' ],
-            pathTemplate: '/${area}/${moduleName}/${groupType}',
-            outputPathTemplate: 'partials/${area}/${moduleName}/${groupType}/index.html'
-        })
+            pathTemplate: '/${groupType}',
+            outputPathTemplate: '${groupType}/index.html'
+        });
         computePathsProcessor.pathTemplates.push({
             docTypes: ['dimension', 'container', 'behavior', 'layout'],
             pathTemplate: '/${docType}/${name}',
-            outputPathTemplate: 'partials/${docType}/${name}.html'
-        })
+            outputPathTemplate: '${docType}/${name}.html'
+        });
         computePathsProcessor.pathTemplates.push({
-            docTypes: ['content', 'sharedParams'],
+            docTypes: ['guide'],
             pathTemplate: '/${docType}/${name}',
-            outputPathTemplate: 'partials/${docType}/${name}.html'
-        })
+            outputPathTemplate: '${docType}/${name}.html'
+        });
         computeIdsProcessor.idTemplates.push({
             docTypes: ['dimension', 'container', 'behavior', 'layout', 'attrs'],
             getId: function(doc) {
@@ -56,7 +57,7 @@ module.exports = new Package('dgeniDocsPackage', [
             getAliases: function(doc) { return [doc.id]; }
         });
         computeIdsProcessor.idTemplates.push({
-            docTypes: ['content', 'sharedParams'],
+            docTypes: ['guide'],
             getId: function(doc) {
                 return doc.docType + '/' + doc.name;
             },

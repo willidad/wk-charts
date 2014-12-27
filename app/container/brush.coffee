@@ -57,7 +57,9 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       ###*
         @ngdoc attr
         @name brush#brush
+        @values none
         @param brush {string} Brush name
+        Brush will be published under this name for consumption by other layouts
       ###
       attrs.$observe 'brush', (val) ->
         if _.isString(val) and val.length > 0

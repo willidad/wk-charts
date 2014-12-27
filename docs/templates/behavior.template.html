@@ -1,4 +1,4 @@
-{% include "lib/macros.html" -%}
+{% include "macros.html" -%}
 {% extends "api/api.template.html" %}
 
 {% block additional %}
@@ -66,6 +66,6 @@
   {$ 'module:ngAnimate.$animate' | link('Click here', doc) $} to learn more about the steps involved in the animation.
   {%- endif -%}
 
-  {% include "lib/params.template.html" %}
+  {% include "params.template.html" %}
   {% include "lib/events.template.html" %}
 {% endblock %}

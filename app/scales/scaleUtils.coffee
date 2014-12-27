@@ -13,7 +13,8 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
         @ngdoc attr
         @name type
         @usedBy dimension
-        @param type{expression}
+        @param [type=layout specific - see layout docs] {scale}
+        Defines the d3 scale applied to transform the input data to a dimensions display value. All d3 scales are supported, as well as wk-chart specific extensions described here. #TODO insert correct links
       ###
       attrs.$observe 'type', (val) ->
         if val isnt undefined
@@ -29,17 +30,20 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
         @ngdoc attr
         @name exponent
         @usedBy dimension
-        @param exponent{expression}
+        @param [exponent] {number}
+        This attribute is only evaluated with pow and log scale types - defines the exponent for the d3 pow and log scale #TODO insert correct links
       ###
       attrs.$observe 'exponent', (val) ->
         if me.scaleType() is 'pow' and _.isNumber(+val)
-         me.exponent(+val).update()
+          me.exponent(+val).update()
 
       ###*
         @ngdoc attr
         @name property
         @usedBy dimension
         @param property{expression}
+          the input data property (properties) used to compute this dimension. In case the charts supports a the data layer dimension this attribute can be a list of data properties.
+          In this case the property field can be omitted, for non-layer dimension it is required.
       ###
       attrs.$observe 'property', (val) ->
         me.property(parseList(val)).update()
@@ -48,9 +52,10 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
         @ngdoc attr
         @name layerProperty
         @usedBy dimension
-        @param layerProperty{expression}
+        @param [layerProperty] {expression}
+        defines the container object for property in case the data is a hierachical structure. See (#todo define link)
+         for more detail
       ###
-
       attrs.$observe 'layerProperty', (val) ->
         if val and val.length > 0
           me.layerProperty(val).update()
@@ -59,21 +64,24 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
         @ngdoc attr
         @name range
         @usedBy dimension
-        @param range{expression}
+        @param [range] {expression}
+        The scale types range attribute. For x and y scales the range is set to the pixel width and height of the drawing container, for category... scales the range is set to the scales color range
       ###
       attrs.$observe 'range', (val) ->
-       range = parseList(val)
-       if Array.isArray(range)
-         me.range(range).update()
+        range = parseList(val)
+        if Array.isArray(range)
+          me.range(range).update()
 
       ###*
         @ngdoc attr
         @name dateFormat
         @usedBy dimension
-        @param dateFormat{expression}
+        @param [dateFormat] {expression}
+        applies to Time scale type only. Describes the date display format of the property field content. can be omitted if the field is already a javascript Date object, otherwise the format is used to transform
+        the property values into a Javascript Date object.Date Format is described using d3's [Time Format](https://github.com/mbostock/d3/wiki/Time-Formatting#format)
       ###
       attrs.$observe 'dateFormat', (val) ->
-       if val
+        if val
          if me.scaleType() is 'time'
            me.dataFormat(val).update()
 
@@ -81,118 +89,129 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
         @ngdoc attr
         @name domain
         @usedBy dimension
-        @param domain{expression}
+        @param [domain] {expression}
+        the scale types domain property. Meaning and acceptable values for domain depend on teh scale type, thus please see (TODO: define link)
+        for further explanation
       ###
       attrs.$observe 'domain', (val) ->
-       if val
-         $log.info 'domain', val
-         parsedList = parseList(val)
-         if Array.isArray(parsedList)
-           me.domain(parsedList).update()
-         else
-           $log.error "domain: must be array, or comma-separated list, got", val
-       else
-           me.domain(undefined).update()
+        if val
+          $log.info 'domain', val
+          parsedList = parseList(val)
+          if Array.isArray(parsedList)
+            me.domain(parsedList).update()
+          else
+            $log.error "domain: must be array, or comma-separated list, got", val
+        else
+            me.domain(undefined).update()
       ###*
         @ngdoc attr
         @name domainRange
         @usedBy dimension
-        @param domainRange{expression}
+        @param [domainRange] {expression}
+        Certain scale type and dimensions require a calculation of the data range to perform the correct mapping onto the scale output.domainRange defined the rule to be used to calculate this. Possible values are:
+        min: [0 .. minimum data value]
+        max: [0 .. maximum data value]
+        extent: [minimum data value .. maximum data value]
+        total: applies only layer dimensions, calculates as 0 ..  maximum of the layer value totals]
       ###
       attrs.$observe 'domainRange', (val) ->
-       if val
-         me.domainCalc(val).update()
+        if val
+          me.domainCalc(val).update()
 
       ###*
         @ngdoc attr
         @name label
         @usedBy dimension
-        @param label{expression}
+        @param [label] {expression}
+        defined the dimensions label text. If not specified, the value of teh 'property' attribute is used
       ###
       attrs.$observe 'label', (val) ->
-       if val isnt undefined
-         me.axisLabel(val).updateAttrs()
+        if val isnt undefined
+          me.axisLabel(val).updateAttrs()
 
       ###*
         @ngdoc attr
         @name format
         @usedBy dimension
-        @param format{expression}
+        @param [format] {expression}
+         a formatting string used to display tooltip and legend values for the dimension. if omitted, a default format will be applied
+        please note tha this is different from the 'tickFormat' attribute
       ###
       attrs.$observe 'format', (val) ->
-       if val isnt undefined
-         me.format(val)
+        if val isnt undefined
+          me.format(val)
 
       ###*
         @ngdoc attr
         @name reset
         @usedBy dimension
-        @param reset{expression}
+        @param [reset] {expression}
+         If sepcified or set to true, the domain values are reset every time the carts data changes.
       ###
       attrs.$observe 'reset', (val) ->
-       me.resetOnNewData(utils.parseTrueFalse(val))
+        me.resetOnNewData(utils.parseTrueFalse(val))
 
       #-------------------------------------------------------------------------------------------------------------------
 
-      observeAxisAttributes: (attrs, me, scope) ->
+    observeAxisAttributes: (attrs, me, scope) ->
 
       ###*
           @ngdoc attr
           @name tickFormat
           @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
-          @param tickFormat {expression}
+          @param [tickFormat] {expression}
       ###
       attrs.$observe 'tickFormat', (val) ->
-      if val isnt undefined
-        me.tickFormat(d3.format(val)).update()
+        if val isnt undefined
+          me.tickFormat(d3.format(val)).update()
 
       ###*
-          @ngdoc attr
-          @name ticks
-          @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
-          @param ticks {expression}
+        @ngdoc attr
+        @name ticks
+        @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
+        @param [ticks] {expression}
       ###
       attrs.$observe 'ticks', (val) ->
-      if val isnt undefined
-        me.ticks(+val)
-        if me.axis()
-          me.updateAttrs()
+        if val isnt undefined
+          me.ticks(+val)
+          if me.axis()
+            me.updateAttrs()
 
       ###*
-          @ngdoc attr
-          @name grid
-          @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
-          @param grid {expression}
+        @ngdoc attr
+        @name grid
+        @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
+        @param [grid] {expression}
       ###
       attrs.$observe 'grid', (val) ->
-      if val isnt undefined
-        me.showGrid(val is '' or val is 'true').updateAttrs()
+        if val isnt undefined
+          me.showGrid(val is '' or val is 'true').updateAttrs()
 
       ###*
-          @ngdoc attr
-          @name showLabel
-          @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
-          @param showLabel {expression}
+        @ngdoc attr
+        @name showLabel
+        @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
+        @param [showLabel] {expression}
       ###
       attrs.$observe 'showLabel', (val) ->
-      if val isnt undefined
-        me.showLabel(val is '' or val is 'true').update(true)
+        if val isnt undefined
+          me.showLabel(val is '' or val is 'true').update(true)
 
       ###*
-          @ngdoc attr
-          @name axisFormatters
-          @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
-          @param axisFormatters {expression}
+        @ngdoc attr
+        @name axisFormatters
+        @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
+        @param [axisFormatters] {expression}
       ###
       scope.$watch attrs.axisFormatters,  (val) ->
-      if _.isObject(val)
-        if _.has(val, 'tickFormat') and _.isFunction(val.tickFormat)
-          me.tickFormat(val.tickFormat)
-        else if _.isString(val.tickFormat)
-          me.tickFormat(d3.format(val))
-        if _.has(val,'tickValues') and _.isArray(val.tickValues)
-          me.tickValues(val.tickValues)
-        me.update()
+        if _.isObject(val)
+          if _.has(val, 'tickFormat') and _.isFunction(val.tickFormat)
+            me.tickFormat(val.tickFormat)
+          else if _.isString(val.tickFormat)
+            me.tickFormat(d3.format(val))
+          if _.has(val,'tickValues') and _.isArray(val.tickValues)
+            me.tickValues(val.tickValues)
+          me.update()
 
 
     #-------------------------------------------------------------------------------------------------------------------
@@ -200,10 +219,11 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
     observeLegendAttributes: (attrs, me, layout) ->
 
       ###*
-          @ngdoc attr
-          @name legend
-          @usedBy dimension
-          @param legend {expression}
+        @ngdoc attr
+        @name legend
+        @usedBy dimension
+        @values true, false, top-right, top-left, bottom-left, bottom-right, #divName
+        @param [legend=true] {expression}
       ###
       attrs.$observe 'legend', (val) ->
         if val isnt undefined
@@ -230,10 +250,10 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
           l.redraw()
 
       ###*
-          @ngdoc attr
-          @name valuesLegend
-          @usedBy dimension
-          @param valuesLegend {expression}
+        @ngdoc attr
+        @name valuesLegend
+        @usedBy dimension
+        @param [valuesLegend] {expression}
       ###
       attrs.$observe 'valuesLegend', (val) ->
         if val isnt undefined
@@ -260,10 +280,10 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
           l.redraw()
 
       ###*
-          @ngdoc attr
-          @name legendTitle
-          @usedBy dimension
-          @param legendTitle {expression}
+        @ngdoc attr
+        @name legendTitle
+        @usedBy dimension
+        @param [legendTitle] {expression}
       ###
       attrs.$observe 'legendTitle', (val) ->
         if val isnt undefined
@@ -274,23 +294,21 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
     observerRangeAttributes: (attrs, me) ->
 
       ###*
-          @ngdoc attr
-          @name lowerProperty
-          @usedBy dimension.rangeX, dimension.rangeY
-          @param lowerProperty {expression}
+        @ngdoc attr
+        @name lowerProperty
+        @usedBy dimension.rangeX, dimension.rangeY
+        @param [lowerProperty] {expression}
       ###
       attrs.$observe 'lowerProperty', (val) ->
-        null
         me.lowerProperty(parseList(val)).update()
 
       ###*
-          @ngdoc attr
-          @name upperProperty
-          @usedBy dimension.rangeX, dimension.rangeY
-          @param upperProperty {expression}
+        @ngdoc attr
+        @name upperProperty
+        @usedBy dimension.rangeX, dimension.rangeY
+        @param [upperProperty] {expression}
       ###
       attrs.$observe 'upperProperty', (val) ->
-        null
         me.upperProperty(parseList(val)).update()
 
     }

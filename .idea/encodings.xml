@@ -4,5 +4,8 @@
     <file url="file://$PROJECT_DIR$/README.md" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/app" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/bower.json" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/docs/guide/basics.ngdoc" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/docs/guide/introduction.ngdoc" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/docs/guide/tooltips.ngdoc" charset="UTF-8" />
   </component>
 </project>

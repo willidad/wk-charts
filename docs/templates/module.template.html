@@ -11,21 +11,21 @@
 <div class="component-breakdown">
   <h2>Module Components</h2>
   {% for componentGroup in doc.componentGroups %}
-  <div>
-    <h3 class="component-heading" id="{$ componentGroup.groupType | dashCase $}">{$ componentGroup.groupType | title $}</h3>
-    <table class="definition-table">
-      <tr>
-        <th>Name</th>
-        <th>Description</th>
-      </tr>
-      {% for component in componentGroup.components %}
-      <tr>
-        <td>{$ component.id | link(component.name, component) $}</td>
-        <td>{$ component.description | firstParagraph | marked $}</td>
-      </tr>
-      {% endfor %}
-    </table>
-  </div>
+    <div>
+      <h3 class="component-heading" id="{$ componentGroup.groupType | dashCase $}">{$ componentGroup.groupType | title $}</h3>
+      <table class="definition-table">
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+        {% for component in componentGroup.components %}
+        <tr>
+          <td>{$ component.id | link(component.name, component) $}</td>
+          <td>{$ component.description | firstParagraph | marked $}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
   {% endfor %}
 </div>
 

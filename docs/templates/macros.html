@@ -24,6 +24,7 @@
       </td>
       <td>
         {$ param.description | marked $}
+        {% if param.values %}<p><em> (Accepted Values: {$ param.values $})</em></p> {% endif %}
         {% if param.defaultValue %}<p><em>(default: {$ param.defaultValue $})</em></p>{% endif %}
       </td>
     </tr>

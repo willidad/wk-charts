@@ -9,7 +9,14 @@ module.exports = function assignAttrsProcessor(log) {
         $runBefore: ['processing-docs'],
         $process: function (docs) {
             docs = _.filter(docs, function (doc) {
+                // attach values  to param block
                 if (doc.docType === 'attr') {
+                    // attach values  to param block
+                    if (doc.values) {
+                        _.forEach(doc.params, function(param) {
+                            param.values = doc.values;
+                        })
+                    }
                     if (doc.usedBy) {
                         log.debug('found usedBy:', doc.usedBy);
                         var useList = doc.usedBy.split(',');

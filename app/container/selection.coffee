@@ -5,11 +5,7 @@
   @module wk.chart
   @restrict A
   @description
-
   enables selection of individual chart objects
-
-
-
 ###
 angular.module('wk.chart').directive 'selection', ($log) ->
   objId = 0

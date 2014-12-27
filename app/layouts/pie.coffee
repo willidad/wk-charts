@@ -127,6 +127,7 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
 
         labels.transition().duration(options.duration)
           .style('opacity',1)
+          .text((d) -> size.formattedValue(d.data))
           .attrTween('transform', (d) ->
             _this = this
             interpolate = d3.interpolate(_this._current, d)
@@ -141,8 +142,8 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
             return (t) ->
               d2 = interpolate(t)
               return if midAngle(d2) < Math.PI then  "start" else "end"
-        )
-
+            )
+          
         labels.exit()
           .transition().duration(options.duration).style('opacity',0).remove()
 

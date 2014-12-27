@@ -1,0 +1,79 @@
+@ngdoc guide
+@module guide
+@name Introduction
+@description
+
+# Introduction
+
+When using the wk-charts package, chart layouts are defined using a set of AngularJs directives, which enable you to implement a chart on you page through HTML Markup. 
+To draw the charts wk-charts uses the power of the d3 library. 
+
+# Defining charts
+
+Chart layouts are defined through a set of directives and directive attributes. There is a wide range of options to fine tune the chart various layouts, however, thanks to meaningful defaults for these options 
+getting started is simple and requires minimal markup. Here are a few illustrative examples
+
+## Defining a simple chart
+
+The following markup defines a simple pie chart: 
+
+    <chart data="exampleData">                   defines the chart container and the data to be shown. 
+                                                 exampleData is a Scope variable. Its value is expected to be an array of objects, 
+                                                 where each array element represents one pie segment 
+        <layout pie>                             defines what type of chart should be drawn, in this case a pie chart
+            <size property="population" />       defines the data property that determines the relative size of the pie segments
+            <color property="age" />             defines the data property that determines the segment color
+        </layout>
+    </chart>
+            
+
+The ` exampleData ` looks like this:
+
+    [
+        { "age":"<5", "population":2704659 },
+        { "age":"5-13", "population":4499890 },
+        { "age":"14-17", "population":2159981 },
+        { "age":"18-24", "population":3853788 },
+        { "age":"25-44", "population":14106543 },
+        { "age":"45-64", "population":8819342 },
+        { "age":"≥65", "population":612463 }
+    ]
+    
+The resulting Pie Chart looks like this:   
+
+<img src="pie1.png" alt="Pie Chart" width="150px">
+
+Pie Chart
+
+Lets 'beef up' the pie chart a little bit: 
+
+* show a legend of 'age' values and how they map to colors:  `<color property="age" values-legend/>`
+* annotate each pie segment with the values of the population property `<layout pie labels>` 
+
+Voila, here is the chart:
+
+<img src="pie w label.png" alt="Pie Chart with labels" width="350px">
+
+Please see pie chart to see a life example and learn more about the pie chart options. 
+
+## A simple column chart
+
+Charts transform data into a visual representation, and there is many ways to show the same set of data. The data above can easily be shown as a column chart using the markup below. 
+To make the chart a bit more fancy we added data labels, axis values and a chart title. As you can see, this is done by adding a few optional attributes to the markup elements. 
+
+
+    <chart data="exampleData" title="Column Chart Example">
+        <layout column labels>
+            <x axis property="age", type="ordinal"/>
+            <y property="population"/>
+            <color property="age"/>
+        </layout>
+    </chart>
+    
+The resulting chart looks like this:
+    
+<img src="column w legend and labels.png" alt="Column Chart w Legend and Labels" width="350px">
+
+As you can see we are using different dimensions to represent the same data. *population* goes on the vertical axis (`y`), whereas *age* is used for two different dimension, `x` and `color`
+Please note that the x-dimension has a type definition `type="ordinal"` This tells the chart that *age* is a set of discrete values, in contrast to the y dimension, which is, in our terminology, a **quantitative** dimension. 
+Each dimension needs a type, however there are default types for each that do not need to  be specified. We will explain this in a later section in more detail 
