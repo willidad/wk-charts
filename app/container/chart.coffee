@@ -21,8 +21,9 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
     scope:
       data: '='
       filter: '='
-    controller: () ->
+    controller: ($scope) ->
       this.me = chart()
+      this.me.scope($scope)
 
     link: (scope, element, attrs, controller) ->
       me = controller.me
@@ -40,16 +41,7 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
 
       me.lifeCycle().on 'scopeApply', () ->
         scope.$apply()
-      ###
-      attrs.$observe 'tooltips', (val) ->
-        me.toolTipTemplate('')
-        if val isnt undefined and (val is '' or val is 'true')
-          me.showTooltip(true)
-        else if val.length > 0 and val isnt 'false'
-          me.toolTipTemplate(val)
-          me.showTooltip(true)
-        else me.showToolTip(false)
-      ###
+
       attrs.$observe 'animationDuration', (val) ->
         if val and _.isNumber(+val) and +val >= 0
           me.animationDuration(val)

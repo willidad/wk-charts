@@ -16,6 +16,7 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
     _ownedScales = undefined  # holds the scles owned by chart, i.e. share scales
     _data = undefined           # pointer to the last data set bound to chart
     _showTooltip = false        # tooltip property
+    _scope = undefined          # holds a reference to the chart isolated scope
     _toolTipTemplate = ''
     _title = undefined
     _subTitle = undefined
@@ -31,6 +32,12 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
 
     me.id = (id) ->
       return _id
+
+    me.scope = (scope) ->
+      if arguments.length is 0 then return _scope
+      else
+        _scope = scope
+        return me
 
     me.showTooltip = (trueFalse) ->
       if arguments.length is 0 then return _showTooltip
@@ -113,6 +120,8 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
       if data
         $log.log 'executing full life cycle'
         _data = data
+        _scope.filteredData = data                    # put data on scope so tooltip and legend can access it
+        _scope.scales = _allScales
         _lifeCycle.prepareData(data, noAnimation)    # calls the registered layout types
         _lifeCycle.scaleDomains(data, noAnimation)   # calls registered the scales
         _lifeCycle.sizeContainer(data, noAnimation)  # calls container
@@ -136,6 +145,7 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
       if data
         $log.log 'executing new data life cycle'
         _data = data
+        _scope.filteredData = data
         _lifeCycle.prepareData(data, noAnimation)    # calls the registered layout types
         _lifeCycle.scaleDomains(data, noAnimation)
         _lifeCycle.drawAxis(noAnimation)              # calls container
@@ -163,7 +173,7 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
     _behavior.chart(me)
     _container = container().chart(me)   # the charts drawing container object
     _allScales = scaleList()    # Holds all scales of the chart, regardless of scale owner
-    _ownedScales = scaleList()  # holds the scles owned by chart, i.e. share scales
+    _ownedScales = scaleList()  # holds the scales owned by chart, i.e. share scales
 
     return me
 

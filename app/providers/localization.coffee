@@ -1,3 +1,11 @@
+###*
+  @ngdoc provider
+  @module wk.chart
+  @name wkChartLocaleProvider
+  @description
+  registers a den locale
+
+###
 angular.module('wk.chart').provider 'wkChartLocale', () ->
 
   locale = 'en_US'
@@ -37,13 +45,34 @@ angular.module('wk.chart').provider 'wkChartLocale', () ->
     })
   }
 
+  ###*
+    @ngdoc method
+    @name wkChartLocaleProvider#setLocale
+    @param name {string} name of the locale. If locale is unknown it reports an error and sets locale to en_US
+  ###
   this.setLocale = (l) ->
     if _.has(locales, l)
       locale = l
     else
       throw "unknowm locale '#{l}' using 'en-US' instead"
 
+  ###*
+    @ngdoc method
+    @name wkChartLocaleProvider#addLocaleDefinition
+    @param name {string} name of the locale.
+    @param localeDefinition {object} A d3.js locale definition object. See [d3 documentation](https://github.com/mbostock/d3/wiki/Localization#d3_locale) for details of the format.
+  ###
+  this.addLocaleDefinition = (name, l) ->
+    locales[name] = d3.locale(l)
+      #$log.warn 'locale ' + name + ' already defined. Using new definition'
 
+  ###*
+    @ngdoc service
+    @module wk.chart
+    @name wkChartLocale
+    @description
+    @returns d3.ls locale definition
+  ###
   this.$get = ['$log',($log) ->
     return locales[locale]
   ]

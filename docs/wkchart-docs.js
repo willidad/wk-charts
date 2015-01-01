@@ -49,6 +49,14 @@ module.exports = new Package('dgeniDocsPackage', [
             pathTemplate: '/${docType}/${name}',
             outputPathTemplate: '${docType}/${name}.html'
         });
+
+        computeIdsProcessor.idTemplates.push({
+            docTypes: ['provider', 'service', 'directive', 'input', 'object', 'function', 'filter', 'type' ],
+            getId: function(doc) {
+                return doc.name;
+            },
+            getAliases: function(doc) { return [doc.id]; }
+        });
         computeIdsProcessor.idTemplates.push({
             docTypes: ['dimension', 'container', 'behavior', 'layout', 'attrs'],
             getId: function(doc) {

@@ -19,8 +19,8 @@ angular.module('wk.chart').directive 'tooltips', ($log, behavior) ->
         @ngdoc attr
         @name tooltips#tooltips
         @values true, false, path/to/custom-template.html
-        @param tooltips {expression} - enable / disable tooltips, resp. supply a custom tooltip template url.
-        If no template url is supplied, a standard template is used,
+        @param tooltips {boolean|url} - enable / disable tooltips, resp. supply a custom tooltip template url.
+        If no template url is supplied, a (configurable) default template is used (see {@link wkChartTemplatesProvider here} for how to configure the default template),
       ###
       attrs.$observe 'tooltips', (val) ->
         chart.toolTipTemplate('')

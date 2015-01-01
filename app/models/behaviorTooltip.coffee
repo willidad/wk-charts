@@ -9,6 +9,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
     _markerG = undefined
     _markerLine = undefined
     _areaSelection = undefined
+    _chart = undefined
     _area= undefined
     _container = undefined
     _scales = undefined
@@ -17,8 +18,8 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
     _tooltipDispatch = d3.dispatch('enter', 'moveData', 'moveMarker', 'leave')
 
     _templ = wkChartTemplates.tooltipTemplate()
-    _templScope = $rootScope.$new(true)
-    _compiledTempl = $compile(_templ)(_templScope)
+    _templScope = undefined #_chart.scope().$new(true)
+    _compiledTempl = undefined #$compile(_templ)(_templScope)
     body = $document.find('body')
 
     bodyRect = body[0].getBoundingClientRect()
@@ -48,9 +49,9 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         'z-index': 1500
         opacity: 0
       }
-      _templScope.$apply()  # ensure tooltip gets rendered
-      #wayit until it is rendered and then reposition
-      _.throttle positionBox, 200
+      _templScope.$apply()  # ensure tooltip gets rendered and size attributes get set correctly
+
+      _.throttle positionBox, 200 #wait until it is rendered and then reposition
 
     #--- TooltipStart Event Handler ------------------------------------------------------------------------------------
 
@@ -69,8 +70,6 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       else
         value = d3.select(this).datum()
         _templScope.ttData = if value.data then value.data else value
-
-      _templScope.ttShow = true
 
       _tooltipDispatch.enter.apply(_templScope, [value]) # call layout to fill in data
       positionInitial()
@@ -113,8 +112,8 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       if _markerG
         _markerG.remove()
       _markerG = undefined
-      _templScope.ttShow = false
       _compiledTempl.remove()
+
 
     #--- Interface to brush --------------------------------------------------------------------------------------------
 
@@ -144,6 +143,12 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
 
     #-- Tooltip properties ---------------------------------------------------------------------------------------------
 
+    me.chart = (chart) ->
+      if arguments.length is 0 then return _chart
+      else
+        _chart = chart
+        return me
+
     me.active = (val) ->
       if arguments.length is 0 then return _active
       else
@@ -157,9 +162,9 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         if _path.length > 0
           _customTempl = $templateCache.get('templates/' + _path)
           # wrap template into positioning div
-          _customTemplWrapped = "<div class=\"wk-chart-tooltip\" ng-show=\"ttShow\" ng-style=\"position\">#{_customTempl}</div>"
-          _compiledTempl = $compile(_customTemplWrapped)(_templScope)
-
+          #_customTemplWrapped = "<div class=\"wk-chart-tooltip\" ng-style=\"position\">#{_customTempl}</div>"
+          _templ = "<div class=\"wk-chart-tooltip\" ng-style=\"position\">#{_customTempl}</div>"
+          #_compiledTempl = $compile(_customTemplWrapped)(_templScope)
         return me
 
     me.area = (val) ->
@@ -206,6 +211,9 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
     me.tooltip = (s) -> # register the tooltip events with the selection
       if arguments.length is 0 then return me
       else  # set tooltip for an objects selection
+        if not _templScope
+          _templScope = _chart.scope().$new(true)   ## create the template scope as child of the chart's scope
+          _compiledTempl = $compile(_templ)(_templScope) # and bind it to the tooltip template
         s.on 'mouseenter.tooltip', tooltipEnter
           .on 'mousemove.tooltip', tooltipMove
           .on 'mouseleave.tooltip', tooltipLeave

@@ -1,19 +1,9 @@
 ###*
-  @ngdoc service
-  @module wk.chart
-  @name wkChartTemplates
-  @description
-  provides the default tooltip and legend template.
-###
-
-
-
-###*
   @ngdoc provider
   @module wk.chart
   @name wkChartTemplatesProvider
   @description
-  used to register a tooltip or legend template globally (ie.e for the application) with wk-charts. and overwrite the default system templates.
+  used to register a custom tooltip or legend default template and overwrite the default system templates.
 
 ###
 angular.module('wk.chart').provider 'wkChartTemplates', () ->
@@ -36,6 +26,13 @@ angular.module('wk.chart').provider 'wkChartTemplates', () ->
   this.setLegendTemplate = (url) ->
     legendTemplateUrl = url
 
+  ###*
+    @ngdoc service
+    @module wk.chart
+    @name wkChartTemplates
+    @description
+    provides the default tooltip and legend template.
+  ###
   this.$get = ['$log', '$templateCache',($log, $templateCache) ->
     return {
       ###*
