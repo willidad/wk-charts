@@ -12,6 +12,7 @@ angular.module('wk.chart').directive 'tooltips', ($log, behavior) ->
   return {
     restrict: 'A'
     require: 'chart'
+    controller: TooltipsController
     link: (scope, element, attrs, chartCtrl) ->
       chart = chartCtrl.me
 
@@ -31,3 +32,8 @@ angular.module('wk.chart').directive 'tooltips', ($log, behavior) ->
           chart.showTooltip(true)
         else chart.showToolTip(false)
   }
+
+  class TooltipsController
+
+
+    constructor: (@$scope) ->

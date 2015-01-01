@@ -1,8 +1,181 @@
+<html>
+<head>
+    <title>WK Charts API Documentations</title>
+    <link rel="stylesheet" href="/css/github-markdown.css">
+</head>
+<body>
+<div class="markdown-body">
 
 
 <div class="content-description">
     <h1 id="tooltips">Tooltips</h1>
+<h2 id="custom-tooltips">Custom Tooltips</h2>
+<p>A custom tooltip is defined by providing a template url as value to the <code>tooltips</code> behavior directive. this template will be compiled by Angular and be used instead of the standard template.
+The custom template will be positioned as usual, in case value markers are displayed for na axis these will be created and positioned automatically, like with the standard template.</p>
+<p>To support tooltip formatting the $scope for this template exposes a number of attributes:</p>
+<table>
+<thead>
+<tr>
+<th>scope property</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ttData</td>
+<td>a object containing the data row the cursor is over</td>
+</tr>
+<tr>
+<td>scales</td>
+<td>an object referring to the charts dimensions scale functions</td>
+</tr>
+<tr>
+<td>maps</td>
+<td>an object referring to the charts dimensions map function</td>
+</tr>
+<tr>
+<td>properties</td>
+<td>an object containing the charts dimension properties</td>
+</tr>
+<tr>
+<td>labels</td>
+<td>an abject containing the charts dimensions labels</td>
+</tr>
+</tbody>
+</table>
+<p>scales, maps, properties and labels scope variables have properties with the names of the chart dimensions, i.e. x, y ,color, size, etc.</p>
+<h3 id="scales">scales</h3>
+<table>
+<thead>
+<tr>
+<th>&nbsp;</th>
+<th>Descriptions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Usage</td>
+<td><code>scales.&lt;dimension name&gt;(value)</code></td>
+</tr>
+<tr>
+<td>Returns</td>
+<td>the translated value</td>
+</tr>
+<tr>
+<td>Examples</td>
+<td><code>scales.color(&#39;abc&#39;)</code> returns the color value used to represent <code>&#39;abc&#39;</code> in the chart</td>
+</tr>
+<tr>
+<td></td>
+<td><code>scales.x(1234)</code> returns the x-axis pixel offset representing <code>1234</code></td>
+</tr>
+<tr>
+<td></td>
+<td><code>scales.shape(&#39;xyz&#39;)</code> returns the name of the svg shape used to repesent <code>&#39;xyz&#39;</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="maps">maps</h3>
+<table>
+<thead>
+<tr>
+<th>&nbsp;</th>
+<th>Descriptions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Usage</td>
+<td><code>maps.&lt;dimension name&gt;()</code></td>
+</tr>
+<tr>
+<td>Returns</td>
+<td>the translated value</td>
+</tr>
+<tr>
+<td>Examples</td>
+<td><code>maps.color()</code> returns the color value for the color dimension.</td>
+</tr>
+<tr>
+<td></td>
+<td><code>maps.x()</code> returns the x-axis pixel offset.</td>
+</tr>
+<tr>
+<td></td>
+<td><code>maps.shape()</code> returns the name of the svg shape.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Important</strong> the maps functions should not be used for layer properties.</p>
+</blockquote>
+<h3 id="properties">properties</h3>
+<table>
+<thead>
+<tr>
+<th>&nbsp;</th>
+<th>Descriptions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Usage</td>
+<td><code>properties.&lt;dimension name&gt;</code></td>
+</tr>
+<tr>
+<td>Returns</td>
+<td>an array of property names for the dimension.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="labels">labels</h3>
+<table>
+<thead>
+<tr>
+<th>&nbsp;</th>
+<th>Descriptions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Usage</td>
+<td><code>labels.&lt;dimension name&gt;</code></td>
+</tr>
+<tr>
+<td>Returns</td>
+<td>the label text defined for the dimension. If no label is defined it returns the property name.</td>
+</tr>
+<tr>
+<td></td>
+<td>In case the property attribute of the dimension is not defined it returns an empty string.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="example-templates">Example Templates</h2>
+<p>The following examples illustrate how to create an example template.
+The first example displays a simple tooltip with three values in a singe line.
+The tooltip border is colored with the color of the chart object below the cursor:</p>
+<pre><code>table.table.table-condensed.custom-tooltip(ng-style=&quot;{&#39;border-color&#39;:map.color()}&quot;)
+tr
+    td Days
+    td {{ttData.CLASS_BOUNDS_LOWER}} to {{ttData.CLASS_BOUNDS_UPPER}}
+    td Units : {{ttData.CLASS_COUNT}}
+</code></pre>
+<p>The second example shows a table with the layer property values. In this case the text is colored:</p>
+<pre><code>table.table.table-condensed
+thead
+    tr
+        th {{labels.color}}
+        th {{labels.y}}
+tbody
+    tr(ng-repeat=&quot;prop in properties.color()&quot;, ng-style=&quot;{&#39;color&#39;:scale.color(prop)}&quot;)
+        td {{prop}}
+        td {{ttData[prop] | number:1}}
+</code></pre>
 
 </div>
 
 
+</div>
+</body>
+</html>

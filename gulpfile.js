@@ -21,6 +21,10 @@ gulp.task('watch', ['default'], function() {
   return gulp.watch(['docs/**/*', 'dist/lib/**/*'], ['default']);
 });
 
+gulp.task('css', function() {
+  return gulp.src('./docs/css/**/*.css').pipe(gulp.dest('./dist/docs/css'));
+})
+
 gulp.task('default', function(cb) {
-  runSequence('clean', 'dgeni', cb);
+  runSequence('clean', 'dgeni', 'css', cb);
 });

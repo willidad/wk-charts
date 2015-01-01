@@ -5,3 +5,76 @@
 
 # Tooltips
 
+## Custom Tooltips
+
+A custom tooltip is defined by providing a template url as value to the `tooltips` behavior directive. this template will be compiled by Angular and be used instead of the standard template.
+The custom template will be positioned as usual, in case value markers are displayed for na axis these will be created and positioned automatically, like with the standard template.
+
+To support tooltip formatting the $scope for this template exposes a number of attributes:
+
+| scope property | Description |
+| --- | --- |
+| ttData | a object containing the data row the cursor is over |
+| scales | an object referring to the charts dimensions scale functions|
+| maps | an object referring to the charts dimensions map function |
+| properties | an object containing the charts dimension properties |
+| labels | an abject containing the charts dimensions labels |
+
+scales, maps, properties and labels scope variables have properties with the names of the chart dimensions, i.e. x, y ,color, size, etc.
+
+### scales
+ &nbsp;   | Descriptions
+--- | ---
+Usage | `scales.<dimension name>(value)`
+Returns | the translated value
+Examples | `scales.color('abc')` returns the color value used to represent `'abc'` in the chart
+         | `scales.x(1234)` returns the x-axis pixel offset representing `1234`
+         | `scales.shape('xyz')` returns the name of the svg shape used to repesent `'xyz'`
+
+### maps
+ &nbsp;   | Descriptions
+--- | ---
+Usage | `maps.<dimension name>()`
+Returns | the translated value
+Examples | `maps.color()` returns the color value for the color dimension.
+         | `maps.x()` returns the x-axis pixel offset.
+         | `maps.shape()` returns the name of the svg shape.
+
+> **Important** the maps functions should not be used for layer properties.
+
+### properties
+ &nbsp;   | Descriptions
+--- | ---
+Usage | `properties.<dimension name>`
+Returns | an array of property names for the dimension.
+
+### labels
+ &nbsp;   | Descriptions
+--- | ---
+Usage | `labels.<dimension name>`
+Returns | the label text defined for the dimension. If no label is defined it returns the property name.
+  |In case the property attribute of the dimension is not defined it returns an empty string.
+
+## Example Templates
+
+The following examples illustrate how to create an example template.
+The first example displays a simple tooltip with three values in a singe line.
+The tooltip border is colored with the color of the chart object below the cursor:
+
+    table.table.table-condensed.custom-tooltip(ng-style="{'border-color':map.color()}")
+        tr
+            td Days
+            td {{ttData.CLASS_BOUNDS_LOWER}} to {{ttData.CLASS_BOUNDS_UPPER}}
+            td Units : {{ttData.CLASS_COUNT}}
+
+The second example shows a table with the layer property values. In this case the text is colored:
+
+    table.table.table-condensed
+        thead
+            tr
+                th {{labels.color}}
+                th {{labels.y}}
+        tbody
+            tr(ng-repeat="prop in properties.color()", ng-style="{'color':scale.color(prop)}")
+                td {{prop}}
+                td {{ttData[prop] | number:1}}

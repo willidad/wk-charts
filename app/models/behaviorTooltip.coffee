@@ -198,22 +198,39 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         _data = val
         return me #to enable chaining
 
-    me.scales = (val) ->
-      if arguments.length is 0 then return _scales
-      _scales = val
-      return me
-
     me.on = (name, callback) ->
       _tooltipDispatch.on name, callback
+
+    #--- Utility functions ---------------------------------------------------------------------------------------------
+
+
+
+    compileTemplate = (template) ->
+      if not _templScope
+        _templScope = _chart.scope().$new(true)   ## create the template scope as child of the chart's scope
+        # add scale access functions to scope
+        _templScope.properties = {}
+        _templScope.map = {}
+        _templScope.scale = {}
+        _templScope.labels = {}
+        for name, scale of _chart.allScales().allKinds()
+          _templScope.map[name] = () -> if _templScope.ttData then scale.map(_templScope.ttData)
+          _templScope.scale[name] = scale.scale()
+          _templScope.properties[name] = () -> if _templScope.ttData then scale.layerKeys(_templScope.ttData)
+          _templScope.labels[name] = scale.axisLabel()
+
+      if not _compiledTempl
+        _compiledTempl = $compile(_templ)(_templScope) # and bind it to the tooltip template
+
+
 
     #--- Tooltip -------------------------------------------------------------------------------------------------------
 
     me.tooltip = (s) -> # register the tooltip events with the selection
       if arguments.length is 0 then return me
       else  # set tooltip for an objects selection
-        if not _templScope
-          _templScope = _chart.scope().$new(true)   ## create the template scope as child of the chart's scope
-          _compiledTempl = $compile(_templ)(_templScope) # and bind it to the tooltip template
+        compileTemplate _templ # set up tooltip template
+
         s.on 'mouseenter.tooltip', tooltipEnter
           .on 'mousemove.tooltip', tooltipMove
           .on 'mouseleave.tooltip', tooltipLeave
