@@ -30,30 +30,34 @@ The custom template will be positioned as usual, in case value markers are displ
 <td>a object containing the data row the cursor is over</td>
 </tr>
 <tr>
-<td>scales</td>
+<td>scale</td>
 <td>an object referring to the charts dimensions scale functions</td>
 </tr>
 <tr>
-<td>maps</td>
+<td>map</td>
 <td>an object referring to the charts dimensions map function</td>
+</tr>
+<tr>
+<td>value</td>
+<td>an object referring to the charts dimensions value function</td>
 </tr>
 <tr>
 <td>properties</td>
 <td>an object containing the charts dimension properties</td>
 </tr>
 <tr>
-<td>labels</td>
+<td>label</td>
 <td>an abject containing the charts dimensions labels</td>
 </tr>
 </tbody>
 </table>
 <p>scales, maps, properties and labels scope variables have properties with the names of the chart dimensions, i.e. x, y ,color, size, etc.</p>
-<h3 id="scales">scales</h3>
+<h3 id="scale">scale</h3>
 <table>
 <thead>
 <tr>
 <th style="text-align:left">Usage</th>
-<th style="text-align:left"><code>scales.&lt;dimension name&gt;(value)</code></th>
+<th style="text-align:left"><code>scale.&lt;dimension name&gt;(value)</code></th>
 </tr>
 </thead>
 <tbody>
@@ -63,19 +67,19 @@ The custom template will be positioned as usual, in case value markers are displ
 </tr>
 <tr>
 <td style="text-align:left">Examples</td>
-<td style="text-align:left"><code>scales.color(&#39;abc&#39;)</code> returns the color value used to represent <code>&#39;abc&#39;</code> in the chart</td>
+<td style="text-align:left"><code>scale.color(&#39;abc&#39;)</code> returns the color value used to represent <code>&#39;abc&#39;</code> in the chart</td>
 </tr>
 <tr>
 <td style="text-align:left"></td>
-<td style="text-align:left"><code>scales.x(1234)</code> returns the x-axis pixel offset representing <code>1234</code></td>
+<td style="text-align:left"><code>scale.x(1234)</code> returns the x-axis pixel offset representing <code>1234</code></td>
 </tr>
 <tr>
 <td style="text-align:left"></td>
-<td style="text-align:left"><code>scales.shape(&#39;xyz&#39;)</code> returns the name of the svg shape used to repesent <code>&#39;xyz&#39;</code></td>
+<td style="text-align:left"><code>scale.shape(&#39;xyz&#39;)</code> returns the name of the svg shape used to repesent <code>&#39;xyz&#39;</code></td>
 </tr>
 </tbody>
 </table>
-<h3 id="maps">maps</h3>
+<h3 id="map">map</h3>
 <table>
 <thead>
 <tr>
@@ -90,21 +94,48 @@ The custom template will be positioned as usual, in case value markers are displ
 </tr>
 <tr>
 <td style="text-align:left">Examples</td>
-<td style="text-align:left"><code>maps.color()</code> returns the color value for the color dimension.</td>
+<td style="text-align:left"><code>map.color()</code> returns the color value for the color dimension.</td>
 </tr>
 <tr>
 <td style="text-align:left"></td>
-<td style="text-align:left"><code>maps.x()</code> returns the x-axis pixel offset.</td>
+<td style="text-align:left"><code>map.x()</code> returns the x-axis pixel offset.</td>
 </tr>
 <tr>
 <td style="text-align:left"></td>
-<td style="text-align:left"><code>maps.shape()</code> returns the name of the svg shape.</td>
+<td style="text-align:left"><code>map.shape()</code> returns the name of the svg shape.</td>
 </tr>
 </tbody>
 </table>
 <blockquote>
 <p><strong>Important</strong> the maps functions should not be used for layer properties.</p>
 </blockquote>
+<h3 id="value">value</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Usage</th>
+<th style="text-align:left"><code>value.&lt;dimension name&gt;()</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Returns</td>
+<td style="text-align:left">the translated value</td>
+</tr>
+<tr>
+<td style="text-align:left">Examples</td>
+<td style="text-align:left"><code>value.color()</code> returns the value of the color property.</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left"><code>value.x()</code> returns the value of the x property.</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left"><code>value.shape()</code> returns the value of the shape property.</td>
+</tr>
+</tbody>
+</table>
 <h3 id="properties">properties</h3>
 <table>
 <thead>
@@ -120,12 +151,12 @@ The custom template will be positioned as usual, in case value markers are displ
 </tr>
 </tbody>
 </table>
-<h3 id="labels">labels</h3>
+<h3 id="label">label</h3>
 <table>
 <thead>
 <tr>
 <th style="text-align:left">Usage</th>
-<th style="text-align:left"><code>labels.&lt;dimension name&gt;</code></th>
+<th style="text-align:left"><code>label.&lt;dimension name&gt;</code></th>
 </tr>
 </thead>
 <tbody>
@@ -153,8 +184,10 @@ tr
 <pre><code>table.table.table-condensed
 thead
     tr
-        th {{labels.color}}
-        th {{labels.y}}
+        th(colspan=&quot;2&quot;) {{value.x() | date:&#39;d MMM yyyy&#39;}}
+    tr
+        th {{label.color}}
+        th {{label.y}}
 tbody
     tr(ng-repeat=&quot;prop in properties.color()&quot;, ng-style=&quot;{&#39;color&#39;:scale.color(prop)}&quot;)
         td {{prop}}

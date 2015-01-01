@@ -19,32 +19,43 @@ To support tooltip formatting the $scope for this template exposes a number of a
 | scope property | Description |
 | --- | --- |
 | ttData | a object containing the data row the cursor is over |
-| scales | an object referring to the charts dimensions scale functions|
-| maps | an object referring to the charts dimensions map function |
+| scale | an object referring to the charts dimensions scale functions|
+| map | an object referring to the charts dimensions map function |
+| value | an object referring to the charts dimensions value function |
 | properties | an object containing the charts dimension properties |
-| labels | an abject containing the charts dimensions labels |
+| label | an abject containing the charts dimensions labels |
 
 scales, maps, properties and labels scope variables have properties with the names of the chart dimensions, i.e. x, y ,color, size, etc.
 
-### scales
+### scale
 
-Usage | `scales.<dimension name>(value)`
+Usage | `scale.<dimension name>(value)`
 :--- |:---
 Returns | the translated value
-Examples | `scales.color('abc')` returns the color value used to represent `'abc'` in the chart
-         | `scales.x(1234)` returns the x-axis pixel offset representing `1234`
-         | `scales.shape('xyz')` returns the name of the svg shape used to repesent `'xyz'`
+Examples | `scale.color('abc')` returns the color value used to represent `'abc'` in the chart
+         | `scale.x(1234)` returns the x-axis pixel offset representing `1234`
+         | `scale.shape('xyz')` returns the name of the svg shape used to repesent `'xyz'`
 
-### maps
+### map
 
 Usage | `maps.<dimension name>()`
 :--- |:---
 Returns | the translated value
-Examples | `maps.color()` returns the color value for the color dimension.
-         | `maps.x()` returns the x-axis pixel offset.
-         | `maps.shape()` returns the name of the svg shape.
+Examples | `map.color()` returns the color value for the color dimension.
+         | `map.x()` returns the x-axis pixel offset.
+         | `map.shape()` returns the name of the svg shape.
 
 > **Important** the maps functions should not be used for layer properties.
+
+### value
+
+Usage | `value.<dimension name>()`
+:--- |:---
+Returns | the translated value
+Examples | `value.color()` returns the value of the color property.
+         | `value.x()` returns the value of the x property.
+         | `value.shape()` returns the value of the shape property.
+
 
 ### properties
 
@@ -52,9 +63,9 @@ Usage | `properties.<dimension name>`
 :--- |:---
 Returns | an array of property names for the dimension.
 
-### labels
+### label
 
-Usage | `labels.<dimension name>`
+Usage | `label.<dimension name>`
 :--- |:---
 Returns | the label text defined for the dimension. If no label is defined it returns the property name.
   |In case the property attribute of the dimension is not defined it returns an empty string.
@@ -76,8 +87,10 @@ The second example shows a table with the layer property values. In this case th
     table.table.table-condensed
         thead
             tr
-                th {{labels.color}}
-                th {{labels.y}}
+                th(colspan="2") {{value.x() | date:'d MMM yyyy'}}
+            tr
+                th {{label.color}}
+                th {{label.y}}
         tbody
             tr(ng-repeat="prop in properties.color()", ng-style="{'color':scale.color(prop)}")
                 td {{prop}}

@@ -203,6 +203,9 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
 
     #--- Utility functions ---------------------------------------------------------------------------------------------
 
+    createClosure = (scaleFn) ->
+      return () ->
+        if _templScope.ttData then scaleFn(_templScope.ttData)
 
 
     compileTemplate = (template) ->
@@ -212,12 +215,14 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         _templScope.properties = {}
         _templScope.map = {}
         _templScope.scale = {}
-        _templScope.labels = {}
+        _templScope.label = {}
+        _templScope.value = {}
         for name, scale of _chart.allScales().allKinds()
-          _templScope.map[name] = () -> if _templScope.ttData then scale.map(_templScope.ttData)
+          _templScope.map[name] = createClosure(scale.map)
           _templScope.scale[name] = scale.scale()
-          _templScope.properties[name] = () -> if _templScope.ttData then scale.layerKeys(_templScope.ttData)
-          _templScope.labels[name] = scale.axisLabel()
+          _templScope.properties[name] = createClosure(scale.layerKeys)
+          _templScope.label[name] = scale.axisLabel()
+          _templScope.value[name] = createClosure(scale.value)
 
       if not _compiledTempl
         _compiledTempl = $compile(_templ)(_templScope) # and bind it to the tooltip template
