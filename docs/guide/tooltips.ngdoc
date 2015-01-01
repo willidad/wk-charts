@@ -7,8 +7,12 @@
 
 ## Custom Tooltips
 
-A custom tooltip is defined by providing a template url as value to the `tooltips` behavior directive. this template will be compiled by Angular and be used instead of the standard template.
+A custom tooltip is defined by providing a HTML template url as value to the `tooltips` behavior directive. this template will be compiled by Angular and be used instead of the standard template.
 The custom template will be positioned as usual, in case value markers are displayed for na axis these will be created and positioned automatically, like with the standard template.
+
+> The tooltips function creates an isolated scope, which is a child of the charts scope. Thus, chart scope variables and scope variables of the charts container hierarchy are accessible from the template.
+
+> For more sophisticated formatting a controller can be attached to the template using the ng-controller directive.
 
 To support tooltip formatting the $scope for this template exposes a number of attributes:
 
@@ -57,7 +61,7 @@ Returns | the label text defined for the dimension. If no label is defined it re
 
 ## Example Templates
 
-The following examples illustrate how to create an example template.
+The following examples illustrate how to create an template in Jade. 
 The first example displays a simple tooltip with three values in a singe line.
 The tooltip border is colored with the color of the chart object below the cursor:
 
