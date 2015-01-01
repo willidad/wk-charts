@@ -52,30 +52,26 @@ The custom template will be positioned as usual, in case value markers are displ
 <table>
 <thead>
 <tr>
-<th>&nbsp;</th>
-<th>Descriptions</th>
+<th style="text-align:left">Usage</th>
+<th style="text-align:left"><code>scales.&lt;dimension name&gt;(value)</code></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Usage</td>
-<td><code>scales.&lt;dimension name&gt;(value)</code></td>
+<td style="text-align:left">Returns</td>
+<td style="text-align:left">the translated value</td>
 </tr>
 <tr>
-<td>Returns</td>
-<td>the translated value</td>
+<td style="text-align:left">Examples</td>
+<td style="text-align:left"><code>scales.color(&#39;abc&#39;)</code> returns the color value used to represent <code>&#39;abc&#39;</code> in the chart</td>
 </tr>
 <tr>
-<td>Examples</td>
-<td><code>scales.color(&#39;abc&#39;)</code> returns the color value used to represent <code>&#39;abc&#39;</code> in the chart</td>
+<td style="text-align:left"></td>
+<td style="text-align:left"><code>scales.x(1234)</code> returns the x-axis pixel offset representing <code>1234</code></td>
 </tr>
 <tr>
-<td></td>
-<td><code>scales.x(1234)</code> returns the x-axis pixel offset representing <code>1234</code></td>
-</tr>
-<tr>
-<td></td>
-<td><code>scales.shape(&#39;xyz&#39;)</code> returns the name of the svg shape used to repesent <code>&#39;xyz&#39;</code></td>
+<td style="text-align:left"></td>
+<td style="text-align:left"><code>scales.shape(&#39;xyz&#39;)</code> returns the name of the svg shape used to repesent <code>&#39;xyz&#39;</code></td>
 </tr>
 </tbody>
 </table>
@@ -83,30 +79,26 @@ The custom template will be positioned as usual, in case value markers are displ
 <table>
 <thead>
 <tr>
-<th>&nbsp;</th>
-<th>Descriptions</th>
+<th style="text-align:left">Usage</th>
+<th style="text-align:left"><code>maps.&lt;dimension name&gt;()</code></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Usage</td>
-<td><code>maps.&lt;dimension name&gt;()</code></td>
+<td style="text-align:left">Returns</td>
+<td style="text-align:left">the translated value</td>
 </tr>
 <tr>
-<td>Returns</td>
-<td>the translated value</td>
+<td style="text-align:left">Examples</td>
+<td style="text-align:left"><code>maps.color()</code> returns the color value for the color dimension.</td>
 </tr>
 <tr>
-<td>Examples</td>
-<td><code>maps.color()</code> returns the color value for the color dimension.</td>
+<td style="text-align:left"></td>
+<td style="text-align:left"><code>maps.x()</code> returns the x-axis pixel offset.</td>
 </tr>
 <tr>
-<td></td>
-<td><code>maps.x()</code> returns the x-axis pixel offset.</td>
-</tr>
-<tr>
-<td></td>
-<td><code>maps.shape()</code> returns the name of the svg shape.</td>
+<td style="text-align:left"></td>
+<td style="text-align:left"><code>maps.shape()</code> returns the name of the svg shape.</td>
 </tr>
 </tbody>
 </table>
@@ -117,18 +109,14 @@ The custom template will be positioned as usual, in case value markers are displ
 <table>
 <thead>
 <tr>
-<th>&nbsp;</th>
-<th>Descriptions</th>
+<th style="text-align:left">Usage</th>
+<th style="text-align:left"><code>properties.&lt;dimension name&gt;</code></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Usage</td>
-<td><code>properties.&lt;dimension name&gt;</code></td>
-</tr>
-<tr>
-<td>Returns</td>
-<td>an array of property names for the dimension.</td>
+<td style="text-align:left">Returns</td>
+<td style="text-align:left">an array of property names for the dimension.</td>
 </tr>
 </tbody>
 </table>
@@ -136,27 +124,23 @@ The custom template will be positioned as usual, in case value markers are displ
 <table>
 <thead>
 <tr>
-<th>&nbsp;</th>
-<th>Descriptions</th>
+<th style="text-align:left">Usage</th>
+<th style="text-align:left"><code>labels.&lt;dimension name&gt;</code></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Usage</td>
-<td><code>labels.&lt;dimension name&gt;</code></td>
+<td style="text-align:left">Returns</td>
+<td style="text-align:left">the label text defined for the dimension. If no label is defined it returns the property name.</td>
 </tr>
 <tr>
-<td>Returns</td>
-<td>the label text defined for the dimension. If no label is defined it returns the property name.</td>
-</tr>
-<tr>
-<td></td>
-<td>In case the property attribute of the dimension is not defined it returns an empty string.</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">In case the property attribute of the dimension is not defined it returns an empty string.</td>
 </tr>
 </tbody>
 </table>
 <h2 id="example-templates">Example Templates</h2>
-<p>The following examples illustrate how to create an template in Jade. 
+<p>The following examples illustrate how to create an template in Jade.
 The first example displays a simple tooltip with three values in a singe line.
 The tooltip border is colored with the color of the chart object below the cursor:</p>
 <pre><code>table.table.table-condensed.custom-tooltip(ng-style=&quot;{&#39;border-color&#39;:map.color()}&quot;)

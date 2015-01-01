@@ -27,18 +27,18 @@ To support tooltip formatting the $scope for this template exposes a number of a
 scales, maps, properties and labels scope variables have properties with the names of the chart dimensions, i.e. x, y ,color, size, etc.
 
 ### scales
- &nbsp;   | Descriptions
---- | ---
+
 Usage | `scales.<dimension name>(value)`
+:--- |:---
 Returns | the translated value
 Examples | `scales.color('abc')` returns the color value used to represent `'abc'` in the chart
          | `scales.x(1234)` returns the x-axis pixel offset representing `1234`
          | `scales.shape('xyz')` returns the name of the svg shape used to repesent `'xyz'`
 
 ### maps
- &nbsp;   | Descriptions
---- | ---
+
 Usage | `maps.<dimension name>()`
+:--- |:---
 Returns | the translated value
 Examples | `maps.color()` returns the color value for the color dimension.
          | `maps.x()` returns the x-axis pixel offset.
@@ -47,21 +47,21 @@ Examples | `maps.color()` returns the color value for the color dimension.
 > **Important** the maps functions should not be used for layer properties.
 
 ### properties
- &nbsp;   | Descriptions
---- | ---
+
 Usage | `properties.<dimension name>`
+:--- |:---
 Returns | an array of property names for the dimension.
 
 ### labels
- &nbsp;   | Descriptions
---- | ---
+
 Usage | `labels.<dimension name>`
+:--- |:---
 Returns | the label text defined for the dimension. If no label is defined it returns the property name.
   |In case the property attribute of the dimension is not defined it returns an empty string.
 
 ## Example Templates
 
-The following examples illustrate how to create an template in Jade. 
+The following examples illustrate how to create an template in Jade.
 The first example displays a simple tooltip with three values in a singe line.
 The tooltip border is colored with the color of the chart object below the cursor:
 
