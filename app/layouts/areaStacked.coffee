@@ -4,9 +4,10 @@
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  draws a horizontally stacked area chart layout
 
   @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
   @usesDimension y [type=linear, domainRange=total]
@@ -160,7 +161,9 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils) ->
       ###*
           @ngdoc attr
           @name areaStacked#areaStacked
-          @param [areaStacked=zero] {expression}
+          @values zero, silhouette, expand, wiggle
+          @param [areaStacked=zero] {string} Defines how the areas are stacked.
+          For a description of the stacking algorithms please see [d3 Documentation on Stack Layout](https://github.com/mbostock/d3/wiki/Stack-Layout#offset)
       ###
       attrs.$observe 'areaStacked', (val) ->
         if val in ['zero', 'silhouette', 'expand', 'wiggle']

@@ -4,6 +4,7 @@
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
   draws a area chart layout

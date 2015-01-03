@@ -4,15 +4,13 @@
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  draws a pie chart layout
 
-  @requires size
-  @requires color
-  @requires layout
-
-
+  @usesDimension size [type=linear, domainRange=extent]
+  @usesDimension color [type=category20]
 ###
 angular.module('wk.chart').directive 'pie', ($log, utils) ->
   pieCntr = 0
@@ -194,6 +192,12 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
 
     #-------------------------------------------------------------------------------------------------------------------
 
+    ###*
+        @ngdoc attr
+        @name pie#labels
+        @values true, false
+        @param [labels=true] {boolean} controls the display of data labels for each of the pie segments.
+    ###
     attrs.$observe 'labels', (val) ->
       if val is 'false'
         _showLabels = false

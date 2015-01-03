@@ -4,6 +4,7 @@
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
   draws a area chart layout
@@ -11,8 +12,6 @@
   @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
   @usesDimension y [type=linear, domainRange=extent]
   @usesDimension color [type=category20]
-
-
 ###
 angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, wkChartMargins)->
   sBarCntr = 0
@@ -132,7 +131,10 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, wkChartMar
     ###*
         @ngdoc attr
         @name bars#padding
-        @param padding {expression}
+        @values true, false, [padding, outerPadding]
+        @param [padding=true] {boolean | list} Defined the inner and outer padding between the bars.
+          `padding` and `outerPadding` are measured in % of the total bar space occupied, i.e. a padding of 20 implies a bar height of 80%, padding 50 implies bar and space have the same size.
+        > padding is set to [10,0] unless explicitly specified differently. Setting `padding="false"` is equivalent to [0,0]
     ###
     attrs.$observe 'padding', (val) ->
       if val is 'false'
@@ -152,10 +154,11 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, wkChartMar
       _scaleList.y.rangePadding(config)
       host.lifeCycle().update()
 
-    ###*stackedAreaVertical
+    ###*
         @ngdoc attr
         @name bars#labels
-        @param labels {expression}
+        @values true, false
+        @param [labels=true] {boolean} controls the display of data labels for each of the bars.
     ###
     attrs.$observe 'labels', (val) ->
       if val is 'false'

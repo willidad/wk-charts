@@ -13,7 +13,7 @@
   {% else %}
     {%- if doc.restrict.attribute -%}
         {% code %}
-        <{$ doc.element | dashCase $} {$ doc.name | dashCase $} {%- for param in doc.params %} {$ directiveParam(param.alias or param.name, param.type, '="', '"') $} {%- endfor %} ... >
+        <{$ doc.element | dashCase $} {$ doc.name | dashCase $} {%- for param in doc.params %} {$ directiveParam(param.alias or param.name, param.optional, '="', '"') $} {%- endfor %} ... >
           ...
         </{$ doc.element $}>
         {% endcode %}

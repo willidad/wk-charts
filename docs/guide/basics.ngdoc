@@ -67,7 +67,7 @@ Scales define how data is translated into visual representation, and are at the 
 D3 (and thus the charting systems) supports two basic types of scales:
 * Quantitive - repesenting an continous data domain, such as number or dates
 * Ordinal - representing an enumeration of descrete values, such as names or categories. 
-For a more detailed discussion please see <https://github.com/mbostock/d3/wiki/Scales>
+For a more detailed discussion please see [d3 Documentation in Scales](https://github.com/mbostock/d3/wiki/Scales)
 
 The scale attributes describe how the data value is translated in the visual representation (e.g. a date value into a horizontal pixel offset) Details are with the different scale types. Please note that x,y,color and size dimensions are quantitive by nature, and ca ne used to represent quantitive domsins direcly. 
 Shape scales are ordinal, thus in order to represent quantitative data through shapes the data needs to be categorized into a limited number of categories that ca then be represented through shapes. d2 (and thus charts) supports a a number of means (e.g. thresholds) to achieve this. See ... for details

@@ -4,6 +4,7 @@
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
   draws a area chart layout
@@ -170,7 +171,10 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils) ->
       ###*
           @ngdoc attr
           @name areaStackedVertical#areaStackedVertical
-          @param [areaStackedVertical=zero] {expression}
+          @values zero, silhouette, expand, wiggle
+          @param [areaStackedVertical=zero] {string} Defines how the areas are stacked.
+          For a description of the stacking algorithms please see [d3 Documentation on Stack Layout](https://github.com/mbostock/d3/wiki/Stack-Layout#offset)
+
       ###
       attrs.$observe 'areaStackedVertical', (val) ->
         if val in ['zero', 'silhouette', 'expand', 'wiggle']

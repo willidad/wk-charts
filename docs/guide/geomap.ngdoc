@@ -1,0 +1,10 @@
+@ngdoc guide
+@module guide
+@name geoMap
+@description
+
+### Input data format
+
+wk.chart expects an array of objects as input data for the charts
+
+blablabla

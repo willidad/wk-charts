@@ -4,18 +4,16 @@
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  draws a icon chart layout
 
-  @requires x
-  @requires y
-  @requires color
-  @requires size
-  @requires shape
-  @requires layout
-
-
+  @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
+  @usesDimension y [type=linear]
+  @usesDimension color [type=category20]
+  @usesDimension size [type=linear]
+  @usesDimension shape [type=ordinal]
 ###
 angular.module('wk.chart').directive 'scatter', ($log, utils) ->
   scatterCnt = 0

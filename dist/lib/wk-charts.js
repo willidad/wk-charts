@@ -321,6 +321,8 @@ angular.module('wk.chart').directive('brush', function($log, selectionSharing, b
   };
 });
 
+angular.module("wk.chart").run(["$templateCache", function($templateCache) {$templateCache.put("templates/legend.html","\n<div ng-style=\"position\" ng-show=\"showLegend\" class=\"wk-chart-legend\">\n  <div ng-show=\"title\" class=\"legend-title\">{{title}}</div>\n  <ul class=\"list-unstyled\">\n    <li ng-repeat=\"legendRow in legendRows track by legendRow.value\" class=\"wk-chart-legend-item\"><span ng-if=\"legendRow.color\" ng-style=\"legendRow.color\">&nbsp;&nbsp;&nbsp;</span>\n      <svg-icon ng-if=\"legendRow.path\" path=\"legendRow.path\" width=\"20\"></svg-icon><span> &nbsp;{{legendRow.value}}</span>\n    </li>\n  </ul>\n</div>");
+$templateCache.put("templates/toolTip.html","\n<div ng-style=\"position\" class=\"wk-chart-tooltip\">\n  <table class=\"table table-condensed table-bordered\">\n    <thead ng-show=\"headerValue\">\n      <tr>\n        <th colspan=\"2\">{{headerName}}</th>\n        <th>{{headerValue}}</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr ng-repeat=\"ttRow in layers track by ttRow.name\">\n        <td ng-style=\"ttRow.color\" ng-class=\"ttRow.class\">\n          <svg-icon ng-if=\"ttRow.path\" path=\"ttRow.path\" width=\"15\"></svg-icon>\n        </td>\n        <td>{{ttRow.name}}</td>\n        <td>{{ttRow.value}}</td>\n      </tr>\n    </tbody>\n  </table>\n</div>");}]);
 // Copyright (c) 2013, Jason Davies, http://www.jasondavies.com
 // See LICENSE.txt for details.
 (function() {
@@ -447,8 +449,6 @@ function cross(a, b) {
 
 })();
 
-angular.module("wk.chart").run(["$templateCache", function($templateCache) {$templateCache.put("templates/legend.html","\n<div ng-style=\"position\" ng-show=\"showLegend\" class=\"wk-chart-legend\">\n  <div ng-show=\"title\" class=\"legend-title\">{{title}}</div>\n  <ul class=\"list-unstyled\">\n    <li ng-repeat=\"legendRow in legendRows track by legendRow.value\" class=\"wk-chart-legend-item\"><span ng-if=\"legendRow.color\" ng-style=\"legendRow.color\">&nbsp;&nbsp;&nbsp;</span>\n      <svg-icon ng-if=\"legendRow.path\" path=\"legendRow.path\" width=\"20\"></svg-icon><span> &nbsp;{{legendRow.value}}</span>\n    </li>\n  </ul>\n</div>");
-$templateCache.put("templates/toolTip.html","\n<div ng-style=\"position\" class=\"wk-chart-tooltip\">\n  <table class=\"table table-condensed table-bordered\">\n    <thead ng-show=\"headerValue\">\n      <tr>\n        <th colspan=\"2\">{{headerName}}</th>\n        <th>{{headerValue}}</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr ng-repeat=\"ttRow in layers track by ttRow.name\">\n        <td ng-style=\"ttRow.color\" ng-class=\"ttRow.class\">\n          <svg-icon ng-if=\"ttRow.path\" path=\"ttRow.path\" width=\"15\"></svg-icon>\n        </td>\n        <td>{{ttRow.name}}</td>\n        <td>{{ttRow.value}}</td>\n      </tr>\n    </tbody>\n  </table>\n</div>");}]);
 
 /**
   @ngdoc behavior
@@ -885,7 +885,7 @@ angular.module('wk.chart').directive('tooltips', function($log, behavior) {
   @module wk.chart
   @restrict A
   @area api
-
+  @element layout
   @description
 
   draws a area chart layout
@@ -1111,9 +1111,10 @@ angular.module('wk.chart').directive('area', function($log, utils) {
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  draws a horizontally stacked area chart layout
 
   @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
   @usesDimension y [type=linear, domainRange=total]
@@ -1316,7 +1317,9 @@ angular.module('wk.chart').directive('areaStacked', function($log, utils) {
       /**
           @ngdoc attr
           @name areaStacked#areaStacked
-          @param [areaStacked=zero] {expression}
+          @values zero, silhouette, expand, wiggle
+          @param [areaStacked=zero] {string} Defines how the areas are stacked.
+          For a description of the stacking algorithms please see [d3 Documentation on Stack Layout](https://github.com/mbostock/d3/wiki/Stack-Layout#offset)
        */
       attrs.$observe('areaStacked', function(val) {
         if (val === 'zero' || val === 'silhouette' || val === 'expand' || val === 'wiggle') {
@@ -1345,6 +1348,7 @@ angular.module('wk.chart').directive('areaStacked', function($log, utils) {
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
   draws a area chart layout
@@ -1558,7 +1562,9 @@ angular.module('wk.chart').directive('areaStackedVertical', function($log, utils
       /**
           @ngdoc attr
           @name areaStackedVertical#areaStackedVertical
-          @param [areaStackedVertical=zero] {expression}
+          @values zero, silhouette, expand, wiggle
+          @param [areaStackedVertical=zero] {string} Defines how the areas are stacked.
+          For a description of the stacking algorithms please see [d3 Documentation on Stack Layout](https://github.com/mbostock/d3/wiki/Stack-Layout#offset)
        */
       attrs.$observe('areaStackedVertical', function(val) {
         if (val === 'zero' || val === 'silhouette' || val === 'expand' || val === 'wiggle') {
@@ -1587,6 +1593,7 @@ angular.module('wk.chart').directive('areaStackedVertical', function($log, utils
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
   draws a area chart layout
@@ -1820,6 +1827,7 @@ angular.module('wk.chart').directive('areaVertical', function($log, utils) {
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
   draws a area chart layout
@@ -1952,7 +1960,10 @@ angular.module('wk.chart').directive('bars', function($log, utils, barConfig, wk
       /**
           @ngdoc attr
           @name bars#padding
-          @param padding {expression}
+          @values true, false, [padding, outerPadding]
+          @param [padding=true] {boolean | list} Defined the inner and outer padding between the bars.
+            `padding` and `outerPadding` are measured in % of the total bar space occupied, i.e. a padding of 20 implies a bar height of 80%, padding 50 implies bar and space have the same size.
+          > padding is set to [10,0] unless explicitly specified differently. Setting `padding="false"` is equivalent to [0,0]
        */
       attrs.$observe('padding', function(val) {
         var values;
@@ -1978,10 +1989,11 @@ angular.module('wk.chart').directive('bars', function($log, utils, barConfig, wk
         return host.lifeCycle().update();
       });
 
-      /**stackedAreaVertical
+      /**
           @ngdoc attr
           @name bars#labels
-          @param labels {expression}
+          @values true, false
+          @param [labels=true] {boolean} controls the display of data labels for each of the bars.
        */
       return attrs.$observe('labels', function(val) {
         if (val === 'false') {
@@ -2002,9 +2014,10 @@ angular.module('wk.chart').directive('bars', function($log, utils, barConfig, wk
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  draws a clustered bar layout
 
   @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
   @usesDimension y [type=linear, domainRange=extent]
@@ -2167,7 +2180,10 @@ angular.module('wk.chart').directive('barClustered', function($log, utils, barCo
       /**
           @ngdoc attr
           @name barClustered#padding
-          @param padding {expression}
+          @values true, false, [padding, outerPadding]
+          @param [padding=true] {boolean | list} Defined the inner and outer padding between the bars.
+            `padding` and `outerPadding` are measured in % of the total bar space occupied, i.e. a padding of 20 implies a bar height of 80%, padding 50 implies bar and space have the same size.
+          > padding is set to [10,0] unless explicitly specified differently. Setting `padding="false"` is equivalent to [0,0]
        */
       return attrs.$observe('padding', function(val) {
         var values;
@@ -2205,10 +2221,10 @@ angular.module('wk.chart').directive('barClustered', function($log, utils, barCo
   @area api
   @description
 
-  draws a area chart layout
+  draws a stacked bar chart layout
 
-  @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
-  @usesDimension y [type=linear, domainRange=total]
+  @usesDimension x [type=linear, domainRange=total] The horizontal dimension
+  @usesDimension y [type=linear, domainRange=extent]
   @usesDimension color [type=category20]
  */
 angular.module('wk.chart').directive('barStacked', function($log, utils, barConfig) {
@@ -2377,7 +2393,10 @@ angular.module('wk.chart').directive('barStacked', function($log, utils, barConf
       /**
           @ngdoc attr
           @name barStacked#padding
-          @param padding {expression}
+          @values true, false, [padding, outerPadding]
+          @param [padding=true] {boolean | list} Defined the inner and outer padding between the bars.
+            `padding` and `outerPadding` are measured in % of the total bar space occupied, i.e. a padding of 20 implies a bar height of 80%, padding 50 implies bar and space have the same size.
+          > padding is set to [10,0] unless explicitly specified differently. Setting `padding="false"` is equivalent to [0,0]
        */
       return attrs.$observe('padding', function(val) {
         var values;
@@ -2413,15 +2432,15 @@ angular.module('wk.chart').directive('barStacked', function($log, utils, barConf
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  draws a bubble chart layout
 
-  @requires x
-  @requires y
-  @requires color
-  @requires size
-  @requires layout
+  @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
+  @usesDimension y [type=linear]
+  @usesDimension color [type=category20]
+  @usesDimension size [type=linear]
  */
 angular.module('wk.chart').directive('bubble', function($log, utils) {
   var bubbleCntr;
@@ -2492,14 +2511,14 @@ angular.module('wk.chart').directive('bubble', function($log, utils) {
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  draws a column chart layout
 
-  @requires x
-  @requires y
-  @requires color
-  @requires layout
+  @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
+  @usesDimension y [type=linear, domainRange=extent]
+  @usesDimension color [type=category20]
  */
 angular.module('wk.chart').directive('column', function($log, utils, barConfig, wkChartMargins) {
   var sBarCntr;
@@ -2619,6 +2638,15 @@ angular.module('wk.chart').directive('column', function($log, utils, barConfig, 
       });
       host.lifeCycle().on('drawChart', draw);
       host.lifeCycle().on('brushDraw', brush);
+
+      /**
+      @ngdoc attr
+        @name column#padding
+        @values true, false, [padding, outerPadding]
+        @param [padding=true] {boolean | list} Defined the inner and outer padding between the bars.
+        `padding` and `outerPadding` are measured in % of the total bar space occupied, i.e. a padding of 20 implies a bar width of 80%, padding 50 implies bar and space have the same size.
+        > padding is set to [10,0] unless explicitly specified differently. Setting `padding="false"` is equivalent to [0,0]
+       */
       attrs.$observe('padding', function(val) {
         var values;
         if (val === 'false') {
@@ -2642,6 +2670,13 @@ angular.module('wk.chart').directive('column', function($log, utils, barConfig, 
         _scaleList.x.rangePadding(config);
         return host.lifeCycle().update();
       });
+
+      /**
+          @ngdoc attr
+          @name column#labels
+          @values true, false
+          @param [labels=true] {boolean} controls the display of data labels for each of the bars.
+       */
       return attrs.$observe('labels', function(val) {
         if (val === 'false') {
           host.showDataLabels(false);
@@ -2661,14 +2696,14 @@ angular.module('wk.chart').directive('column', function($log, utils, barConfig, 
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  draws a clustered column chart layout
 
-  @requires x
-  @requires y
-  @requires color
-  @requires layout
+  @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
+  @usesDimension y [type=linear, domainRange=extent]
+  @usesDimension color [type=category20]
  */
 angular.module('wk.chart').directive('columnClustered', function($log, utils, barConfig) {
   var clusteredBarCntr;
@@ -2824,6 +2859,15 @@ angular.module('wk.chart').directive('columnClustered', function($log, utils, ba
       });
       host.lifeCycle().on('drawChart', draw);
       host.lifeCycle().on('brushDraw', drawBrush);
+
+      /**
+        @ngdoc attr
+        @name columnClustered#padding
+        @values true, false, [padding, outerPadding]
+        @param [padding=true] {boolean | list} Defined the inner and outer padding between the bars.
+        `padding` and `outerPadding` are measured in % of the total bar space occupied, i.e. a padding of 20 implies a bar width of 80%, padding 50 implies bar and space have the same size.
+        > padding is set to [10,0] unless explicitly specified differently. Setting `padding="false"` is equivalent to [0,0]
+       */
       return attrs.$observe('padding', function(val) {
         var values;
         if (val === 'false') {
@@ -2858,14 +2902,14 @@ angular.module('wk.chart').directive('columnClustered', function($log, utils, ba
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  draws a stacked column chart layout
 
-  @requires x
-  @requires y
-  @requires color
-  @requires layout
+  @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
+  @usesDimension y [type=linear, domainRange=total]
+  @usesDimension color [type=category20]
  */
 angular.module('wk.chart').directive('columnStacked', function($log, utils, barConfig) {
   var stackedColumnCntr;
@@ -3024,6 +3068,15 @@ angular.module('wk.chart').directive('columnStacked', function($log, utils, barC
       });
       host.lifeCycle().on('drawChart', draw);
       host.lifeCycle().on('brushDraw', drawBrush);
+
+      /**
+        @ngdoc attr
+        @name columnStacked#padding
+        @values true, false, [padding, outerPadding]
+        @param [padding=true] {boolean | list} Defined the inner and outer padding between the bars.
+        `padding` and `outerPadding` are measured in % of the total bar space occupied, i.e. a padding of 20 implies a bar width of 80%, padding 50 implies bar and space have the same size.
+        > padding is set to [10,0] unless explicitly specified differently. Setting `padding="false"` is equivalent to [0,0]
+       */
       return attrs.$observe('padding', function(val) {
         var values;
         if (val === 'false') {
@@ -3153,14 +3206,15 @@ angular.module('wk.chart').directive('gauge', function($log, utils) {
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  Draws a map form the `geoJson` data provided. Colors the map elements according to the data provided in the cart data and the mapping rules provided in the `idMap` attribute.
+  The map is drawn according to the properties provided in the `projection` attribute
 
-  @requires x
-  @requires y
-  @requires color
-  @requires layout
+  For a more detailed description of the various attributes, and a reference to geoJson, projections and other relevant topic please see the {@link guide/geoMap geoMap section in the guide}
+
+  @usesDimension color [type=category20]
  */
 angular.module('wk.chart').directive('geoMap', function($log, utils) {
   var mapCntr, parseList;
@@ -3253,6 +3307,12 @@ angular.module('wk.chart').directive('geoMap', function($log, utils) {
       _tooltip = layout.behavior().tooltip;
       _selected = layout.behavior().selected;
       _tooltip.on("enter." + _id, ttEnter);
+
+      /**
+          @ngdoc attr
+          @name geoMap#projection
+          @param projection {object} sets the projection attributes for the map defined in `geojson`
+       */
       scope.$watch('projection', function(val) {
         if (val !== void 0) {
           $log.log('setting Projection params', val);
@@ -3271,6 +3331,12 @@ angular.module('wk.chart').directive('geoMap', function($log, utils) {
           }
         }
       }, true);
+
+      /**
+        @ngdoc attr
+        @name geoMap#geojson
+        @param geojson {object} the geojson object that describes the the map.
+       */
       return scope.$watch('geojson', function(val) {
         if (val !== void 0 && val !== '') {
           _geoJson = val;
@@ -3284,18 +3350,18 @@ angular.module('wk.chart').directive('geoMap', function($log, utils) {
 
 /**
   @ngdoc layout
-  @name histogram
+  @name columnHistogram
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  draws a histogram chart layout
 
-  @requires rangeX
-  @requires rangeY
-  @requires color
-  @requires layout
+  @usesDimension rangeX [type=linear, domainRange=extent] The horizontal dimension
+  @usesDimension y [type=linear, domainRange=extent]
+  @usesDimension color [type=category20]
  */
 angular.module('wk.chart').directive('columnHistogram', function($log, barConfig, utils, wkChartMargins) {
   var sHistoCntr;
@@ -3452,6 +3518,13 @@ angular.module('wk.chart').directive('columnHistogram', function($log, barConfig
       });
       host.lifeCycle().on('drawChart', draw);
       host.lifeCycle().on('brushDraw', brush);
+
+      /**
+          @ngdoc attr
+          @name columnHistogram#labels
+          @values true, false
+          @param [labels=true] {boolean} controls the display of data labels for each of the bars.
+       */
       return attrs.$observe('labels', function(val) {
         if (val === 'false') {
           host.showDataLabels(false);
@@ -4024,13 +4097,13 @@ angular.module('wk.chart').directive('lineVertical', function($log, utils) {
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  draws a pie chart layout
 
-  @requires size
-  @requires color
-  @requires layout
+  @usesDimension size [type=linear, domainRange=extent]
+  @usesDimension color [type=category20]
  */
 angular.module('wk.chart').directive('pie', function($log, utils) {
   var pieCntr;
@@ -4190,6 +4263,13 @@ angular.module('wk.chart').directive('pie', function($log, utils) {
         return _tooltip.on("enter." + _id, ttEnter);
       });
       layout.lifeCycle().on('drawChart', draw);
+
+      /**
+          @ngdoc attr
+          @name pie#labels
+          @values true, false
+          @param [labels=true] {boolean} controls the display of data labels for each of the pie segments.
+       */
       return attrs.$observe('labels', function(val) {
         if (val === 'false') {
           _showLabels = false;
@@ -4209,16 +4289,16 @@ angular.module('wk.chart').directive('pie', function($log, utils) {
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  draws a icon chart layout
 
-  @requires x
-  @requires y
-  @requires color
-  @requires size
-  @requires shape
-  @requires layout
+  @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
+  @usesDimension y [type=linear]
+  @usesDimension color [type=category20]
+  @usesDimension size [type=linear]
+  @usesDimension shape [type=ordinal]
  */
 angular.module('wk.chart').directive('scatter', function($log, utils) {
   var scatterCnt;
@@ -4294,14 +4374,14 @@ angular.module('wk.chart').directive('scatter', function($log, utils) {
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  draws a spider chart layout
 
-  @requires x
-  @requires y
-  @requires color
-  @requires layout
+  @usesDimension x [type=ordinal] The horizontal dimension
+  @usesDimension y [type=linear, domainRange=max]
+  @usesDimension color [type=category20]
  */
 angular.module('wk.chart').directive('spider', function($log, utils) {
   var spiderCntr;
@@ -4423,7 +4503,7 @@ angular.module('wk.chart').directive('spider', function($log, utils) {
       layout.lifeCycle().on('configure', function() {
         _scaleList = this.getScales(['x', 'y', 'color']);
         _scaleList.y.domainCalc('max');
-        _scaleList.x.resetOnNewData(true);
+        _scaleList.x.resetOnNewData(true).scaleType('ordinal');
         _tooltip = layout.behavior().tooltip;
         return _tooltip.on("enter." + _id, ttEnter);
       });
@@ -7978,103 +8058,6 @@ angular.module('wk.chart').directive('rangeY', function($log, scale, legend, sca
   };
 });
 
-angular.module('wk.chart').service('selectionSharing', function($log) {
-  var callbacks, _selection, _selectionIdxRange;
-  _selection = {};
-  _selectionIdxRange = {};
-  callbacks = {};
-  this.createGroup = function(group) {};
-  this.setSelection = function(selection, selectionIdxRange, group) {
-    var cb, _i, _len, _ref, _results;
-    if (group) {
-      _selection[group] = selection;
-      _selectionIdxRange[group] = selectionIdxRange;
-      if (callbacks[group]) {
-        _ref = callbacks[group];
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          cb = _ref[_i];
-          _results.push(cb(selection, selectionIdxRange));
-        }
-        return _results;
-      }
-    }
-  };
-  this.getSelection = function(group) {
-    var grp;
-    grp = group || 'default';
-    return selection[grp];
-  };
-  this.register = function(group, callback) {
-    if (group) {
-      if (!callbacks[group]) {
-        callbacks[group] = [];
-      }
-      if (!_.contains(callbacks[group], callback)) {
-        return callbacks[group].push(callback);
-      }
-    }
-  };
-  this.unregister = function(group, callback) {
-    var idx;
-    if (callbacks[group]) {
-      idx = callbacks[group].indexOf(callback);
-      if (idx >= 0) {
-        return callbacks[group].splice(idx, 1);
-      }
-    }
-  };
-  return this;
-});
-
-angular.module('wk.chart').service('timing', function($log) {
-  var elapsed, elapsedStart, timers;
-  timers = {};
-  elapsedStart = 0;
-  elapsed = 0;
-  this.init = function() {
-    return elapsedStart = Date.now();
-  };
-  this.start = function(topic) {
-    var top;
-    top = timers[topic];
-    if (!top) {
-      top = timers[topic] = {
-        name: topic,
-        start: 0,
-        total: 0,
-        callCnt: 0,
-        active: false
-      };
-    }
-    top.start = Date.now();
-    return top.active = true;
-  };
-  this.stop = function(topic) {
-    var top;
-    if (top = timers[topic]) {
-      top.active = false;
-      top.total += Date.now() - top.start;
-      top.callCnt += 1;
-    }
-    return elapsed = Date.now() - elapsedStart;
-  };
-  this.report = function() {
-    var topic, val;
-    for (topic in timers) {
-      val = timers[topic];
-      val.avg = val.total / val.callCnt;
-    }
-    $log.info(timers);
-    $log.info('Elapsed Time (ms)', elapsed);
-    return timers;
-  };
-  this.clear = function() {
-    return timers = {};
-  };
-  return this;
-});
-
 angular.module('wk.chart').factory('layeredData', function($log) {
   var layered;
   return layered = function() {
@@ -8485,6 +8468,103 @@ angular.module('wk.chart').service('utils', function($log) {
       iNew++;
     }
     return result;
+  };
+  return this;
+});
+
+angular.module('wk.chart').service('selectionSharing', function($log) {
+  var callbacks, _selection, _selectionIdxRange;
+  _selection = {};
+  _selectionIdxRange = {};
+  callbacks = {};
+  this.createGroup = function(group) {};
+  this.setSelection = function(selection, selectionIdxRange, group) {
+    var cb, _i, _len, _ref, _results;
+    if (group) {
+      _selection[group] = selection;
+      _selectionIdxRange[group] = selectionIdxRange;
+      if (callbacks[group]) {
+        _ref = callbacks[group];
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          cb = _ref[_i];
+          _results.push(cb(selection, selectionIdxRange));
+        }
+        return _results;
+      }
+    }
+  };
+  this.getSelection = function(group) {
+    var grp;
+    grp = group || 'default';
+    return selection[grp];
+  };
+  this.register = function(group, callback) {
+    if (group) {
+      if (!callbacks[group]) {
+        callbacks[group] = [];
+      }
+      if (!_.contains(callbacks[group], callback)) {
+        return callbacks[group].push(callback);
+      }
+    }
+  };
+  this.unregister = function(group, callback) {
+    var idx;
+    if (callbacks[group]) {
+      idx = callbacks[group].indexOf(callback);
+      if (idx >= 0) {
+        return callbacks[group].splice(idx, 1);
+      }
+    }
+  };
+  return this;
+});
+
+angular.module('wk.chart').service('timing', function($log) {
+  var elapsed, elapsedStart, timers;
+  timers = {};
+  elapsedStart = 0;
+  elapsed = 0;
+  this.init = function() {
+    return elapsedStart = Date.now();
+  };
+  this.start = function(topic) {
+    var top;
+    top = timers[topic];
+    if (!top) {
+      top = timers[topic] = {
+        name: topic,
+        start: 0,
+        total: 0,
+        callCnt: 0,
+        active: false
+      };
+    }
+    top.start = Date.now();
+    return top.active = true;
+  };
+  this.stop = function(topic) {
+    var top;
+    if (top = timers[topic]) {
+      top.active = false;
+      top.total += Date.now() - top.start;
+      top.callCnt += 1;
+    }
+    return elapsed = Date.now() - elapsedStart;
+  };
+  this.report = function() {
+    var topic, val;
+    for (topic in timers) {
+      val = timers[topic];
+      val.avg = val.total / val.callCnt;
+    }
+    $log.info(timers);
+    $log.info('Elapsed Time (ms)', elapsed);
+    return timers;
+  };
+  this.clear = function() {
+    return timers = {};
   };
   return this;
 });

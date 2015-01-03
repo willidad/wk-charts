@@ -4,16 +4,14 @@
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  draws a stacked column chart layout
 
-  @requires x
-  @requires y
-  @requires color
-  @requires layout
-
-
+  @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
+  @usesDimension y [type=linear, domainRange=total]
+  @usesDimension color [type=category20]
 ###
 angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig) ->
 
@@ -155,7 +153,14 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig) -
       host.lifeCycle().on 'drawChart', draw
       host.lifeCycle().on 'brushDraw', drawBrush
 
-
+      ###*
+        @ngdoc attr
+        @name columnStacked#padding
+        @values true, false, [padding, outerPadding]
+        @param [padding=true] {boolean | list} Defined the inner and outer padding between the bars.
+        `padding` and `outerPadding` are measured in % of the total bar space occupied, i.e. a padding of 20 implies a bar width of 80%, padding 50 implies bar and space have the same size.
+        > padding is set to [10,0] unless explicitly specified differently. Setting `padding="false"` is equivalent to [0,0]
+      ###
       attrs.$observe 'padding', (val) ->
         if val is 'false'
           config.padding = 0

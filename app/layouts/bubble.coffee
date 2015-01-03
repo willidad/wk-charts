@@ -4,17 +4,15 @@
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  draws a bubble chart layout
 
-  @requires x
-  @requires y
-  @requires color
-  @requires size
-  @requires layout
-
-
+  @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
+  @usesDimension y [type=linear]
+  @usesDimension color [type=category20]
+  @usesDimension size [type=linear]
 ###
 angular.module('wk.chart').directive 'bubble', ($log, utils) ->
   bubbleCntr = 0

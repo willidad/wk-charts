@@ -19,7 +19,7 @@ function errorAlert(error){
 
 var buildDir = './dist';
 
-gulp.task('wkChartsDoc', function() {
+gulp.task('wkChartsDoc',['wkChartsJs'], function() {
   try {
     var dgeni = new Dgeni([require('./docs/wkchart-docs')]);
     return dgeni.generate();

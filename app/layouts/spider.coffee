@@ -4,16 +4,14 @@
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  draws a spider chart layout
 
-  @requires x
-  @requires y
-  @requires color
-  @requires layout
-
-
+  @usesDimension x [type=ordinal] The horizontal dimension
+  @usesDimension y [type=linear, domainRange=max]
+  @usesDimension color [type=category20]
 ###
 angular.module('wk.chart').directive 'spider', ($log, utils) ->
   spiderCntr = 0
@@ -123,7 +121,7 @@ angular.module('wk.chart').directive 'spider', ($log, utils) ->
       layout.lifeCycle().on 'configure', ->
         _scaleList = @getScales(['x', 'y', 'color'])
         _scaleList.y.domainCalc('max')
-        _scaleList.x.resetOnNewData(true)
+        _scaleList.x.resetOnNewData(true).scaleType('ordinal')
         #@layerScale('color')
         _tooltip = layout.behavior().tooltip
         _tooltip.on "enter.#{_id}", ttEnter

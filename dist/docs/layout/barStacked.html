@@ -1,7 +1,7 @@
 <div>
 
     <h3>Layout <em>barStacked</em></h3>
-    draws a area chart layout
+    draws a stacked bar chart layout
 
   
   <h3 id="usage">Usage</h3>
@@ -17,10 +17,10 @@
         </thead>
         <tbody><tr>
                 <td>x</td>
-                <td><div>type = linear</div><div>domainRange = extent</div></td>
+                <td><div>type = linear</div><div>domainRange = total</div></td>
             </tr><tr>
                 <td>y</td>
-                <td><div>type = linear</div><div>domainRange = total</div></td>
+                <td><div>type = linear</div><div>domainRange = extent</div></td>
             </tr><tr>
                 <td>color</td>
                 <td><div>type = category20</div></td>
@@ -42,15 +42,19 @@
     <tr>
       <td>
         <div><strong>padding </strong></div>
-        
-        
+        <div><em>(optional, default: true)</em></div>
+        <div><em> (Accepted Values: true, false, [padding, outerPadding])</em></div> 
 
       </td>
       <td>
-        <a href="" class="label type-hint type-hint-expression">expression</a>
+        <a href="" class="label type-hint type-hint-boolean">boolean</a><a href="" class="label type-hint type-hint-list">list</a>
       </td>
       <td>
-        
+        <p>Defined the inner and outer padding between the bars.
+            <code>padding</code> and <code>outerPadding</code> are measured in % of the total bar space occupied, i.e. a padding of 20 implies a bar height of 80%, padding 50 implies bar and space have the same size.</p>
+<pre><code>&gt; padding is set to [10,0] unless explicitly specified differently. Setting `padding=&quot;false&quot;` is equivalent to [0,0]
+</code></pre>
+
       </td>
     </tr>
     

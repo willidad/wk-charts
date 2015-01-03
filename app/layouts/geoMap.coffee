@@ -4,16 +4,15 @@
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  Draws a map form the `geoJson` data provided. Colors the map elements according to the data provided in the cart data and the mapping rules provided in the `idMap` attribute.
+  The map is drawn according to the properties provided in the `projection` attribute
 
-  @requires x
-  @requires y
-  @requires color
-  @requires layout
+  For a more detailed description of the various attributes, and a reference to geoJson, projections and other relevant topic please see the {@link guide/geoMap geoMap section in the guide}
 
-
+  @usesDimension color [type=category20]
 ###
 angular.module('wk.chart').directive 'geoMap', ($log, utils) ->
   mapCntr = 0
@@ -107,7 +106,11 @@ angular.module('wk.chart').directive 'geoMap', ($log, utils) ->
       _tooltip.on "enter.#{_id}", ttEnter
 
       # GeoMap specific properties -------------------------------------------------------------------------------------
-
+      ###*
+          @ngdoc attr
+          @name geoMap#projection
+          @param projection {object} sets the projection attributes for the map defined in `geojson`
+      ###
       scope.$watch 'projection', (val) ->
         if val isnt undefined
           $log.log 'setting Projection params', val
@@ -126,6 +129,11 @@ angular.module('wk.chart').directive 'geoMap', ($log, utils) ->
 
       , true #deep watch
 
+      ###*
+        @ngdoc attr
+        @name geoMap#geojson
+        @param geojson {object} the geojson object that describes the the map.
+      ###
       scope.$watch 'geojson', (val) ->
         if val isnt undefined and val isnt ''
           _geoJson = val
@@ -133,5 +141,3 @@ angular.module('wk.chart').directive 'geoMap', ($log, utils) ->
 
 
   }
-
-  #TODO re-test and verify in new applicaiton.

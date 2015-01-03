@@ -1,19 +1,17 @@
 ###*
   @ngdoc layout
-  @name histogram
+  @name columnHistogram
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  draws a histogram chart layout
 
-  @requires rangeX
-  @requires rangeY
-  @requires color
-  @requires layout
-
-
+  @usesDimension rangeX [type=linear, domainRange=extent] The horizontal dimension
+  @usesDimension y [type=linear, domainRange=extent]
+  @usesDimension color [type=category20]
 ###
 angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils, wkChartMargins) ->
 
@@ -144,7 +142,12 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils,
       host.lifeCycle().on 'brushDraw', brush
 
       #-------------------------------------------------------------------------------------------------------------------
-
+      ###*
+          @ngdoc attr
+          @name columnHistogram#labels
+          @values true, false
+          @param [labels=true] {boolean} controls the display of data labels for each of the bars.
+      ###
       attrs.$observe 'labels', (val) ->
         if val is 'false'
           host.showDataLabels(false)
