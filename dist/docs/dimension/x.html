@@ -1,15 +1,5 @@
-<html>
-<head>
-    <title>WK Charts API Documentations</title>
-    <link rel="stylesheet" href="/css/github-markdown.css">
-</head>
-<body>
-<div class="markdown-body">
+<div>
 
-
-<a href='https://github.com///tree//dist/lib/wk-charts.js#L5032' class='view-source pull-right btn btn-primary'>
-  <i class="glyphicon glyphicon-zoom-in">&nbsp;</i>View Source
-</a>
 
 
 <header class="api-profile-header">
@@ -63,16 +53,17 @@
     <tr>
       <th>Param</th>
       <th>Type</th>
-      <th>Details</th>
+      <th>Description</th>
     </tr>
   </thead>
   <tbody>
     
     <tr>
       <td>
-        axis
+        <div><strong>axis </strong></div>
         
         
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-string">string</a>
@@ -80,16 +71,15 @@
       <td>
         <p>Define if a horizontal axis should be displayed Possible values:</p>
 
-        
-        
       </td>
     </tr>
     
     <tr>
       <td>
-        type
+        <div><strong>type </strong></div>
+        <div><em>(optional, default: layout specific - see layout docs)</em></div>
         
-        <div><em>(optional)</em></div>
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-scale">scale</a>
@@ -97,16 +87,15 @@
       <td>
         <p>Defines the d3 scale applied to transform the input data to a dimensions display value. All d3 scales are supported, as well as wk-chart specific extensions described here. #TODO insert correct links</p>
 
-        
-        <p><em>(default: layout specific - see layout docs)</em></p>
       </td>
     </tr>
     
     <tr>
       <td>
-        exponent
+        <div><strong>exponent </strong></div>
+        <div><em>(optional</em></div>
         
-        <div><em>(optional)</em></div>
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-number">number</a>
@@ -114,16 +103,15 @@
       <td>
         <p>This attribute is only evaluated with pow and log scale types - defines the exponent for the d3 pow and log scale #TODO insert correct links</p>
 
-        
-        
       </td>
     </tr>
     
     <tr>
       <td>
-        property
+        <div><strong>property </strong></div>
         
         
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-expression">expression</a>
@@ -132,16 +120,15 @@
         <p>the input data property (properties) used to compute this dimension. In case the charts supports a the data layer dimension this attribute can be a list of data properties.
           In this case the property field can be omitted, for non-layer dimension it is required.</p>
 
-        
-        
       </td>
     </tr>
     
     <tr>
       <td>
-        layerProperty
+        <div><strong>layerProperty </strong></div>
+        <div><em>(optional</em></div>
         
-        <div><em>(optional)</em></div>
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-expression">expression</a>
@@ -150,16 +137,15 @@
         <p>defines the container object for property in case the data is a hierachical structure. See (#todo define link)
          for more detail</p>
 
-        
-        
       </td>
     </tr>
     
     <tr>
       <td>
-        range
+        <div><strong>range </strong></div>
+        <div><em>(optional</em></div>
         
-        <div><em>(optional)</em></div>
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-expression">expression</a>
@@ -167,16 +153,15 @@
       <td>
         <p>The scale types range attribute. For x and y scales the range is set to the pixel width and height of the drawing container, for category... scales the range is set to the scales color range</p>
 
-        
-        
       </td>
     </tr>
     
     <tr>
       <td>
-        dateFormat
+        <div><strong>dateFormat </strong></div>
+        <div><em>(optional</em></div>
         
-        <div><em>(optional)</em></div>
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-expression">expression</a>
@@ -185,16 +170,15 @@
         <p>applies to Time scale type only. Describes the date display format of the property field content. can be omitted if the field is already a javascript Date object, otherwise the format is used to transform
         the property values into a Javascript Date object.Date Format is described using d3&#39;s <a href="https://github.com/mbostock/d3/wiki/Time-Formatting#format">Time Format</a></p>
 
-        
-        
       </td>
     </tr>
     
     <tr>
       <td>
-        domain
+        <div><strong>domain </strong></div>
+        <div><em>(optional</em></div>
         
-        <div><em>(optional)</em></div>
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-expression">expression</a>
@@ -203,16 +187,15 @@
         <p>the scale types domain property. Meaning and acceptable values for domain depend on teh scale type, thus please see (TODO: define link)
         for further explanation</p>
 
-        
-        
       </td>
     </tr>
     
     <tr>
       <td>
-        domainRange
+        <div><strong>domainRange </strong></div>
+        <div><em>(optional</em></div>
         
-        <div><em>(optional)</em></div>
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-expression">expression</a>
@@ -224,16 +207,15 @@
         extent: [minimum data value .. maximum data value]
         total: applies only layer dimensions, calculates as 0 ..  maximum of the layer value totals]</p>
 
-        
-        
       </td>
     </tr>
     
     <tr>
       <td>
-        label
+        <div><strong>label </strong></div>
+        <div><em>(optional</em></div>
         
-        <div><em>(optional)</em></div>
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-expression">expression</a>
@@ -241,16 +223,15 @@
       <td>
         <p>defined the dimensions label text. If not specified, the value of teh &#39;property&#39; attribute is used</p>
 
-        
-        
       </td>
     </tr>
     
     <tr>
       <td>
-        format
+        <div><strong>format </strong></div>
+        <div><em>(optional</em></div>
         
-        <div><em>(optional)</em></div>
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-expression">expression</a>
@@ -259,16 +240,15 @@
         <p>a formatting string used to display tooltip and legend values for the dimension. if omitted, a default format will be applied
         please note tha this is different from the &#39;tickFormat&#39; attribute</p>
 
-        
-        
       </td>
     </tr>
     
     <tr>
       <td>
-        reset
+        <div><strong>reset </strong></div>
+        <div><em>(optional</em></div>
         
-        <div><em>(optional)</em></div>
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-expression">expression</a>
@@ -276,135 +256,125 @@
       <td>
         <p>If sepcified or set to true, the domain values are reset every time the carts data changes.</p>
 
-        
-        
       </td>
     </tr>
     
     <tr>
       <td>
-        tickFormat
+        <div><strong>tickFormat </strong></div>
+        <div><em>(optional</em></div>
         
-        <div><em>(optional)</em></div>
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-expression">expression</a>
       </td>
       <td>
         
-        
-        
       </td>
     </tr>
     
     <tr>
       <td>
-        ticks
+        <div><strong>ticks </strong></div>
+        <div><em>(optional</em></div>
         
-        <div><em>(optional)</em></div>
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-expression">expression</a>
       </td>
       <td>
         
-        
-        
       </td>
     </tr>
     
     <tr>
       <td>
-        grid
+        <div><strong>grid </strong></div>
+        <div><em>(optional</em></div>
         
-        <div><em>(optional)</em></div>
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-expression">expression</a>
       </td>
       <td>
         
-        
-        
       </td>
     </tr>
     
     <tr>
       <td>
-        showLabel
+        <div><strong>showLabel </strong></div>
+        <div><em>(optional</em></div>
         
-        <div><em>(optional)</em></div>
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-expression">expression</a>
       </td>
       <td>
         
-        
-        
       </td>
     </tr>
     
     <tr>
       <td>
-        axisFormatters
+        <div><strong>axisFormatters </strong></div>
+        <div><em>(optional</em></div>
         
-        <div><em>(optional)</em></div>
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-expression">expression</a>
       </td>
       <td>
         
-        
-        
       </td>
     </tr>
     
     <tr>
       <td>
-        legend
-        
-        <div><em>(optional)</em></div>
+        <div><strong>legend </strong></div>
+        <div><em>(optional, default: true)</em></div>
+        <div><em> (Accepted Values: true, false, top-right, top-left, bottom-left, bottom-right, #divName)</em></div> 
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-expression">expression</a>
       </td>
       <td>
         
-        <p><em> (Accepted Values: true, false, top-right, top-left, bottom-left, bottom-right, #divName)</em></p> 
-        <p><em>(default: true)</em></p>
       </td>
     </tr>
     
     <tr>
       <td>
-        valuesLegend
+        <div><strong>valuesLegend </strong></div>
+        <div><em>(optional</em></div>
         
-        <div><em>(optional)</em></div>
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-expression">expression</a>
       </td>
       <td>
         
-        
-        
       </td>
     </tr>
     
     <tr>
       <td>
-        legendTitle
+        <div><strong>legendTitle </strong></div>
+        <div><em>(optional</em></div>
         
-        <div><em>(optional)</em></div>
+
       </td>
       <td>
         <a href="" class="label type-hint type-hint-expression">expression</a>
       </td>
       <td>
-        
-        
         
       </td>
     </tr>
@@ -421,5 +391,3 @@
 
 
 </div>
-</body>
-</html>

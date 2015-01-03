@@ -4,14 +4,14 @@
   @module wk.chart
   @restrict A
   @area api
+  @element layout
   @description
 
-  draws a area chart layout
+  Draws a horizontal line chart layout
 
-  @requires x
-  @requires y
-  @requires color
-  @requires layout
+  @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
+  @usesDimension y [type=linear, domainRange=extent] The vertical dimension
+  @usesDimension color [type=category20] the line coloring dimension
 
 
 ###
@@ -228,6 +228,12 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
 
       #--- Property Observers ------------------------------------------------------------------------------------------
 
+      ###*
+        @ngdoc attr
+        @name line#markers
+        @values true, false
+        @param [markers=false] {boolean} - show a data maker icon for each data point
+      ###
       attrs.$observe 'markers', (val) ->
         if val is '' or val is 'true'
           _showMarkers = true

@@ -8,24 +8,23 @@
     <tr>
       <th>Param</th>
       <th>Type</th>
-      <th>Details</th>
+      <th>Description</th>
     </tr>
   </thead>
   <tbody>
     {% for param in params %}
     <tr>
       <td>
-        {$ param.name $}
-        {% if param.alias %}| {$ param.alias $}{% endif %}
-        {% if param.optional %}<div><em>(optional)</em></div>{% endif %}
+        <div><strong>{$ param.name $} {% if param.alias %}| {$ param.alias $}{% endif %}</strong></div>
+        {% if param.optional %}<div><em>(optional{% if param.defaultValue %}, default: {$ param.defaultValue $}){% endif %}</em></div>{% endif %}
+        {% if param.values %}<div><em> (Accepted Values: {$ param.values $})</em></div> {% endif %}
+
       </td>
       <td>
         {$ typeList(param.typeList) $}
       </td>
       <td>
         {$ param.description | marked $}
-        {% if param.values %}<p><em> (Accepted Values: {$ param.values $})</em></p> {% endif %}
-        {% if param.defaultValue %}<p><em>(default: {$ param.defaultValue $})</em></p>{% endif %}
       </td>
     </tr>
     {% endfor %}

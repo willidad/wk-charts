@@ -1,86 +1,39 @@
-{% include "lib/macros.html" -%}
-{% extends "api/api.template.html" %}
+{% extends "base.template.html" %}
+{% include "macros.html" -%}
 
-{% block additional %}
-  <h2>Directive Info</h2>
-  <ul>
-    {% if doc.scope %}<li>This directive creates new scope.</li>{% endif %}
-    <li>This directive executes at priority level {$ doc.priority $}.</li>
-  </ul>
+{% block content %}
+    <h3>Layout <em>{$ doc.name $}</em></h3>
+    {$ doc.description $}
 
   {% block usage %}
-  <h2 id="usage">Usage</h2>
+  <h3 id="usage">Usage</h3>
   <div class="usage">
   {% if doc.usage %}
     {$ doc.usage | marked $}
   {% else %}
-    <ul>
-    {% if doc.restrict.element %}
-      <li>as element:
-      {% if doc.name.indexOf('ng') == 0 -%}
-      (This directive can be used as custom element, but be aware of <a href="guide/ie">IE restrictions</a>).
-      {%- endif %}
-      {% code %}
-      <{$ doc.name | dashCase $}
-        {%- for param in doc.params %}
-        {$ directiveParam(param.alias or param.name, param.type, '="', '"') $}
-        {%- endfor %}>
-      ...
-      </{$ doc.name | dashCase $}>
-      {% endcode %}
-      </li>
-    {% endif -%}
-
     {%- if doc.restrict.attribute -%}
-      <li>as attribute:
         {% code %}
-        <{$ doc.element $}
-          {%- for param in doc.params %}
-          {$ directiveParam(param.name, param.type, '="', '"') $}
-          {%- endfor %}>
-        ...
+        <{$ doc.element | dashCase $} {$ doc.name | dashCase $} {%- for param in doc.params %} {$ directiveParam(param.alias or param.name, param.type, '="', '"') $} {%- endfor %} ... >
+          ...
         </{$ doc.element $}>
         {% endcode %}
-      </li>
     {% endif -%}
-
-    {%- if doc.restrict.cssClass -%}
-      <li>as CSS class:
-        {% code %}
-        {% set sep = joiner(' ') %}
-        <{$ doc.element $} class="
-        {%- for param in doc.params -%}
-          {$ sep() $}{$ directiveParam(param.name, param.type, ': ', ';') $}
-        {%- endfor %}"> ... </{$ doc.element $}>
-        {% endcode %}
-      </li>
-    {% endif -%}
-    </ul>
   {%- endif %}
   </div>
   {% endblock -%}
   {%- if doc.usesDimension -%}
-      <table>
+      <table class="variables-matrix">
         <thead>
           <tr>
-            <td>Dimension</td><td>Attribute</td><td>Default</td><td>Remarks</td>
+            <th>Required Dimensions</th><th>Dimension Attribute Defaults</th>
           </tr>
         </thead>
         <tbody>
           {%- for dim in doc.usesDimension -%}
-          <tr><td>{$ dim.paramName $}</td>
-            <td colspan="3">
-              <table>
-                <tbody>
-                  {%- for defVal in dim.defaults -%}
-                    <tr>
-                      <td>{$ defVal.param $}</td><td>{$ defVal.value $}</td><td>{$ defVal.description $}</td>
-                    </tr>
-                  {%- endfor -%}
-                </tbody>
-              </table>
-            </td>
-          </tr>
+            <tr>
+                <td>{$ dim.paramName $}</td>
+                <td>{%- for defVal in dim.defaults -%}<div>{$ defVal.param $} = {$ defVal.value $}</div>{%- endfor -%}</td>
+            </tr>
           {%- endfor -%}
         </tbody>
       </table>
