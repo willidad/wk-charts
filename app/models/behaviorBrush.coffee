@@ -26,7 +26,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
     _brushY = false
     _boundsIdx = undefined
     _boundsValues = undefined
-    _boundsDomain = undefined
+    _boundsDomain = []
     _brushEvents = d3.dispatch('brushStart', 'brush', 'brushEnd')
 
     left = top = right = bottom = startTop = startLeft = startRight = startBottom = undefined
@@ -77,34 +77,48 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
 
     setSelection = (left, right, top, bottom) ->
       if _brushX
-        _boundsIdx = [me.x().invert(left), me.x().invert(right)]
-        if me.x().isOrdinal()
-          _boundsValues = _data.map((d) -> me.x().value(d)).slice(_boundsIdx[0], _boundsIdx[1] + 1)
-        else
-          if me.x().kind() is 'rangeX'
-            if me.x().upperProperty()
-              _boundsValues = [me.x().lowerValue(_data[_boundsIdx[0]]), me.x().upperValue(_data[_boundsIdx[1]])]
+        #test if selected elements are changed
+        _left = me.x().invert(left)
+        _right = me.x().invert(right)
+        if _boundsIdx[0] isnt _left or _boundsIdx[1] isnt _right
+          _boundsIdx = [_left, _right]
+          # bounds have changed, update bounds values array
+          if me.x().isOrdinal()
+            _boundsValues = _data.map((d) -> me.x().value(d)).slice(_left, _right + 1)
+          else
+            if me.x().kind() is 'rangeX'
+              if me.x().upperProperty()
+                _boundsValues = [me.x().lowerValue(_data[_left]), me.x().upperValue(_data[_right])]
+              else
+                step = me.x().lowerValue(_data[1]) - me.x().lowerValue(_data[0])
+                _boundsValues = [me.x().lowerValue(_data[_left]), me.x().lowerValue(_data[_right]) + step]
             else
-              step = me.x().lowerValue(_data[1]) - me.x().lowerValue(_data[0])
-              _boundsValues = [me.x().lowerValue(_data[_boundsIdx[0]]), me.x().lowerValue(_data[_boundsIdx[1]]) + step]
-          else
-            _boundsValues = [me.x().value(_data[_boundsIdx[0]]), me.x().value(_data[_boundsIdx[1]])]
-        _boundsDomain = _data.slice(_boundsIdx[0], _boundsIdx[1] + 1)
+              _boundsValues = [me.x().value(_data[_boundsIdx[0]]), me.x().value(_data[_right])]
+          _boundsDomain = _data.slice(_left, _right+ 1)
+          _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain)
       if _brushY
-        _boundsIdx = [me.y().invert(bottom), me.y().invert(top)]
-        if me.y().isOrdinal()
-          _boundsValues = _data.map((d) -> me.y().value(d)).slice(_boundsIdx[0], _boundsIdx[1] + 1)
-        else
-          if me.y().kind() is 'rangeY'
-            step = me.y().lowerValue(_data[1]) - me.y().lowerValue(_data[0])
-            _boundsValues = [me.y().lowerValue(_data[_boundsIdx[0]]), me.y().lowerValue(_data[_boundsIdx[1]]) + step]
+        #test if selected elements are changed
+        _bottom = me.y().invert(bottom)
+        _top = me.y().invert(top)
+        if _boundsIdx[0] isnt _bottom or _boundsIdx[1] isnt _top
+          _boundsIdx = [_bottom, _top]
+          if me.y().isOrdinal()
+            _boundsValues = _data.map((d) -> me.y().value(d)).slice(_bottom, _top + 1)
           else
-            _boundsValues = [me.y().value(_data[_boundsIdx[0]]), me.y().value(_data[_boundsIdx[1]])]
-        _boundsDomain = _data.slice(_boundsIdx[0], _boundsIdx[1] + 1)
+            if me.y().kind() is 'rangeY'
+              step = me.y().lowerValue(_data[1]) - me.y().lowerValue(_data[0])
+              _boundsValues = [me.y().lowerValue(_data[_bottom]), me.y().lowerValue(_data[_top]) + step]
+            else
+              _boundsValues = [me.y().value(_data[_bottom]), me.y().value(_data[_top])]
+          _boundsDomain = _data.slice(_bottom, _top + 1)
+          _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain)
       if _brushXY
-        _boundsIdx = []
-        _boundsValues = []
-        _boundsDomain = getSelectedObjects()
+        newDomain = getSelectedObjects()
+        if _.xor(_boundsDomain, newDomain).length > 0
+          _boundsIdx = []
+          _boundsValues = []
+          _boundsDomain = newDomain
+          _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain)
 
     #--- BrushStart Event Handler --------------------------------------------------------------------------------------
 
@@ -128,7 +142,8 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       d3.select($window).on('mousemove.brush', brushMove).on('mouseup.brush', brushEnd)
 
       _tooltip.hide(true)
-      _boundsIdx = undefined
+      _boundsIdx = [undefined, undefined]
+      _boundsDomain = [undefined]
       _selectables = _container.selectAll('.wk-chart-selectable')
       _brushEvents.brushStart()
       timing.clear()
@@ -153,7 +168,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
     #--- BrushMove Event Handler ---------------------------------------------------------------------------------------
 
     brushMove = () ->
-      $log.info 'brushmove'
+      #$log.info 'brushmove'
       pos = d3.mouse(_area)
       deltaX = pos[0] - _startPos[0]
       deltaY = pos[1] - _startPos[1]
@@ -245,7 +260,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
 
       positionBrushElements(left, right, top, bottom)
       setSelection(left, right, top, bottom)
-      _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain)
+      #_brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain)
       selectionSharing.setSelection _boundsValues, _boundsIdx, _brushGroup
 
     #--- Brush ---------------------------------------------------------------------------------------------------------

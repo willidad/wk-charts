@@ -15,7 +15,7 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       brushExtent: '='
       selectedValues: '='
       selectedDomain: '='
-      change: '&'
+      selectedDomainChange: '&'
 
     link:(scope, element, attrs, controllers) ->
       chart = controllers[0].me
@@ -42,6 +42,13 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
         brush.y(y or rangeY)
       brush.active(true)
 
+      ###*
+        @ngdoc event
+        @name brush#selectedDomainChange
+        @param domain {array} Array containing the data objects selected by te brush
+
+      ###
+
       brush.events().on 'brush', (idxRange, valueRange, domain) ->
         if attrs.brushExtent
           scope.brushExtent = idxRange
@@ -49,6 +56,7 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
           scope.selectedValues = valueRange
         if attrs.selectedDomain
           scope.selectedDomain = domain
+        scope.selectedDomainChange({domain:domain})
         scope.$apply()
 
       layout.lifeCycle().on 'drawChart.brush', (data) ->

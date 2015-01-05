@@ -19,7 +19,7 @@ function errorAlert(error){
 
 var buildDir = './dist';
 
-gulp.task('wkChartsDoc',['wkChartsJs'], function() {
+gulp.task('wkChartsDoc', function() {
   try {
     var dgeni = new Dgeni([require('./docs/wkchart-docs')]);
     return dgeni.generate();
@@ -33,9 +33,13 @@ gulp.task('clean', function(done) {
   del([buildDir], done);
 });
 
-gulp.task('watch', ['default'], function() {
-    gulp.watch(['docs/**/*'], ['wkChartsDoc', 'wkChartsDocCss']);
-    gulp.watch(['app/**/*.js','app/**/*.coffee','app/**/*.jade'], ['wkChartsJs','wkChartsDoc']);
+gulp.task('rebuild', function () {
+    runSequence('wkChartsJs','wkChartsDoc')
+})
+
+gulp.task('watch', function() {
+    gulp.watch(['docs/**/*.ngdoc'], ['wkChartsDoc', 'wkChartsDocCss']);
+    gulp.watch(['app/**/*.js','app/**/*.coffee','app/**/*.jade'], ['rebuild']);
     gulp.watch(['app/**/*.css'], ['wkChartCss']);
 });
 
