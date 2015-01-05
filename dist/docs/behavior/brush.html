@@ -38,7 +38,7 @@
   
     <ul>
     <li>as attribute:
-        <pre><code>&lt;&#13;&#10;  [brush-extent=&quot;&quot;]&#13;&#10;  [selected-values=&quot;&quot;]&#13;&#10;  [selected-domain=&quot;&quot;]&#13;&#10;  [brush=&quot;&quot;]&#13;&#10;  [brush-start=&quot;&quot;]&#13;&#10;  [selected-domain-change=&quot;&quot;]&#13;&#10;  [brush-end=&quot;&quot;]&gt;&#13;&#10;...&#13;&#10;&lt;/&gt;&#13;</code></pre>
+        <pre><code>&lt;x, y, range-x, range-y or layout&#13;&#10;  [brush=&quot;&quot;]&#13;&#10;  [brush-extent=&quot;&quot;]&#13;&#10;  [selected-values=&quot;&quot;]&#13;&#10;  [selected-domain=&quot;&quot;]&#13;&#10;  [selected-domain-change=&quot;&quot;]&#13;&#10;  [brush-start=&quot;&quot;]&#13;&#10;  [brush-end=&quot;&quot;]&#13;&#10;  [selected-domain-change=&quot;&quot;]&gt;&#13;&#10;...&#13;&#10;&lt;/x, y, range-x, range-y or layout&gt;&#13;</code></pre>
       </li>
     </ul>
   </div>
@@ -55,6 +55,23 @@
     </tr>
   </thead>
   <tbody>
+    
+    <tr>
+      <td>
+        <div><strong>brush </strong></div>
+        
+        <div><em> (Accepted Values: none)</em></div> 
+
+      </td>
+      <td>
+        <a href="" class="label type-hint type-hint-string">string</a>
+      </td>
+      <td>
+        <p>Brush name
+  Brush will be published under this name for consumption by other layouts</p>
+
+      </td>
+    </tr>
     
     <tr>
       <td>
@@ -106,17 +123,16 @@
     
     <tr>
       <td>
-        <div><strong>brush </strong></div>
+        <div><strong>selectedDomainChange </strong></div>
         
-        <div><em> (Accepted Values: none)</em></div> 
+        
 
       </td>
       <td>
-        <a href="" class="label type-hint type-hint-string">string</a>
+        <a href="" class="label type-hint type-hint-expression">expression</a>
       </td>
       <td>
-        <p>Brush name
-        Brush will be published under this name for consumption by other layouts</p>
+        <p>expression to evaluate upon a change of the brushes selected domain. The selected domain is available as ´domain´</p>
 
       </td>
     </tr>
@@ -139,22 +155,6 @@
     
     <tr>
       <td>
-        <div><strong>selectedDomainChange </strong></div>
-        
-        
-
-      </td>
-      <td>
-        <a href="" class="label type-hint type-hint-expression">expression</a>
-      </td>
-      <td>
-        <p>expression to evaluate upon a change of the brushes selected domain. The selected domain is available as ´domain´</p>
-
-      </td>
-    </tr>
-    
-    <tr>
-      <td>
         <div><strong>brushEnd </strong></div>
         
         
@@ -165,6 +165,22 @@
       </td>
       <td>
         <p>expression to evaluate upon a end of brushing. is fired on &#39;mouseup&#39;. The selected domain is available as ´domain´</p>
+
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+        <div><strong>selectedDomainChange </strong></div>
+        
+        
+
+      </td>
+      <td>
+        <a href="" class="label type-hint type-hint-expression">expression</a>
+      </td>
+      <td>
+        <p>expression to evaluate upon a change of the brushes selected domain. The selected domain is available as ´domain´</p>
 
       </td>
     </tr>
