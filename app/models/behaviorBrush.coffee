@@ -96,6 +96,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
               _boundsValues = [me.x().value(_data[_boundsIdx[0]]), me.x().value(_data[_right])]
           _boundsDomain = _data.slice(_left, _right+ 1)
           _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain)
+          selectionSharing.setSelection _boundsValues, _boundsIdx, _brushGroup
       if _brushY
         #test if selected elements are changed
         _bottom = me.y().invert(bottom)
@@ -112,6 +113,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
               _boundsValues = [me.y().value(_data[_bottom]), me.y().value(_data[_top])]
           _boundsDomain = _data.slice(_bottom, _top + 1)
           _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain)
+          selectionSharing.setSelection _boundsValues, _boundsIdx, _brushGroup
       if _brushXY
         newDomain = getSelectedObjects()
         if _.xor(_boundsDomain, newDomain).length > 0
@@ -119,6 +121,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
           _boundsValues = []
           _boundsDomain = newDomain
           _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain)
+          selectionSharing.setSelection _boundsValues, _boundsIdx, _brushGroup
 
     #--- BrushStart Event Handler --------------------------------------------------------------------------------------
 
@@ -162,7 +165,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
         #brush is empty
         d3.select(_area).selectAll('.wk-chart-resize').style('display', 'none')
       _tooltip.hide(false)
-      _brushEvents.brushEnd(_boundsIdx)
+      _brushEvents.brushEnd(_boundsIdx, _boundsValues, _boundsDomain)
       timing.report()
 
     #--- BrushMove Event Handler ---------------------------------------------------------------------------------------
@@ -260,8 +263,6 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
 
       positionBrushElements(left, right, top, bottom)
       setSelection(left, right, top, bottom)
-      #_brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain)
-      selectionSharing.setSelection _boundsValues, _boundsIdx, _brushGroup
 
     #--- Brush ---------------------------------------------------------------------------------------------------------
 
@@ -305,7 +306,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
 
     resizeExtent = () ->
       if _areaBox
-        $log.info 'resizeHandler'
+        #$log.info 'resizeHandler'
         newBox = _area.getBBox()
         horizontalRatio = _areaBox.width / newBox.width
         verticalRatio = _areaBox.height / newBox.height

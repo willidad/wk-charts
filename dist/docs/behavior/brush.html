@@ -38,7 +38,7 @@
   
     <ul>
     <li>as attribute:
-        <pre><code>&lt;&#13;&#10;  [brush=&quot;&quot;]&#13;&#10;  [selected-domain-change=&quot;&quot;]&gt;&#13;&#10;...&#13;&#10;&lt;/&gt;&#13;</code></pre>
+        <pre><code>&lt;&#13;&#10;  [brush-extent=&quot;&quot;]&#13;&#10;  [selected-values=&quot;&quot;]&#13;&#10;  [selected-domain=&quot;&quot;]&#13;&#10;  [brush=&quot;&quot;]&#13;&#10;  [brush-start=&quot;&quot;]&#13;&#10;  [selected-domain-change=&quot;&quot;]&#13;&#10;  [brush-end=&quot;&quot;]&gt;&#13;&#10;...&#13;&#10;&lt;/&gt;&#13;</code></pre>
       </li>
     </ul>
   </div>
@@ -58,6 +58,54 @@
     
     <tr>
       <td>
+        <div><strong>brushExtent </strong></div>
+        
+        
+
+      </td>
+      <td>
+        <a href="" class="label type-hint type-hint-array">array</a>
+      </td>
+      <td>
+        <p>Contains the start and end index into the data array for the brushed axis. Is undefined if brush is empty, axis is an ordinal type scale, or is xy (layout) brushes</p>
+
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+        <div><strong>selectedValues </strong></div>
+        
+        
+
+      </td>
+      <td>
+        <a href="" class="label type-hint type-hint-array">array</a>
+      </td>
+      <td>
+        <p>Contains array of the axis values of the selected the brush  area. Is undefined if brush is empty or is xy (layout) brushes</p>
+
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+        <div><strong>selectedDomain </strong></div>
+        
+        
+
+      </td>
+      <td>
+        <a href="" class="label type-hint type-hint-array">array</a>
+      </td>
+      <td>
+        <p>Contains an array of data objects for the selected brush area.</p>
+
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
         <div><strong>brush </strong></div>
         
         <div><em> (Accepted Values: none)</em></div> 
@@ -68,7 +116,23 @@
       </td>
       <td>
         <p>Brush name
-              Brush will be published under this name for consumption by other layouts</p>
+        Brush will be published under this name for consumption by other layouts</p>
+
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+        <div><strong>brushStart </strong></div>
+        
+        
+
+      </td>
+      <td>
+        <a href="" class="label type-hint type-hint-expression">expression</a>
+      </td>
+      <td>
+        <p>expression to evaluate upon a start of brushing. Is fired on &#39;mousedown&#39;.</p>
 
       </td>
     </tr>
@@ -84,7 +148,23 @@
         <a href="" class="label type-hint type-hint-expression">expression</a>
       </td>
       <td>
-        <p>expression to evaluate upon a change od the brushes selected domain. The selected domain is available as ´domain´</p>
+        <p>expression to evaluate upon a change of the brushes selected domain. The selected domain is available as ´domain´</p>
+
+      </td>
+    </tr>
+    
+    <tr>
+      <td>
+        <div><strong>brushEnd </strong></div>
+        
+        
+
+      </td>
+      <td>
+        <a href="" class="label type-hint type-hint-expression">expression</a>
+      </td>
+      <td>
+        <p>expression to evaluate upon a end of brushing. is fired on &#39;mouseup&#39;. The selected domain is available as ´domain´</p>
 
       </td>
     </tr>

@@ -243,8 +243,6 @@ angular.module('wk.chart').constant('barConfig', {
         }
     }
 })()
-angular.module("wk.chart").run(["$templateCache", function($templateCache) {$templateCache.put("templates/legend.html","\n<div ng-style=\"position\" ng-show=\"showLegend\" class=\"wk-chart-legend\">\n  <div ng-show=\"title\" class=\"legend-title\">{{title}}</div>\n  <ul class=\"list-unstyled\">\n    <li ng-repeat=\"legendRow in legendRows track by legendRow.value\" class=\"wk-chart-legend-item\"><span ng-if=\"legendRow.color\" ng-style=\"legendRow.color\">&nbsp;&nbsp;&nbsp;</span>\n      <svg-icon ng-if=\"legendRow.path\" path=\"legendRow.path\" width=\"20\"></svg-icon><span> &nbsp;{{legendRow.value}}</span>\n    </li>\n  </ul>\n</div>");
-$templateCache.put("templates/toolTip.html","\n<div ng-style=\"position\" class=\"wk-chart-tooltip\">\n  <table class=\"table table-condensed table-bordered\">\n    <thead ng-show=\"headerValue\">\n      <tr>\n        <th colspan=\"2\">{{headerName}}</th>\n        <th>{{headerValue}}</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr ng-repeat=\"ttRow in layers track by ttRow.name\">\n        <td ng-style=\"ttRow.color\" ng-class=\"ttRow.class\">\n          <svg-icon ng-if=\"ttRow.path\" path=\"ttRow.path\" width=\"15\"></svg-icon>\n        </td>\n        <td>{{ttRow.name}}</td>\n        <td>{{ttRow.value}}</td>\n      </tr>\n    </tbody>\n  </table>\n</div>");}]);
 
 /**
   @ngdoc behavior
@@ -260,10 +258,30 @@ angular.module('wk.chart').directive('brush', function($log, selectionSharing, b
     restrict: 'A',
     require: ['^chart', '^layout', '?x', '?y', '?rangeX', '?rangeY'],
     scope: {
+
+      /**
+        @ngdoc attr
+        @name brush#brushExtent
+        @param brushExtent {array} Contains the start and end index into the data array for the brushed axis. Is undefined if brush is empty, axis is an ordinal type scale, or is xy (layout) brushes
+       */
       brushExtent: '=',
+
+      /**
+        @ngdoc attr
+        @name brush#selectedValues
+        @param selectedValues {array} Contains array of the axis values of the selected the brush  area. Is undefined if brush is empty or is xy (layout) brushes
+       */
       selectedValues: '=',
+
+      /**
+        @ngdoc attr
+        @name brush#selectedDomain
+        @param selectedDomain {array} Contains an array of data objects for the selected brush area.
+       */
       selectedDomain: '=',
-      selectedDomainChange: '&'
+      selectedDomainChange: '&',
+      brushStart: '&',
+      brushEnd: '&'
     },
     link: function(scope, element, attrs, controllers) {
       var brush, chart, layout, rangeX, rangeY, scales, x, xScale, y, yScale, _brushAreaSelection, _brushGroup, _isAreaBrush, _ref, _ref1, _ref2, _ref3, _ref4, _selectables;
@@ -291,11 +309,11 @@ angular.module('wk.chart').directive('brush', function($log, selectionSharing, b
       brush.active(true);
 
       /**
-              @ngdoc attr
-              @name brush#brush
-              @values none
-              @param brush {string} Brush name
-              Brush will be published under this name for consumption by other layouts
+        @ngdoc attr
+        @name brush#brush
+        @values none
+        @param brush {string} Brush name
+        Brush will be published under this name for consumption by other layouts
        */
       attrs.$observe('brush', function(val) {
         if (_.isString(val) && val.length > 0) {
@@ -307,8 +325,18 @@ angular.module('wk.chart').directive('brush', function($log, selectionSharing, b
 
       /**
         @ngdoc attr
+        @name brush#brushStart
+        @param brushStart {expression} expression to evaluate upon a start of brushing. Is fired on 'mousedown'.
+       */
+      brush.events().on('brushStart', function() {
+        scope.brushStart();
+        return scope.apply();
+      });
+
+      /**
+        @ngdoc attr
         @name brush#selectedDomainChange
-        @param selectedDomainChange {expression} expression to evaluate upon a change od the brushes selected domain. The selected domain is available as ´domain´
+        @param selectedDomainChange {expression} expression to evaluate upon a change of the brushes selected domain. The selected domain is available as ´domain´
        */
       brush.events().on('brush', function(idxRange, valueRange, domain) {
         if (attrs.brushExtent) {
@@ -325,6 +353,18 @@ angular.module('wk.chart').directive('brush', function($log, selectionSharing, b
         });
         return scope.$apply();
       });
+
+      /**
+        @ngdoc attr
+        @name brush#brushEnd
+        @param brushEnd {expression} expression to evaluate upon a end of brushing. is fired on 'mouseup'. The selected domain is available as ´domain´
+       */
+      brush.events().on('brushEnd', function(idxRange, valueRange, domain) {
+        scope.brushEnd({
+          domain: domain
+        });
+        return scope.apply();
+      });
       return layout.lifeCycle().on('drawChart.brush', function(data) {
         return brush.data(data);
       });
@@ -332,6 +372,8 @@ angular.module('wk.chart').directive('brush', function($log, selectionSharing, b
   };
 });
 
+angular.module("wk.chart").run(["$templateCache", function($templateCache) {$templateCache.put("templates/legend.html","\n<div ng-style=\"position\" ng-show=\"showLegend\" class=\"wk-chart-legend\">\n  <div ng-show=\"title\" class=\"legend-title\">{{title}}</div>\n  <ul class=\"list-unstyled\">\n    <li ng-repeat=\"legendRow in legendRows track by legendRow.value\" class=\"wk-chart-legend-item\"><span ng-if=\"legendRow.color\" ng-style=\"legendRow.color\">&nbsp;&nbsp;&nbsp;</span>\n      <svg-icon ng-if=\"legendRow.path\" path=\"legendRow.path\" width=\"20\"></svg-icon><span> &nbsp;{{legendRow.value}}</span>\n    </li>\n  </ul>\n</div>");
+$templateCache.put("templates/toolTip.html","\n<div ng-style=\"position\" class=\"wk-chart-tooltip\">\n  <table class=\"table table-condensed table-bordered\">\n    <thead ng-show=\"headerValue\">\n      <tr>\n        <th colspan=\"2\">{{headerName}}</th>\n        <th>{{headerValue}}</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr ng-repeat=\"ttRow in layers track by ttRow.name\">\n        <td ng-style=\"ttRow.color\" ng-class=\"ttRow.class\">\n          <svg-icon ng-if=\"ttRow.path\" path=\"ttRow.path\" width=\"15\"></svg-icon>\n        </td>\n        <td>{{ttRow.name}}</td>\n        <td>{{ttRow.value}}</td>\n      </tr>\n    </tbody>\n  </table>\n</div>");}]);
 // Copyright (c) 2013, Jason Davies, http://www.jasondavies.com
 // See LICENSE.txt for details.
 (function() {
@@ -4649,6 +4691,7 @@ angular.module('wk.chart').factory('behaviorBrush', function($log, $window, sele
           }
           _boundsDomain = _data.slice(_left, _right + 1);
           _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain);
+          selectionSharing.setSelection(_boundsValues, _boundsIdx, _brushGroup);
         }
       }
       if (_brushY) {
@@ -4670,6 +4713,7 @@ angular.module('wk.chart').factory('behaviorBrush', function($log, $window, sele
           }
           _boundsDomain = _data.slice(_bottom, _top + 1);
           _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain);
+          selectionSharing.setSelection(_boundsValues, _boundsIdx, _brushGroup);
         }
       }
       if (_brushXY) {
@@ -4678,7 +4722,8 @@ angular.module('wk.chart').factory('behaviorBrush', function($log, $window, sele
           _boundsIdx = [];
           _boundsValues = [];
           _boundsDomain = newDomain;
-          return _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain);
+          _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain);
+          return selectionSharing.setSelection(_boundsValues, _boundsIdx, _brushGroup);
         }
       }
     };
@@ -4714,7 +4759,7 @@ angular.module('wk.chart').factory('behaviorBrush', function($log, $window, sele
         d3.select(_area).selectAll('.wk-chart-resize').style('display', 'none');
       }
       _tooltip.hide(false);
-      _brushEvents.brushEnd(_boundsIdx);
+      _brushEvents.brushEnd(_boundsIdx, _boundsValues, _boundsDomain);
       return timing.report();
     };
     brushMove = function() {
@@ -4827,8 +4872,7 @@ angular.module('wk.chart').factory('behaviorBrush', function($log, $window, sele
           rightMv(deltaX);
       }
       positionBrushElements(left, right, top, bottom);
-      setSelection(left, right, top, bottom);
-      return selectionSharing.setSelection(_boundsValues, _boundsIdx, _brushGroup);
+      return setSelection(left, right, top, bottom);
     };
     me.brush = function(s) {
       if (arguments.length === 0) {
@@ -4955,7 +4999,6 @@ angular.module('wk.chart').factory('behaviorBrush', function($log, $window, sele
     resizeExtent = function() {
       var horizontalRatio, newBox, verticalRatio;
       if (_areaBox) {
-        $log.info('resizeHandler');
         newBox = _area.getBBox();
         horizontalRatio = _areaBox.width / newBox.width;
         verticalRatio = _areaBox.height / newBox.height;

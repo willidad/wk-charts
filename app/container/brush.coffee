@@ -12,10 +12,27 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
     restrict: 'A'
     require: ['^chart', '^layout', '?x', '?y','?rangeX', '?rangeY']
     scope:
+      ###*
+        @ngdoc attr
+        @name brush#brushExtent
+        @param brushExtent {array} Contains the start and end index into the data array for the brushed axis. Is undefined if brush is empty, axis is an ordinal type scale, or is xy (layout) brushes
+      ###
       brushExtent: '='
+      ###*
+        @ngdoc attr
+        @name brush#selectedValues
+        @param selectedValues {array} Contains array of the axis values of the selected the brush  area. Is undefined if brush is empty or is xy (layout) brushes
+      ###
       selectedValues: '='
+      ###*
+        @ngdoc attr
+        @name brush#selectedDomain
+        @param selectedDomain {array} Contains an array of data objects for the selected brush area.
+      ###
       selectedDomain: '='
       selectedDomainChange: '&'
+      brushStart: '&'
+      brushEnd: '&'
 
     link:(scope, element, attrs, controllers) ->
       chart = controllers[0].me
@@ -43,12 +60,12 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       brush.active(true)
 
       ###*
-              @ngdoc attr
-              @name brush#brush
-              @values none
-              @param brush {string} Brush name
-              Brush will be published under this name for consumption by other layouts
-            ###
+        @ngdoc attr
+        @name brush#brush
+        @values none
+        @param brush {string} Brush name
+        Brush will be published under this name for consumption by other layouts
+      ###
       attrs.$observe 'brush', (val) ->
         if _.isString(val) and val.length > 0
           brush.brushGroup(val)
@@ -57,8 +74,17 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
 
       ###*
         @ngdoc attr
+        @name brush#brushStart
+        @param brushStart {expression} expression to evaluate upon a start of brushing. Is fired on 'mousedown'.
+      ###
+      brush.events().on 'brushStart', () ->
+        scope.brushStart()
+        scope.apply()
+
+      ###*
+        @ngdoc attr
         @name brush#selectedDomainChange
-        @param selectedDomainChange {expression} expression to evaluate upon a change od the brushes selected domain. The selected domain is available as ´domain´
+        @param selectedDomainChange {expression} expression to evaluate upon a change of the brushes selected domain. The selected domain is available as ´domain´
       ###
       brush.events().on 'brush', (idxRange, valueRange, domain) ->
         if attrs.brushExtent
@@ -69,6 +95,15 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
           scope.selectedDomain = domain
         scope.selectedDomainChange({domain:domain})
         scope.$apply()
+
+      ###*
+        @ngdoc attr
+        @name brush#brushEnd
+        @param brushEnd {expression} expression to evaluate upon a end of brushing. is fired on 'mouseup'. The selected domain is available as ´domain´
+      ###
+      brush.events().on 'brushEnd', (idxRange, valueRange, domain) ->
+        scope.brushEnd({domain:domain})
+        scope.apply()
 
       layout.lifeCycle().on 'drawChart.brush', (data) ->
         brush.data(data)
