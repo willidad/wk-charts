@@ -43,12 +43,23 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       brush.active(true)
 
       ###*
-        @ngdoc event
+              @ngdoc attr
+              @name brush#brush
+              @values none
+              @param brush {string} Brush name
+              Brush will be published under this name for consumption by other layouts
+            ###
+      attrs.$observe 'brush', (val) ->
+        if _.isString(val) and val.length > 0
+          brush.brushGroup(val)
+        else
+          brush.brushGroup(undefined)
+
+      ###*
+        @ngdoc attr
         @name brush#selectedDomainChange
-        @param domain {array} Array containing the data objects selected by te brush
-
+        @param selectedDomainChange {expression} expression to evaluate upon a change od the brushes selected domain. The selected domain is available as ´domain´
       ###
-
       brush.events().on 'brush', (idxRange, valueRange, domain) ->
         if attrs.brushExtent
           scope.brushExtent = idxRange
@@ -62,16 +73,5 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       layout.lifeCycle().on 'drawChart.brush', (data) ->
         brush.data(data)
 
-      ###*
-        @ngdoc attr
-        @name brush#brush
-        @values none
-        @param brush {string} Brush name
-        Brush will be published under this name for consumption by other layouts
-      ###
-      attrs.$observe 'brush', (val) ->
-        if _.isString(val) and val.length > 0
-          brush.brushGroup(val)
-        else
-          brush.brushGroup(undefined)
+
   }

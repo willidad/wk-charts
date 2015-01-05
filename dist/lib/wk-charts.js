@@ -243,6 +243,650 @@ angular.module('wk.chart').constant('barConfig', {
         }
     }
 })()
+angular.module("wk.chart").run(["$templateCache", function($templateCache) {$templateCache.put("templates/legend.html","\n<div ng-style=\"position\" ng-show=\"showLegend\" class=\"wk-chart-legend\">\n  <div ng-show=\"title\" class=\"legend-title\">{{title}}</div>\n  <ul class=\"list-unstyled\">\n    <li ng-repeat=\"legendRow in legendRows track by legendRow.value\" class=\"wk-chart-legend-item\"><span ng-if=\"legendRow.color\" ng-style=\"legendRow.color\">&nbsp;&nbsp;&nbsp;</span>\n      <svg-icon ng-if=\"legendRow.path\" path=\"legendRow.path\" width=\"20\"></svg-icon><span> &nbsp;{{legendRow.value}}</span>\n    </li>\n  </ul>\n</div>");
+$templateCache.put("templates/toolTip.html","\n<div ng-style=\"position\" class=\"wk-chart-tooltip\">\n  <table class=\"table table-condensed table-bordered\">\n    <thead ng-show=\"headerValue\">\n      <tr>\n        <th colspan=\"2\">{{headerName}}</th>\n        <th>{{headerValue}}</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr ng-repeat=\"ttRow in layers track by ttRow.name\">\n        <td ng-style=\"ttRow.color\" ng-class=\"ttRow.class\">\n          <svg-icon ng-if=\"ttRow.path\" path=\"ttRow.path\" width=\"15\"></svg-icon>\n        </td>\n        <td>{{ttRow.name}}</td>\n        <td>{{ttRow.value}}</td>\n      </tr>\n    </tbody>\n  </table>\n</div>");}]);
+
+/**
+  @ngdoc behavior
+  @name brush
+  @module wk.chart
+  @restrict A
+  @description
+
+  enable brushing behavior
+ */
+angular.module('wk.chart').directive('brush', function($log, selectionSharing, behavior) {
+  return {
+    restrict: 'A',
+    require: ['^chart', '^layout', '?x', '?y', '?rangeX', '?rangeY'],
+    scope: {
+      brushExtent: '=',
+      selectedValues: '=',
+      selectedDomain: '=',
+      selectedDomainChange: '&'
+    },
+    link: function(scope, element, attrs, controllers) {
+      var brush, chart, layout, rangeX, rangeY, scales, x, xScale, y, yScale, _brushAreaSelection, _brushGroup, _isAreaBrush, _ref, _ref1, _ref2, _ref3, _ref4, _selectables;
+      chart = controllers[0].me;
+      layout = (_ref = controllers[1]) != null ? _ref.me : void 0;
+      x = (_ref1 = controllers[2]) != null ? _ref1.me : void 0;
+      y = (_ref2 = controllers[3]) != null ? _ref2.me : void 0;
+      rangeX = (_ref3 = controllers[4]) != null ? _ref3.me : void 0;
+      rangeY = (_ref4 = controllers[5]) != null ? _ref4.me : void 0;
+      xScale = void 0;
+      yScale = void 0;
+      _selectables = void 0;
+      _brushAreaSelection = void 0;
+      _isAreaBrush = !x && !y;
+      _brushGroup = void 0;
+      brush = chart.behavior().brush;
+      if (!x && !y && !rangeX && !rangeY) {
+        scales = layout.scales().getScales(['x', 'y']);
+        brush.x(scales.x);
+        brush.y(scales.y);
+      } else {
+        brush.x(x || rangeX);
+        brush.y(y || rangeY);
+      }
+      brush.active(true);
+
+      /**
+              @ngdoc attr
+              @name brush#brush
+              @values none
+              @param brush {string} Brush name
+              Brush will be published under this name for consumption by other layouts
+       */
+      attrs.$observe('brush', function(val) {
+        if (_.isString(val) && val.length > 0) {
+          return brush.brushGroup(val);
+        } else {
+          return brush.brushGroup(void 0);
+        }
+      });
+
+      /**
+        @ngdoc attr
+        @name brush#selectedDomainChange
+        @param selectedDomainChange {expression} expression to evaluate upon a change od the brushes selected domain. The selected domain is available as ´domain´
+       */
+      brush.events().on('brush', function(idxRange, valueRange, domain) {
+        if (attrs.brushExtent) {
+          scope.brushExtent = idxRange;
+        }
+        if (attrs.selectedValues) {
+          scope.selectedValues = valueRange;
+        }
+        if (attrs.selectedDomain) {
+          scope.selectedDomain = domain;
+        }
+        scope.selectedDomainChange({
+          domain: domain
+        });
+        return scope.$apply();
+      });
+      return layout.lifeCycle().on('drawChart.brush', function(data) {
+        return brush.data(data);
+      });
+    }
+  };
+});
+
+// Copyright (c) 2013, Jason Davies, http://www.jasondavies.com
+// See LICENSE.txt for details.
+(function() {
+
+var radians = Math.PI / 180,
+    degrees = 180 / Math.PI;
+
+// TODO make incremental rotate optional
+
+d3.geo.zoom = function() {
+  var projection,
+      zoomPoint,
+      event = d3.dispatch("zoomstart", "zoom", "zoomend"),
+      zoom = d3.behavior.zoom()
+        .on("zoomstart", function() {
+          var mouse0 = d3.mouse(this),
+              rotate = quaternionFromEuler(projection.rotate()),
+              point = position(projection, mouse0);
+          if (point) zoomPoint = point;
+
+          zoomOn.call(zoom, "zoom", function() {
+                projection.scale(d3.event.scale);
+                var mouse1 = d3.mouse(this),
+                    between = rotateBetween(zoomPoint, position(projection, mouse1));
+                projection.rotate(eulerFromQuaternion(rotate = between
+                    ? multiply(rotate, between)
+                    : multiply(bank(projection, mouse0, mouse1), rotate)));
+                mouse0 = mouse1;
+                event.zoom.apply(this, arguments);
+              });
+          event.zoomstart.apply(this, arguments);
+        })
+        .on("zoomend", function() {
+          zoomOn.call(zoom, "zoom", null);
+          event.zoomend.apply(this, arguments);
+        }),
+      zoomOn = zoom.on;
+
+  zoom.projection = function(_) {
+    return arguments.length ? zoom.scale((projection = _).scale()) : projection;
+  };
+
+  return d3.rebind(zoom, event, "on");
+};
+
+function bank(projection, p0, p1) {
+  var t = projection.translate(),
+      angle = Math.atan2(p0[1] - t[1], p0[0] - t[0]) - Math.atan2(p1[1] - t[1], p1[0] - t[0]);
+  return [Math.cos(angle / 2), 0, 0, Math.sin(angle / 2)];
+}
+
+function position(projection, point) {
+  var t = projection.translate(),
+      spherical = projection.invert(point);
+  return spherical && isFinite(spherical[0]) && isFinite(spherical[1]) && cartesian(spherical);
+}
+
+function quaternionFromEuler(euler) {
+  var λ = .5 * euler[0] * radians,
+      φ = .5 * euler[1] * radians,
+      γ = .5 * euler[2] * radians,
+      sinλ = Math.sin(λ), cosλ = Math.cos(λ),
+      sinφ = Math.sin(φ), cosφ = Math.cos(φ),
+      sinγ = Math.sin(γ), cosγ = Math.cos(γ);
+  return [
+    cosλ * cosφ * cosγ + sinλ * sinφ * sinγ,
+    sinλ * cosφ * cosγ - cosλ * sinφ * sinγ,
+    cosλ * sinφ * cosγ + sinλ * cosφ * sinγ,
+    cosλ * cosφ * sinγ - sinλ * sinφ * cosγ
+  ];
+}
+
+function multiply(a, b) {
+  var a0 = a[0], a1 = a[1], a2 = a[2], a3 = a[3],
+      b0 = b[0], b1 = b[1], b2 = b[2], b3 = b[3];
+  return [
+    a0 * b0 - a1 * b1 - a2 * b2 - a3 * b3,
+    a0 * b1 + a1 * b0 + a2 * b3 - a3 * b2,
+    a0 * b2 - a1 * b3 + a2 * b0 + a3 * b1,
+    a0 * b3 + a1 * b2 - a2 * b1 + a3 * b0
+  ];
+}
+
+function rotateBetween(a, b) {
+  if (!a || !b) return;
+  var axis = cross(a, b),
+      norm = Math.sqrt(dot(axis, axis)),
+      halfγ = .5 * Math.acos(Math.max(-1, Math.min(1, dot(a, b)))),
+      k = Math.sin(halfγ) / norm;
+  return norm && [Math.cos(halfγ), axis[2] * k, -axis[1] * k, axis[0] * k];
+}
+
+function eulerFromQuaternion(q) {
+  return [
+    Math.atan2(2 * (q[0] * q[1] + q[2] * q[3]), 1 - 2 * (q[1] * q[1] + q[2] * q[2])) * degrees,
+    Math.asin(Math.max(-1, Math.min(1, 2 * (q[0] * q[2] - q[3] * q[1])))) * degrees,
+    Math.atan2(2 * (q[0] * q[3] + q[1] * q[2]), 1 - 2 * (q[2] * q[2] + q[3] * q[3])) * degrees
+  ];
+}
+
+function cartesian(spherical) {
+  var λ = spherical[0] * radians,
+      φ = spherical[1] * radians,
+      cosφ = Math.cos(φ);
+  return [
+    cosφ * Math.cos(λ),
+    cosφ * Math.sin(λ),
+    Math.sin(φ)
+  ];
+}
+
+function dot(a, b) {
+  for (var i = 0, n = a.length, s = 0; i < n; ++i) s += a[i] * b[i];
+  return s;
+}
+
+function cross(a, b) {
+  return [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0]
+  ];
+}
+
+})();
+
+
+/**
+  @ngdoc behavior
+  @name brushed
+  @module wk.chart
+  @restrict A
+  @description
+
+  enables an axis to be scaled by a named brush in a different layout
+ */
+angular.module('wk.chart').directive('brushed', function($log, selectionSharing, timing) {
+  var sBrushCnt;
+  sBrushCnt = 0;
+  return {
+    restrict: 'A',
+    require: ['^chart', '?^layout', '?x', '?y', '?rangeX', '?rangeY'],
+    link: function(scope, element, attrs, controllers) {
+      var axis, brusher, chart, layout, rangeX, rangeY, x, y, _brushGroup, _ref, _ref1, _ref2, _ref3, _ref4;
+      chart = controllers[0].me;
+      layout = (_ref = controllers[1]) != null ? _ref.me : void 0;
+      x = (_ref1 = controllers[2]) != null ? _ref1.me : void 0;
+      y = (_ref2 = controllers[3]) != null ? _ref2.me : void 0;
+      rangeX = (_ref3 = controllers[4]) != null ? _ref3.me : void 0;
+      rangeY = (_ref4 = controllers[5]) != null ? _ref4.me : void 0;
+      axis = x || y || rangeX || rangeY;
+      _brushGroup = void 0;
+      brusher = function(extent, idxRange) {
+        var l, _i, _len, _ref5, _results;
+        if (!axis) {
+          return;
+        }
+        axis.domain(extent).scale().domain(extent);
+        _ref5 = chart.layouts();
+        _results = [];
+        for (_i = 0, _len = _ref5.length; _i < _len; _i++) {
+          l = _ref5[_i];
+          if (l.scales().hasScale(axis)) {
+            _results.push(l.lifeCycle().brush(axis, true, idxRange));
+          }
+        }
+        return _results;
+      };
+      attrs.$observe('brushed', function(val) {
+        if (_.isString(val) && val.length > 0) {
+          _brushGroup = val;
+          return selectionSharing.register(_brushGroup, brusher);
+        } else {
+          return _brushGroup = void 0;
+        }
+      });
+      return scope.$on('$destroy', function() {
+        return selectionSharing.unregister(_brushGroup, brusher);
+      });
+    }
+  };
+});
+
+(function() {
+    var out$ = typeof exports != 'undefined' && exports || this;
+
+    var doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+
+    function inlineImages(callback) {
+        var images = document.querySelectorAll('svg image');
+        var left = images.length;
+        if (left == 0) {
+            callback();
+        }
+        for (var i = 0; i < images.length; i++) {
+            (function(image) {
+                if (image.getAttribute('xlink:href')) {
+                    var href = image.getAttribute('xlink:href').value;
+                    if (/^http/.test(href) && !(new RegExp('^' + window.location.host).test(href))) {
+                        throw new Error("Cannot render embedded images linking to external hosts.");
+                    }
+                }
+                var canvas = document.createElement('canvas');
+                var ctx = canvas.getContext('2d');
+                var img = new Image();
+                img.src = image.getAttribute('xlink:href');
+                img.onload = function() {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    image.setAttribute('xlink:href', canvas.toDataURL('image/png'));
+                    left--;
+                    if (left == 0) {
+                        callback();
+                    }
+                }
+            })(images[i]);
+        }
+    }
+
+    function styles(dom) {
+        var css = "";
+        var sheets = document.styleSheets;
+        for (var i = 0; i < sheets.length; i++) {
+            var rules = sheets[i].cssRules;
+            if (rules != null) {
+                for (var j = 0; j < rules.length; j++) {
+                    var rule = rules[j];
+                    if (typeof(rule.style) != "undefined") {
+                        css += rule.selectorText + " { " + rule.style.cssText + " }\n";
+                    }
+                }
+            }
+        }
+
+        var s = document.createElement('style');
+        s.setAttribute('type', 'text/css');
+        s.innerHTML = "<![CDATA[\n" + css + "\n]]>";
+
+        var defs = document.createElement('defs');
+        defs.appendChild(s);
+        return defs;
+    }
+
+    out$.svgAsDataUri = function(el, scaleFactor, cb) {
+        scaleFactor = scaleFactor || 1;
+
+        inlineImages(function() {
+            var outer = document.createElement("div");
+            var clone = el.cloneNode(true);
+            var width = parseInt(
+                clone.getAttribute('width')
+                || clone.style.width
+                || out$.getComputedStyle(el).getPropertyValue('width')
+            );
+            var height = parseInt(
+                clone.getAttribute('height')
+                || clone.style.height
+                || out$.getComputedStyle(el).getPropertyValue('height')
+            );
+
+            var xmlns = "http://www.w3.org/2000/xmlns/";
+
+            clone.setAttribute("version", "1.1");
+            clone.setAttributeNS(xmlns, "xmlns", "http://www.w3.org/2000/svg");
+            clone.setAttributeNS(xmlns, "xmlns:xlink", "http://www.w3.org/1999/xlink");
+            clone.setAttribute("width", width * scaleFactor);
+            clone.setAttribute("height", height * scaleFactor);
+            clone.setAttribute("viewBox", "0 0 " + width + " " + height);
+            outer.appendChild(clone);
+
+            clone.insertBefore(styles(clone), clone.firstChild);
+
+            var svg = doctype + outer.innerHTML;
+            var uri = 'data:image/svg+xml;base64,' + window.btoa(unescape(encodeURIComponent(svg)));
+            if (cb) {
+                cb(uri);
+            }
+        });
+    }
+
+    out$.saveSvgAsPng = function(el, name, scaleFactor) {
+        out$.svgAsDataUri(el, scaleFactor, function(uri) {
+            var image = new Image();
+            image.src = uri;
+            image.onload = function() {
+                var canvas = document.createElement('canvas');
+                canvas.width = image.width;
+                canvas.height = image.height;
+                var context = canvas.getContext('2d');
+                context.drawImage(image, 0, 0);
+
+                var a = document.createElement('a');
+                a.download = name;
+                a.href = canvas.toDataURL('image/png');
+                document.body.appendChild(a);
+                a.click();
+            }
+        });
+    }
+})();
+
+/**
+  @ngdoc container
+  @name chart
+  @module wk.chart
+  @restrict E
+  @description
+
+  chart is the container directive for all charts.
+  @param {array} data - Data to be graphed, {@link guide/data ...more}
+  @param {boolean} [deep-watch=false]
+  @param {string} [filter] - filters the data using the angular filter function
+  @param {string} [title] - The chart title
+  @param {string} [subtitle] - The chart subtitle
+  @param {number} [animation-duration=300] - animation duration in milliseconds
+ */
+angular.module('wk.chart').directive('chart', function($log, chart, $filter) {
+  var chartCnt;
+  chartCnt = 0;
+  return {
+    restrict: 'E',
+    require: 'chart',
+    scope: {
+      data: '=',
+      filter: '='
+    },
+    controller: function($scope) {
+      this.me = chart();
+      return this.me.scope($scope);
+    },
+    link: function(scope, element, attrs, controller) {
+      var dataWatchFn, deepWatch, me, watcherRemoveFn, _data, _filter;
+      me = controller.me;
+      deepWatch = false;
+      watcherRemoveFn = void 0;
+      element.addClass(me.id());
+      _data = void 0;
+      _filter = void 0;
+      me.container().element(element[0]);
+      me.lifeCycle().configure();
+      me.lifeCycle().on('scopeApply', function() {
+        return scope.$apply();
+      });
+      attrs.$observe('animationDuration', function(val) {
+        if (val && _.isNumber(+val) && +val >= 0) {
+          return me.animationDuration(val);
+        }
+      });
+      attrs.$observe('title', function(val) {
+        if (val) {
+          return me.title(val);
+        } else {
+          return me.title(void 0);
+        }
+      });
+      attrs.$observe('subtitle', function(val) {
+        if (val) {
+          return me.subTitle(val);
+        } else {
+          return me.subTitle(void 0);
+        }
+      });
+      scope.$watch('filter', function(val) {
+        if (val) {
+          _filter = val;
+          if (_data) {
+            return me.lifeCycle().newData($filter('filter')(_data, _filter));
+          }
+        } else {
+          _filter = void 0;
+          if (_data) {
+            return me.lifeCycle().newData(_data);
+          }
+        }
+      });
+      attrs.$observe('deepWatch', function(val) {
+        if (val !== void 0 && val !== 'false') {
+          deepWatch = true;
+        } else {
+          deepWatch = false;
+        }
+        if (watcherRemoveFn) {
+          watcherRemoveFn();
+        }
+        return watcherRemoveFn = scope.$watch('data', dataWatchFn, deepWatch);
+      });
+      dataWatchFn = function(val) {
+        if (val) {
+          _data = val;
+          if (_.isArray(_data) && _data.length === 0) {
+            return;
+          }
+          if (_filter) {
+            return me.lifeCycle().newData($filter('filter')(val, _filter));
+          } else {
+            return me.lifeCycle().newData(val);
+          }
+        }
+      };
+      watcherRemoveFn = scope.$watch('data', dataWatchFn, deepWatch);
+      return element.on('$destroy', function() {
+        if (watcherRemoveFn) {
+          watcherRemoveFn();
+        }
+        return $log.log('Destroying chart');
+      });
+    }
+  };
+});
+
+
+/**
+  @ngdoc container
+  @name layout
+  @module wk.chart
+  @restrict E
+  @requires chart
+  @description
+
+  Layout is the container for the layout directives. It requires chart as a parent.
+ */
+angular.module('wk.chart').directive('layout', function($log, layout, container) {
+  var layoutCnt;
+  layoutCnt = 0;
+  return {
+    restrict: 'AE',
+    require: ['layout', '^chart'],
+    controller: function($element) {
+      return this.me = layout();
+    },
+    link: function(scope, element, attrs, controllers) {
+      var chart, me;
+      me = controllers[0].me;
+      chart = controllers[1].me;
+      me.chart(chart);
+      element.addClass(me.id());
+      chart.addLayout(me);
+      chart.container().addLayout(me);
+      return me.container(chart.container());
+    }
+  };
+});
+
+angular.module('wk.chart').directive('printButton', function($log) {
+  return {
+    require: 'chart',
+    restrict: 'A',
+    link: function(scope, element, attrs, controller) {
+      var chart, draw;
+      chart = controller.me;
+      draw = function() {
+        var _containerDiv;
+        _containerDiv = d3.select(chart.container().element()).select('div.wk-chart');
+        return _containerDiv.append('button').attr('class', 'wk-chart-print-button').style({
+          position: 'absolute',
+          top: 0,
+          right: 0
+        }).text('Print').on('click', function() {
+          var svg;
+          $log.log('Clicked Print Button');
+          svg = _containerDiv.select('svg.wk-chart').node();
+          return saveSvgAsPng(svg, 'print.png', 5);
+        });
+      };
+      return chart.lifeCycle().on('drawChart.print', draw);
+    }
+  };
+});
+
+
+/**
+  @ngdoc behavior
+  @name selection
+  @element layout
+  @module wk.chart
+  @restrict A
+  @description
+  enables selection of individual chart objects
+ */
+angular.module('wk.chart').directive('selection', function($log) {
+  var objId;
+  objId = 0;
+  return {
+    restrict: 'A',
+    scope: {
+      selectedDomain: '='
+    },
+    require: 'layout',
+    link: function(scope, element, attrs, controller) {
+      var layout;
+      layout = controller.me;
+      return layout.lifeCycle().on('configure.selection', function() {
+        var _selection;
+        _selection = layout.behavior().selected;
+        _selection.active(true);
+        return _selection.on('selected', function(selectedObjects) {
+          scope.selectedDomain = selectedObjects;
+          return scope.$apply();
+        });
+      });
+    }
+  };
+});
+
+
+/**
+  @ngdoc behavior
+  @name tooltips
+  @element chart
+  @module wk.chart
+  @restrict A
+  @description
+  enables the display of tooltips. See  the {@link guide/tooltips tooltips section} in the guide for more details
+ */
+angular.module('wk.chart').directive('tooltips', function($log, behavior) {
+  var TooltipsController;
+  return {
+    restrict: 'A',
+    require: 'chart',
+    controller: TooltipsController,
+    link: function(scope, element, attrs, chartCtrl) {
+      var chart;
+      chart = chartCtrl.me;
+
+      /**
+        @ngdoc attr
+        @name tooltips#tooltips
+        @values true, false, path/to/custom-template.html
+        @param tooltips {boolean|url} - enable / disable tooltips, resp. supply a custom tooltip template url.
+        If no template url is supplied, a (configurable) default template is used (see {@link wkChartTemplatesProvider here} for how to configure the default template),
+       */
+      return attrs.$observe('tooltips', function(val) {
+        chart.toolTipTemplate('');
+        if (val !== void 0 && (val === '' || val === 'true')) {
+          return chart.showTooltip(true);
+        } else if (val.length > 0 && val !== 'false') {
+          chart.toolTipTemplate(val);
+          return chart.showTooltip(true);
+        } else {
+          return chart.showToolTip(false);
+        }
+      });
+    }
+  };
+  return TooltipsController = (function() {
+    function TooltipsController($scope) {
+      this.$scope = $scope;
+    }
+
+    return TooltipsController;
+
+  })();
+});
+
 
 /**
   @ngdoc layout
@@ -469,134 +1113,6 @@ angular.module('wk.chart').directive('area', function($log, utils) {
   };
 });
 
-// Copyright (c) 2013, Jason Davies, http://www.jasondavies.com
-// See LICENSE.txt for details.
-(function() {
-
-var radians = Math.PI / 180,
-    degrees = 180 / Math.PI;
-
-// TODO make incremental rotate optional
-
-d3.geo.zoom = function() {
-  var projection,
-      zoomPoint,
-      event = d3.dispatch("zoomstart", "zoom", "zoomend"),
-      zoom = d3.behavior.zoom()
-        .on("zoomstart", function() {
-          var mouse0 = d3.mouse(this),
-              rotate = quaternionFromEuler(projection.rotate()),
-              point = position(projection, mouse0);
-          if (point) zoomPoint = point;
-
-          zoomOn.call(zoom, "zoom", function() {
-                projection.scale(d3.event.scale);
-                var mouse1 = d3.mouse(this),
-                    between = rotateBetween(zoomPoint, position(projection, mouse1));
-                projection.rotate(eulerFromQuaternion(rotate = between
-                    ? multiply(rotate, between)
-                    : multiply(bank(projection, mouse0, mouse1), rotate)));
-                mouse0 = mouse1;
-                event.zoom.apply(this, arguments);
-              });
-          event.zoomstart.apply(this, arguments);
-        })
-        .on("zoomend", function() {
-          zoomOn.call(zoom, "zoom", null);
-          event.zoomend.apply(this, arguments);
-        }),
-      zoomOn = zoom.on;
-
-  zoom.projection = function(_) {
-    return arguments.length ? zoom.scale((projection = _).scale()) : projection;
-  };
-
-  return d3.rebind(zoom, event, "on");
-};
-
-function bank(projection, p0, p1) {
-  var t = projection.translate(),
-      angle = Math.atan2(p0[1] - t[1], p0[0] - t[0]) - Math.atan2(p1[1] - t[1], p1[0] - t[0]);
-  return [Math.cos(angle / 2), 0, 0, Math.sin(angle / 2)];
-}
-
-function position(projection, point) {
-  var t = projection.translate(),
-      spherical = projection.invert(point);
-  return spherical && isFinite(spherical[0]) && isFinite(spherical[1]) && cartesian(spherical);
-}
-
-function quaternionFromEuler(euler) {
-  var λ = .5 * euler[0] * radians,
-      φ = .5 * euler[1] * radians,
-      γ = .5 * euler[2] * radians,
-      sinλ = Math.sin(λ), cosλ = Math.cos(λ),
-      sinφ = Math.sin(φ), cosφ = Math.cos(φ),
-      sinγ = Math.sin(γ), cosγ = Math.cos(γ);
-  return [
-    cosλ * cosφ * cosγ + sinλ * sinφ * sinγ,
-    sinλ * cosφ * cosγ - cosλ * sinφ * sinγ,
-    cosλ * sinφ * cosγ + sinλ * cosφ * sinγ,
-    cosλ * cosφ * sinγ - sinλ * sinφ * cosγ
-  ];
-}
-
-function multiply(a, b) {
-  var a0 = a[0], a1 = a[1], a2 = a[2], a3 = a[3],
-      b0 = b[0], b1 = b[1], b2 = b[2], b3 = b[3];
-  return [
-    a0 * b0 - a1 * b1 - a2 * b2 - a3 * b3,
-    a0 * b1 + a1 * b0 + a2 * b3 - a3 * b2,
-    a0 * b2 - a1 * b3 + a2 * b0 + a3 * b1,
-    a0 * b3 + a1 * b2 - a2 * b1 + a3 * b0
-  ];
-}
-
-function rotateBetween(a, b) {
-  if (!a || !b) return;
-  var axis = cross(a, b),
-      norm = Math.sqrt(dot(axis, axis)),
-      halfγ = .5 * Math.acos(Math.max(-1, Math.min(1, dot(a, b)))),
-      k = Math.sin(halfγ) / norm;
-  return norm && [Math.cos(halfγ), axis[2] * k, -axis[1] * k, axis[0] * k];
-}
-
-function eulerFromQuaternion(q) {
-  return [
-    Math.atan2(2 * (q[0] * q[1] + q[2] * q[3]), 1 - 2 * (q[1] * q[1] + q[2] * q[2])) * degrees,
-    Math.asin(Math.max(-1, Math.min(1, 2 * (q[0] * q[2] - q[3] * q[1])))) * degrees,
-    Math.atan2(2 * (q[0] * q[3] + q[1] * q[2]), 1 - 2 * (q[2] * q[2] + q[3] * q[3])) * degrees
-  ];
-}
-
-function cartesian(spherical) {
-  var λ = spherical[0] * radians,
-      φ = spherical[1] * radians,
-      cosφ = Math.cos(φ);
-  return [
-    cosφ * Math.cos(λ),
-    cosφ * Math.sin(λ),
-    Math.sin(φ)
-  ];
-}
-
-function dot(a, b) {
-  for (var i = 0, n = a.length, s = 0; i < n; ++i) s += a[i] * b[i];
-  return s;
-}
-
-function cross(a, b) {
-  return [
-    a[1] * b[2] - a[2] * b[1],
-    a[2] * b[0] - a[0] * b[2],
-    a[0] * b[1] - a[1] * b[0]
-  ];
-}
-
-})();
-
-angular.module("wk.chart").run(["$templateCache", function($templateCache) {$templateCache.put("templates/legend.html","\n<div ng-style=\"position\" ng-show=\"showLegend\" class=\"wk-chart-legend\">\n  <div ng-show=\"title\" class=\"legend-title\">{{title}}</div>\n  <ul class=\"list-unstyled\">\n    <li ng-repeat=\"legendRow in legendRows track by legendRow.value\" class=\"wk-chart-legend-item\"><span ng-if=\"legendRow.color\" ng-style=\"legendRow.color\">&nbsp;&nbsp;&nbsp;</span>\n      <svg-icon ng-if=\"legendRow.path\" path=\"legendRow.path\" width=\"20\"></svg-icon><span> &nbsp;{{legendRow.value}}</span>\n    </li>\n  </ul>\n</div>");
-$templateCache.put("templates/toolTip.html","\n<div ng-style=\"position\" class=\"wk-chart-tooltip\">\n  <table class=\"table table-condensed table-bordered\">\n    <thead ng-show=\"headerValue\">\n      <tr>\n        <th colspan=\"2\">{{headerName}}</th>\n        <th>{{headerValue}}</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr ng-repeat=\"ttRow in layers track by ttRow.name\">\n        <td ng-style=\"ttRow.color\" ng-class=\"ttRow.class\">\n          <svg-icon ng-if=\"ttRow.path\" path=\"ttRow.path\" width=\"15\"></svg-icon>\n        </td>\n        <td>{{ttRow.name}}</td>\n        <td>{{ttRow.value}}</td>\n      </tr>\n    </tbody>\n  </table>\n</div>");}]);
 
 /**
   @ngdoc layout
@@ -834,124 +1350,6 @@ angular.module('wk.chart').directive('areaStacked', function($log, utils) {
   };
 });
 
-(function() {
-    var out$ = typeof exports != 'undefined' && exports || this;
-
-    var doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
-
-    function inlineImages(callback) {
-        var images = document.querySelectorAll('svg image');
-        var left = images.length;
-        if (left == 0) {
-            callback();
-        }
-        for (var i = 0; i < images.length; i++) {
-            (function(image) {
-                if (image.getAttribute('xlink:href')) {
-                    var href = image.getAttribute('xlink:href').value;
-                    if (/^http/.test(href) && !(new RegExp('^' + window.location.host).test(href))) {
-                        throw new Error("Cannot render embedded images linking to external hosts.");
-                    }
-                }
-                var canvas = document.createElement('canvas');
-                var ctx = canvas.getContext('2d');
-                var img = new Image();
-                img.src = image.getAttribute('xlink:href');
-                img.onload = function() {
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    ctx.drawImage(img, 0, 0);
-                    image.setAttribute('xlink:href', canvas.toDataURL('image/png'));
-                    left--;
-                    if (left == 0) {
-                        callback();
-                    }
-                }
-            })(images[i]);
-        }
-    }
-
-    function styles(dom) {
-        var css = "";
-        var sheets = document.styleSheets;
-        for (var i = 0; i < sheets.length; i++) {
-            var rules = sheets[i].cssRules;
-            if (rules != null) {
-                for (var j = 0; j < rules.length; j++) {
-                    var rule = rules[j];
-                    if (typeof(rule.style) != "undefined") {
-                        css += rule.selectorText + " { " + rule.style.cssText + " }\n";
-                    }
-                }
-            }
-        }
-
-        var s = document.createElement('style');
-        s.setAttribute('type', 'text/css');
-        s.innerHTML = "<![CDATA[\n" + css + "\n]]>";
-
-        var defs = document.createElement('defs');
-        defs.appendChild(s);
-        return defs;
-    }
-
-    out$.svgAsDataUri = function(el, scaleFactor, cb) {
-        scaleFactor = scaleFactor || 1;
-
-        inlineImages(function() {
-            var outer = document.createElement("div");
-            var clone = el.cloneNode(true);
-            var width = parseInt(
-                clone.getAttribute('width')
-                || clone.style.width
-                || out$.getComputedStyle(el).getPropertyValue('width')
-            );
-            var height = parseInt(
-                clone.getAttribute('height')
-                || clone.style.height
-                || out$.getComputedStyle(el).getPropertyValue('height')
-            );
-
-            var xmlns = "http://www.w3.org/2000/xmlns/";
-
-            clone.setAttribute("version", "1.1");
-            clone.setAttributeNS(xmlns, "xmlns", "http://www.w3.org/2000/svg");
-            clone.setAttributeNS(xmlns, "xmlns:xlink", "http://www.w3.org/1999/xlink");
-            clone.setAttribute("width", width * scaleFactor);
-            clone.setAttribute("height", height * scaleFactor);
-            clone.setAttribute("viewBox", "0 0 " + width + " " + height);
-            outer.appendChild(clone);
-
-            clone.insertBefore(styles(clone), clone.firstChild);
-
-            var svg = doctype + outer.innerHTML;
-            var uri = 'data:image/svg+xml;base64,' + window.btoa(unescape(encodeURIComponent(svg)));
-            if (cb) {
-                cb(uri);
-            }
-        });
-    }
-
-    out$.saveSvgAsPng = function(el, name, scaleFactor) {
-        out$.svgAsDataUri(el, scaleFactor, function(uri) {
-            var image = new Image();
-            image.src = uri;
-            image.onload = function() {
-                var canvas = document.createElement('canvas');
-                canvas.width = image.width;
-                canvas.height = image.height;
-                var context = canvas.getContext('2d');
-                context.drawImage(image, 0, 0);
-
-                var a = document.createElement('a');
-                a.download = name;
-                a.href = canvas.toDataURL('image/png');
-                document.body.appendChild(a);
-                a.click();
-            }
-        });
-    }
-})();
 
 /**
   @ngdoc layout
@@ -4154,404 +4552,6 @@ angular.module('wk.chart').directive('spider', function($log, utils) {
   };
 });
 
-
-/**
-  @ngdoc behavior
-  @name brush
-  @module wk.chart
-  @restrict A
-  @description
-
-  enable brushing behavior
- */
-angular.module('wk.chart').directive('brush', function($log, selectionSharing, behavior) {
-  return {
-    restrict: 'A',
-    require: ['^chart', '^layout', '?x', '?y', '?rangeX', '?rangeY'],
-    scope: {
-      brushExtent: '=',
-      selectedValues: '=',
-      selectedDomain: '=',
-      selectedDomainChange: '&'
-    },
-    link: function(scope, element, attrs, controllers) {
-      var brush, chart, layout, rangeX, rangeY, scales, x, xScale, y, yScale, _brushAreaSelection, _brushGroup, _isAreaBrush, _ref, _ref1, _ref2, _ref3, _ref4, _selectables;
-      chart = controllers[0].me;
-      layout = (_ref = controllers[1]) != null ? _ref.me : void 0;
-      x = (_ref1 = controllers[2]) != null ? _ref1.me : void 0;
-      y = (_ref2 = controllers[3]) != null ? _ref2.me : void 0;
-      rangeX = (_ref3 = controllers[4]) != null ? _ref3.me : void 0;
-      rangeY = (_ref4 = controllers[5]) != null ? _ref4.me : void 0;
-      xScale = void 0;
-      yScale = void 0;
-      _selectables = void 0;
-      _brushAreaSelection = void 0;
-      _isAreaBrush = !x && !y;
-      _brushGroup = void 0;
-      brush = chart.behavior().brush;
-      if (!x && !y && !rangeX && !rangeY) {
-        scales = layout.scales().getScales(['x', 'y']);
-        brush.x(scales.x);
-        brush.y(scales.y);
-      } else {
-        brush.x(x || rangeX);
-        brush.y(y || rangeY);
-      }
-      brush.active(true);
-
-      /**
-        @ngdoc event
-        @name brush#selectedDomainChange
-        @param domain {array} Array containing the data objects selected by te brush
-       */
-      brush.events().on('brush', function(idxRange, valueRange, domain) {
-        if (attrs.brushExtent) {
-          scope.brushExtent = idxRange;
-        }
-        if (attrs.selectedValues) {
-          scope.selectedValues = valueRange;
-        }
-        if (attrs.selectedDomain) {
-          scope.selectedDomain = domain;
-        }
-        scope.selectedDomainChange({
-          domain: domain
-        });
-        return scope.$apply();
-      });
-      layout.lifeCycle().on('drawChart.brush', function(data) {
-        return brush.data(data);
-      });
-
-      /**
-        @ngdoc attr
-        @name brush#brush
-        @values none
-        @param brush {string} Brush name
-        Brush will be published under this name for consumption by other layouts
-       */
-      return attrs.$observe('brush', function(val) {
-        if (_.isString(val) && val.length > 0) {
-          return brush.brushGroup(val);
-        } else {
-          return brush.brushGroup(void 0);
-        }
-      });
-    }
-  };
-});
-
-
-/**
-  @ngdoc behavior
-  @name brushed
-  @module wk.chart
-  @restrict A
-  @description
-
-  enables an axis to be scaled by a named brush in a different layout
- */
-angular.module('wk.chart').directive('brushed', function($log, selectionSharing, timing) {
-  var sBrushCnt;
-  sBrushCnt = 0;
-  return {
-    restrict: 'A',
-    require: ['^chart', '?^layout', '?x', '?y', '?rangeX', '?rangeY'],
-    link: function(scope, element, attrs, controllers) {
-      var axis, brusher, chart, layout, rangeX, rangeY, x, y, _brushGroup, _ref, _ref1, _ref2, _ref3, _ref4;
-      chart = controllers[0].me;
-      layout = (_ref = controllers[1]) != null ? _ref.me : void 0;
-      x = (_ref1 = controllers[2]) != null ? _ref1.me : void 0;
-      y = (_ref2 = controllers[3]) != null ? _ref2.me : void 0;
-      rangeX = (_ref3 = controllers[4]) != null ? _ref3.me : void 0;
-      rangeY = (_ref4 = controllers[5]) != null ? _ref4.me : void 0;
-      axis = x || y || rangeX || rangeY;
-      _brushGroup = void 0;
-      brusher = function(extent, idxRange) {
-        var l, _i, _len, _ref5, _results;
-        if (!axis) {
-          return;
-        }
-        axis.domain(extent).scale().domain(extent);
-        _ref5 = chart.layouts();
-        _results = [];
-        for (_i = 0, _len = _ref5.length; _i < _len; _i++) {
-          l = _ref5[_i];
-          if (l.scales().hasScale(axis)) {
-            _results.push(l.lifeCycle().brush(axis, true, idxRange));
-          }
-        }
-        return _results;
-      };
-      attrs.$observe('brushed', function(val) {
-        if (_.isString(val) && val.length > 0) {
-          _brushGroup = val;
-          return selectionSharing.register(_brushGroup, brusher);
-        } else {
-          return _brushGroup = void 0;
-        }
-      });
-      return scope.$on('$destroy', function() {
-        return selectionSharing.unregister(_brushGroup, brusher);
-      });
-    }
-  };
-});
-
-
-/**
-  @ngdoc container
-  @name chart
-  @module wk.chart
-  @restrict E
-  @description
-
-  chart is the container directive for all charts.
-  @param {array} data - Data to be graphed, {@link guide/data ...more}
-  @param {boolean} [deep-watch=false]
-  @param {string} [filter] - filters the data using the angular filter function
-  @param {string} [title] - The chart title
-  @param {string} [subtitle] - The chart subtitle
-  @param {number} [animation-duration=300] - animation duration in milliseconds
- */
-angular.module('wk.chart').directive('chart', function($log, chart, $filter) {
-  var chartCnt;
-  chartCnt = 0;
-  return {
-    restrict: 'E',
-    require: 'chart',
-    scope: {
-      data: '=',
-      filter: '='
-    },
-    controller: function($scope) {
-      this.me = chart();
-      return this.me.scope($scope);
-    },
-    link: function(scope, element, attrs, controller) {
-      var dataWatchFn, deepWatch, me, watcherRemoveFn, _data, _filter;
-      me = controller.me;
-      deepWatch = false;
-      watcherRemoveFn = void 0;
-      element.addClass(me.id());
-      _data = void 0;
-      _filter = void 0;
-      me.container().element(element[0]);
-      me.lifeCycle().configure();
-      me.lifeCycle().on('scopeApply', function() {
-        return scope.$apply();
-      });
-      attrs.$observe('animationDuration', function(val) {
-        if (val && _.isNumber(+val) && +val >= 0) {
-          return me.animationDuration(val);
-        }
-      });
-      attrs.$observe('title', function(val) {
-        if (val) {
-          return me.title(val);
-        } else {
-          return me.title(void 0);
-        }
-      });
-      attrs.$observe('subtitle', function(val) {
-        if (val) {
-          return me.subTitle(val);
-        } else {
-          return me.subTitle(void 0);
-        }
-      });
-      scope.$watch('filter', function(val) {
-        if (val) {
-          _filter = val;
-          if (_data) {
-            return me.lifeCycle().newData($filter('filter')(_data, _filter));
-          }
-        } else {
-          _filter = void 0;
-          if (_data) {
-            return me.lifeCycle().newData(_data);
-          }
-        }
-      });
-      attrs.$observe('deepWatch', function(val) {
-        if (val !== void 0 && val !== 'false') {
-          deepWatch = true;
-        } else {
-          deepWatch = false;
-        }
-        if (watcherRemoveFn) {
-          watcherRemoveFn();
-        }
-        return watcherRemoveFn = scope.$watch('data', dataWatchFn, deepWatch);
-      });
-      dataWatchFn = function(val) {
-        if (val) {
-          _data = val;
-          if (_.isArray(_data) && _data.length === 0) {
-            return;
-          }
-          if (_filter) {
-            return me.lifeCycle().newData($filter('filter')(val, _filter));
-          } else {
-            return me.lifeCycle().newData(val);
-          }
-        }
-      };
-      watcherRemoveFn = scope.$watch('data', dataWatchFn, deepWatch);
-      return element.on('$destroy', function() {
-        if (watcherRemoveFn) {
-          watcherRemoveFn();
-        }
-        return $log.log('Destroying chart');
-      });
-    }
-  };
-});
-
-
-/**
-  @ngdoc container
-  @name layout
-  @module wk.chart
-  @restrict E
-  @requires chart
-  @description
-
-  Layout is the container for the layout directives. It requires chart as a parent.
- */
-angular.module('wk.chart').directive('layout', function($log, layout, container) {
-  var layoutCnt;
-  layoutCnt = 0;
-  return {
-    restrict: 'AE',
-    require: ['layout', '^chart'],
-    controller: function($element) {
-      return this.me = layout();
-    },
-    link: function(scope, element, attrs, controllers) {
-      var chart, me;
-      me = controllers[0].me;
-      chart = controllers[1].me;
-      me.chart(chart);
-      element.addClass(me.id());
-      chart.addLayout(me);
-      chart.container().addLayout(me);
-      return me.container(chart.container());
-    }
-  };
-});
-
-angular.module('wk.chart').directive('printButton', function($log) {
-  return {
-    require: 'chart',
-    restrict: 'A',
-    link: function(scope, element, attrs, controller) {
-      var chart, draw;
-      chart = controller.me;
-      draw = function() {
-        var _containerDiv;
-        _containerDiv = d3.select(chart.container().element()).select('div.wk-chart');
-        return _containerDiv.append('button').attr('class', 'wk-chart-print-button').style({
-          position: 'absolute',
-          top: 0,
-          right: 0
-        }).text('Print').on('click', function() {
-          var svg;
-          $log.log('Clicked Print Button');
-          svg = _containerDiv.select('svg.wk-chart').node();
-          return saveSvgAsPng(svg, 'print.png', 5);
-        });
-      };
-      return chart.lifeCycle().on('drawChart.print', draw);
-    }
-  };
-});
-
-
-/**
-  @ngdoc behavior
-  @name selection
-  @element layout
-  @module wk.chart
-  @restrict A
-  @description
-  enables selection of individual chart objects
- */
-angular.module('wk.chart').directive('selection', function($log) {
-  var objId;
-  objId = 0;
-  return {
-    restrict: 'A',
-    scope: {
-      selectedDomain: '='
-    },
-    require: 'layout',
-    link: function(scope, element, attrs, controller) {
-      var layout;
-      layout = controller.me;
-      return layout.lifeCycle().on('configure.selection', function() {
-        var _selection;
-        _selection = layout.behavior().selected;
-        _selection.active(true);
-        return _selection.on('selected', function(selectedObjects) {
-          scope.selectedDomain = selectedObjects;
-          return scope.$apply();
-        });
-      });
-    }
-  };
-});
-
-
-/**
-  @ngdoc behavior
-  @name tooltips
-  @element chart
-  @module wk.chart
-  @restrict A
-  @description
-  enables the display of tooltips. See  the {@link guide/tooltips tooltips section} in the guide for more details
- */
-angular.module('wk.chart').directive('tooltips', function($log, behavior) {
-  var TooltipsController;
-  return {
-    restrict: 'A',
-    require: 'chart',
-    controller: TooltipsController,
-    link: function(scope, element, attrs, chartCtrl) {
-      var chart;
-      chart = chartCtrl.me;
-
-      /**
-        @ngdoc attr
-        @name tooltips#tooltips
-        @values true, false, path/to/custom-template.html
-        @param tooltips {boolean|url} - enable / disable tooltips, resp. supply a custom tooltip template url.
-        If no template url is supplied, a (configurable) default template is used (see {@link wkChartTemplatesProvider here} for how to configure the default template),
-       */
-      return attrs.$observe('tooltips', function(val) {
-        chart.toolTipTemplate('');
-        if (val !== void 0 && (val === '' || val === 'true')) {
-          return chart.showTooltip(true);
-        } else if (val.length > 0 && val !== 'false') {
-          chart.toolTipTemplate(val);
-          return chart.showTooltip(true);
-        } else {
-          return chart.showToolTip(false);
-        }
-      });
-    }
-  };
-  return TooltipsController = (function() {
-    function TooltipsController($scope) {
-      this.$scope = $scope;
-    }
-
-    return TooltipsController;
-
-  })();
-});
-
 angular.module('wk.chart').factory('behaviorBrush', function($log, $window, selectionSharing, timing) {
   var behaviorBrush;
   behaviorBrush = function() {
@@ -7125,6 +7125,215 @@ angular.module('wk.chart').factory('scaleList', function($log) {
 
 
 /**
+  @ngdoc provider
+  @module wk.chart
+  @name wkChartLocaleProvider
+  @description
+  registers a den locale
+ */
+angular.module('wk.chart').provider('wkChartLocale', function() {
+  var locale, locales;
+  locale = 'en_US';
+  locales = {
+    de_DE: d3.locale({
+      decimal: ",",
+      thousands: ".",
+      grouping: [3],
+      currency: ["", " €"],
+      dateTime: "%A, der %e. %B %Y, %X",
+      date: "%e.%m.%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
+      shortDays: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+      months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
+      shortMonths: ["Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
+    }),
+    'en_US': d3.locale({
+      "decimal": ".",
+      "thousands": ",",
+      "grouping": [3],
+      "currency": ["$", ""],
+      "dateTime": "%a %b %e %X %Y",
+      "date": "%m/%d/%Y",
+      "time": "%H:%M:%S",
+      "periods": ["AM", "PM"],
+      "days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      "shortDays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      "shortMonths": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    })
+  };
+
+  /**
+    @ngdoc method
+    @name wkChartLocaleProvider#setLocale
+    @param name {string} name of the locale. If locale is unknown it reports an error and sets locale to en_US
+   */
+  this.setLocale = function(l) {
+    if (_.has(locales, l)) {
+      return locale = l;
+    } else {
+      throw "unknowm locale '" + l + "' using 'en-US' instead";
+    }
+  };
+
+  /**
+    @ngdoc method
+    @name wkChartLocaleProvider#addLocaleDefinition
+    @param name {string} name of the locale.
+    @param localeDefinition {object} A d3.js locale definition object. See [d3 documentation](https://github.com/mbostock/d3/wiki/Localization#d3_locale) for details of the format.
+   */
+  this.addLocaleDefinition = function(name, l) {
+    return locales[name] = d3.locale(l);
+  };
+
+  /**
+    @ngdoc service
+    @module wk.chart
+    @name wkChartLocale
+    @description
+    @returns d3.ls locale definition
+   */
+  this.$get = [
+    '$log', function($log) {
+      return locales[locale];
+    }
+  ];
+  return this;
+});
+
+angular.module('wk.chart').provider('wkChartScales', function() {
+  var categoryColors, categoryColorsHashed, hashed, _customColors;
+  _customColors = ['red', 'green', 'blue', 'yellow', 'orange'];
+  hashed = function() {
+    var d3Scale, me, _hashFn;
+    d3Scale = d3.scale.ordinal();
+    _hashFn = function(value) {
+      var hash, i, m, _i, _ref, _results;
+      hash = 0;
+      m = d3Scale.range().length - 1;
+      _results = [];
+      for (i = _i = 0, _ref = value.length; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        _results.push(hash = (31 * hash + value.charAt(i)) % m);
+      }
+      return _results;
+    };
+    me = function(value) {
+      if (!arguments) {
+        return me;
+      }
+      return d3Scale(_hashFn(value));
+    };
+    me.range = function(range) {
+      if (!arguments) {
+        return d3Scale.range();
+      }
+      d3Scale.domain(d3.range(range.length));
+      return d3Scale.range(range);
+    };
+    me.rangePoint = d3Scale.rangePoints;
+    me.rangeBands = d3Scale.rangeBands;
+    me.rangeRoundBands = d3Scale.rangeRoundBands;
+    me.rangeBand = d3Scale.rangeBand;
+    me.rangeExtent = d3Scale.rangeExtent;
+    me.hash = function(fn) {
+      if (!arguments) {
+        return _hashFn;
+      }
+      _hashFn = fn;
+      return me;
+    };
+    return me;
+  };
+  categoryColors = function() {
+    return d3.scale.ordinal().range(_customColors);
+  };
+  categoryColorsHashed = function() {
+    return hashed().range(_customColors);
+  };
+  this.colors = function(colors) {
+    return _customColors = colors;
+  };
+  this.$get = [
+    '$log', function($log) {
+      return {
+        hashed: hashed,
+        colors: categoryColors,
+        colorsHashed: categoryColorsHashed
+      };
+    }
+  ];
+  return this;
+});
+
+
+/**
+  @ngdoc provider
+  @module wk.chart
+  @name wkChartTemplatesProvider
+  @description
+  used to register a custom tooltip or legend default template and overwrite the default system templates.
+ */
+angular.module('wk.chart').provider('wkChartTemplates', function() {
+  var legendTemplateUrl, tooltipTemplateUrl;
+  tooltipTemplateUrl = 'templates/toolTip.html';
+  legendTemplateUrl = 'templates/legend.html';
+
+  /**
+    @ngdoc method
+    @name wkChartTemplatesProvider#setTooltipTemplate
+    @param url {string} the url of the template file
+   */
+  this.setTooltipTemplate = function(url) {
+    return tooltipTemplateUrl = url;
+  };
+
+  /**
+      @ngdoc method
+      @name wkChartTemplatesProvider#setLegendTemplate
+      @param url {string} the url of the template file
+   */
+  this.setLegendTemplate = function(url) {
+    return legendTemplateUrl = url;
+  };
+
+  /**
+    @ngdoc service
+    @module wk.chart
+    @name wkChartTemplates
+    @description
+    provides the default tooltip and legend template.
+   */
+  this.$get = [
+    '$log', '$templateCache', function($log, $templateCache) {
+      return {
+
+        /**
+          @ngdoc method
+          @name wkChartTemplates#tooltipTemplate
+          @returns {string} the tooltips template
+         */
+        tooltipTemplate: function() {
+          return $templateCache.get(tooltipTemplateUrl);
+        },
+
+        /**
+          @ngdoc method
+          @name wkChartTemplates#legendTemplate
+          @returns {string} the legends template
+         */
+        legendTemplate: function() {
+          return $templateCache.get(legendTemplateUrl);
+        }
+      };
+    }
+  ];
+  return this;
+});
+
+
+/**
   @ngdoc dimension
   @name color
   @module wk.chart
@@ -8410,215 +8619,6 @@ angular.module('wk.chart').service('utils', function($log) {
     }
     return result;
   };
-  return this;
-});
-
-
-/**
-  @ngdoc provider
-  @module wk.chart
-  @name wkChartLocaleProvider
-  @description
-  registers a den locale
- */
-angular.module('wk.chart').provider('wkChartLocale', function() {
-  var locale, locales;
-  locale = 'en_US';
-  locales = {
-    de_DE: d3.locale({
-      decimal: ",",
-      thousands: ".",
-      grouping: [3],
-      currency: ["", " €"],
-      dateTime: "%A, der %e. %B %Y, %X",
-      date: "%e.%m.%Y",
-      time: "%H:%M:%S",
-      periods: ["AM", "PM"],
-      days: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
-      shortDays: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
-      months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
-      shortMonths: ["Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
-    }),
-    'en_US': d3.locale({
-      "decimal": ".",
-      "thousands": ",",
-      "grouping": [3],
-      "currency": ["$", ""],
-      "dateTime": "%a %b %e %X %Y",
-      "date": "%m/%d/%Y",
-      "time": "%H:%M:%S",
-      "periods": ["AM", "PM"],
-      "days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-      "shortDays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-      "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-      "shortMonths": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    })
-  };
-
-  /**
-    @ngdoc method
-    @name wkChartLocaleProvider#setLocale
-    @param name {string} name of the locale. If locale is unknown it reports an error and sets locale to en_US
-   */
-  this.setLocale = function(l) {
-    if (_.has(locales, l)) {
-      return locale = l;
-    } else {
-      throw "unknowm locale '" + l + "' using 'en-US' instead";
-    }
-  };
-
-  /**
-    @ngdoc method
-    @name wkChartLocaleProvider#addLocaleDefinition
-    @param name {string} name of the locale.
-    @param localeDefinition {object} A d3.js locale definition object. See [d3 documentation](https://github.com/mbostock/d3/wiki/Localization#d3_locale) for details of the format.
-   */
-  this.addLocaleDefinition = function(name, l) {
-    return locales[name] = d3.locale(l);
-  };
-
-  /**
-    @ngdoc service
-    @module wk.chart
-    @name wkChartLocale
-    @description
-    @returns d3.ls locale definition
-   */
-  this.$get = [
-    '$log', function($log) {
-      return locales[locale];
-    }
-  ];
-  return this;
-});
-
-angular.module('wk.chart').provider('wkChartScales', function() {
-  var categoryColors, categoryColorsHashed, hashed, _customColors;
-  _customColors = ['red', 'green', 'blue', 'yellow', 'orange'];
-  hashed = function() {
-    var d3Scale, me, _hashFn;
-    d3Scale = d3.scale.ordinal();
-    _hashFn = function(value) {
-      var hash, i, m, _i, _ref, _results;
-      hash = 0;
-      m = d3Scale.range().length - 1;
-      _results = [];
-      for (i = _i = 0, _ref = value.length; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-        _results.push(hash = (31 * hash + value.charAt(i)) % m);
-      }
-      return _results;
-    };
-    me = function(value) {
-      if (!arguments) {
-        return me;
-      }
-      return d3Scale(_hashFn(value));
-    };
-    me.range = function(range) {
-      if (!arguments) {
-        return d3Scale.range();
-      }
-      d3Scale.domain(d3.range(range.length));
-      return d3Scale.range(range);
-    };
-    me.rangePoint = d3Scale.rangePoints;
-    me.rangeBands = d3Scale.rangeBands;
-    me.rangeRoundBands = d3Scale.rangeRoundBands;
-    me.rangeBand = d3Scale.rangeBand;
-    me.rangeExtent = d3Scale.rangeExtent;
-    me.hash = function(fn) {
-      if (!arguments) {
-        return _hashFn;
-      }
-      _hashFn = fn;
-      return me;
-    };
-    return me;
-  };
-  categoryColors = function() {
-    return d3.scale.ordinal().range(_customColors);
-  };
-  categoryColorsHashed = function() {
-    return hashed().range(_customColors);
-  };
-  this.colors = function(colors) {
-    return _customColors = colors;
-  };
-  this.$get = [
-    '$log', function($log) {
-      return {
-        hashed: hashed,
-        colors: categoryColors,
-        colorsHashed: categoryColorsHashed
-      };
-    }
-  ];
-  return this;
-});
-
-
-/**
-  @ngdoc provider
-  @module wk.chart
-  @name wkChartTemplatesProvider
-  @description
-  used to register a custom tooltip or legend default template and overwrite the default system templates.
- */
-angular.module('wk.chart').provider('wkChartTemplates', function() {
-  var legendTemplateUrl, tooltipTemplateUrl;
-  tooltipTemplateUrl = 'templates/toolTip.html';
-  legendTemplateUrl = 'templates/legend.html';
-
-  /**
-    @ngdoc method
-    @name wkChartTemplatesProvider#setTooltipTemplate
-    @param url {string} the url of the template file
-   */
-  this.setTooltipTemplate = function(url) {
-    return tooltipTemplateUrl = url;
-  };
-
-  /**
-      @ngdoc method
-      @name wkChartTemplatesProvider#setLegendTemplate
-      @param url {string} the url of the template file
-   */
-  this.setLegendTemplate = function(url) {
-    return legendTemplateUrl = url;
-  };
-
-  /**
-    @ngdoc service
-    @module wk.chart
-    @name wkChartTemplates
-    @description
-    provides the default tooltip and legend template.
-   */
-  this.$get = [
-    '$log', '$templateCache', function($log, $templateCache) {
-      return {
-
-        /**
-          @ngdoc method
-          @name wkChartTemplates#tooltipTemplate
-          @returns {string} the tooltips template
-         */
-        tooltipTemplate: function() {
-          return $templateCache.get(tooltipTemplateUrl);
-        },
-
-        /**
-          @ngdoc method
-          @name wkChartTemplates#legendTemplate
-          @returns {string} the legends template
-         */
-        legendTemplate: function() {
-          return $templateCache.get(legendTemplateUrl);
-        }
-      };
-    }
-  ];
   return this;
 });
 

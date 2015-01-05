@@ -18,6 +18,64 @@
   <h2>Module Components</h2>
   
     <div>
+      <h3 class="component-heading" id="behavior">Behavior</h3>
+      <table class="definition-table">
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+        
+        <tr>
+          <td><a href="/behavior/brush">brush</a></td>
+          <td><p>enable brushing behavior</p>
+</td>
+        </tr>
+        
+        <tr>
+          <td><a href="/behavior/brushed">brushed</a></td>
+          <td><p>enables an axis to be scaled by a named brush in a different layout</p>
+</td>
+        </tr>
+        
+        <tr>
+          <td><a href="/behavior/selection">selection</a></td>
+          <td><p>enables selection of individual chart objects</p>
+</td>
+        </tr>
+        
+        <tr>
+          <td><a href="/behavior/tooltips">tooltips</a></td>
+          <td><p>enables the display of tooltips. See  the <a href="/guide/tooltips">tooltips section</a> in the guide for more details</p>
+</td>
+        </tr>
+        
+      </table>
+    </div>
+  
+    <div>
+      <h3 class="component-heading" id="container">Container</h3>
+      <table class="definition-table">
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+        
+        <tr>
+          <td><a href="/container/chart">chart</a></td>
+          <td><p>chart is the container directive for all charts.</p>
+</td>
+        </tr>
+        
+        <tr>
+          <td><a href="/container/layout">layout</a></td>
+          <td><p>Layout is the container for the layout directives. It requires chart as a parent.</p>
+</td>
+        </tr>
+        
+      </table>
+    </div>
+  
+    <div>
       <h3 class="component-heading" id="layout">Layout</h3>
       <table class="definition-table">
         <tr>
@@ -144,7 +202,7 @@
     </div>
   
     <div>
-      <h3 class="component-heading" id="behavior">Behavior</h3>
+      <h3 class="component-heading" id="provider">Provider</h3>
       <table class="definition-table">
         <tr>
           <th>Name</th>
@@ -152,26 +210,14 @@
         </tr>
         
         <tr>
-          <td><a href="/behavior/brush">brush</a></td>
-          <td><p>enable brushing behavior</p>
+          <td><a href="/provider/wkChartLocaleProvider">wkChartLocaleProvider</a></td>
+          <td><p>registers a den locale</p>
 </td>
         </tr>
         
         <tr>
-          <td><a href="/behavior/brushed">brushed</a></td>
-          <td><p>enables an axis to be scaled by a named brush in a different layout</p>
-</td>
-        </tr>
-        
-        <tr>
-          <td><a href="/behavior/selection">selection</a></td>
-          <td><p>enables selection of individual chart objects</p>
-</td>
-        </tr>
-        
-        <tr>
-          <td><a href="/behavior/tooltips">tooltips</a></td>
-          <td><p>enables the display of tooltips. See  the <a href="/guide/tooltips">tooltips section</a> in the guide for more details</p>
+          <td><a href="/provider/wkChartTemplatesProvider">wkChartTemplatesProvider</a></td>
+          <td><p>used to register a custom tooltip or legend default template and overwrite the default system templates.</p>
 </td>
         </tr>
         
@@ -179,7 +225,7 @@
     </div>
   
     <div>
-      <h3 class="component-heading" id="container">Container</h3>
+      <h3 class="component-heading" id="service">Service</h3>
       <table class="definition-table">
         <tr>
           <th>Name</th>
@@ -187,14 +233,13 @@
         </tr>
         
         <tr>
-          <td><a href="/container/chart">chart</a></td>
-          <td><p>chart is the container directive for all charts.</p>
-</td>
+          <td><a href="/service/wkChartLocale">wkChartLocale</a></td>
+          <td></td>
         </tr>
         
         <tr>
-          <td><a href="/container/layout">layout</a></td>
-          <td><p>Layout is the container for the layout directives. It requires chart as a parent.</p>
+          <td><a href="/service/wkChartTemplates">wkChartTemplates</a></td>
+          <td><p>provides the default tooltip and legend template.</p>
 </td>
         </tr>
         
@@ -248,51 +293,6 @@
         <tr>
           <td><a href="/dimension/rangeY">rangeY</a></td>
           <td><p>describes how the chart data is translated into vertical ranges for the chart objects</p>
-</td>
-        </tr>
-        
-      </table>
-    </div>
-  
-    <div>
-      <h3 class="component-heading" id="provider">Provider</h3>
-      <table class="definition-table">
-        <tr>
-          <th>Name</th>
-          <th>Description</th>
-        </tr>
-        
-        <tr>
-          <td><a href="/provider/wkChartLocaleProvider">wkChartLocaleProvider</a></td>
-          <td><p>registers a den locale</p>
-</td>
-        </tr>
-        
-        <tr>
-          <td><a href="/provider/wkChartTemplatesProvider">wkChartTemplatesProvider</a></td>
-          <td><p>used to register a custom tooltip or legend default template and overwrite the default system templates.</p>
-</td>
-        </tr>
-        
-      </table>
-    </div>
-  
-    <div>
-      <h3 class="component-heading" id="service">Service</h3>
-      <table class="definition-table">
-        <tr>
-          <th>Name</th>
-          <th>Description</th>
-        </tr>
-        
-        <tr>
-          <td><a href="/service/wkChartLocale">wkChartLocale</a></td>
-          <td></td>
-        </tr>
-        
-        <tr>
-          <td><a href="/service/wkChartTemplates">wkChartTemplates</a></td>
-          <td><p>provides the default tooltip and legend template.</p>
 </td>
         </tr>
         
