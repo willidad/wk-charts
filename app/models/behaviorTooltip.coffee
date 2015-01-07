@@ -162,9 +162,8 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         if _path.length > 0
           _customTempl = $templateCache.get(_path)
           # wrap template into positioning div
-          #_customTemplWrapped = "<div class=\"wk-chart-tooltip\" ng-style=\"position\">#{_customTempl}</div>"
           _templ = "<div class=\"wk-chart-tooltip\" ng-style=\"position\">#{_customTempl}</div>"
-          #_compiledTempl = $compile(_customTemplWrapped)(_templScope)
+
         return me
 
     me.area = (val) ->
@@ -210,7 +209,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
 
     compileTemplate = (template) ->
       if not _templScope
-        _templScope = _chart.scope().$new(true)   ## create the template scope as child of the chart's scope
+        _templScope = _chart.scope().$parent.$new(true)   ## create the template scope as child of the chart's scope
         # add scale access functions to scope
         _templScope.properties = {}
         _templScope.map = {}
