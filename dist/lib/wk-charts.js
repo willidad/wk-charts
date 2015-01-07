@@ -308,7 +308,15 @@ angular.module('wk.chart').directive('brush', function($log, selectionSharing, b
         @name brush#brushEnd
         @param brushEnd {expression} expression to evaluate upon a end of brushing. is fired on 'mouseup'. The selected domain is available as ´domain´
        */
-      brushEnd: '&'
+      brushEnd: '&',
+
+      /**
+        @ngdoc attr
+        @name brush#clearBrush
+        @param clearBrush {function} assigns a function that clears the brush selection when called to the bound scope variable.
+      * > you should not re-assign this expression !!!
+       */
+      clearBrush: "="
     },
     link: function(scope, element, attrs, controllers) {
       var brush, chart, layout, rangeX, rangeY, scales, x, xScale, y, yScale, _brushAreaSelection, _brushGroup, _isAreaBrush, _ref, _ref1, _ref2, _ref3, _ref4, _selectables;
@@ -334,6 +342,9 @@ angular.module('wk.chart').directive('brush', function($log, selectionSharing, b
         brush.y(y || rangeY);
       }
       brush.active(true);
+      scope.$watch('clearBrush', function(val) {
+        return scope.clearBrush = brush.clearBrush;
+      });
       attrs.$observe('brush', function(val) {
         if (_.isString(val) && val.length > 0) {
           return brush.brushGroup(val);
@@ -501,63 +512,6 @@ function cross(a, b) {
 
 })();
 
-
-/**
-  @ngdoc behavior
-  @name brushed
-  @module wk.chart
-  @restrict A
-  @description
-
-  enables an axis to be scaled by a named brush in a different layout
- */
-angular.module('wk.chart').directive('brushed', function($log, selectionSharing, timing) {
-  var sBrushCnt;
-  sBrushCnt = 0;
-  return {
-    restrict: 'A',
-    require: ['^chart', '?^layout', '?x', '?y', '?rangeX', '?rangeY'],
-    link: function(scope, element, attrs, controllers) {
-      var axis, brusher, chart, layout, rangeX, rangeY, x, y, _brushGroup, _ref, _ref1, _ref2, _ref3, _ref4;
-      chart = controllers[0].me;
-      layout = (_ref = controllers[1]) != null ? _ref.me : void 0;
-      x = (_ref1 = controllers[2]) != null ? _ref1.me : void 0;
-      y = (_ref2 = controllers[3]) != null ? _ref2.me : void 0;
-      rangeX = (_ref3 = controllers[4]) != null ? _ref3.me : void 0;
-      rangeY = (_ref4 = controllers[5]) != null ? _ref4.me : void 0;
-      axis = x || y || rangeX || rangeY;
-      _brushGroup = void 0;
-      brusher = function(extent, idxRange) {
-        var l, _i, _len, _ref5, _results;
-        if (!axis) {
-          return;
-        }
-        axis.domain(extent).scale().domain(extent);
-        _ref5 = chart.layouts();
-        _results = [];
-        for (_i = 0, _len = _ref5.length; _i < _len; _i++) {
-          l = _ref5[_i];
-          if (l.scales().hasScale(axis)) {
-            _results.push(l.lifeCycle().brush(axis, true, idxRange));
-          }
-        }
-        return _results;
-      };
-      attrs.$observe('brushed', function(val) {
-        if (_.isString(val) && val.length > 0) {
-          _brushGroup = val;
-          return selectionSharing.register(_brushGroup, brusher);
-        } else {
-          return _brushGroup = void 0;
-        }
-      });
-      return scope.$on('$destroy', function() {
-        return selectionSharing.unregister(_brushGroup, brusher);
-      });
-    }
-  };
-});
-
 (function() {
     var out$ = typeof exports != 'undefined' && exports || this;
 
@@ -676,6 +630,71 @@ angular.module('wk.chart').directive('brushed', function($log, selectionSharing,
         });
     }
 })();
+
+/**
+  @ngdoc behavior
+  @name brushed
+  @module wk.chart
+  @restrict A
+  @description
+
+  enables an axis to be scaled by a named brush in a different layout
+ */
+angular.module('wk.chart').directive('brushed', function($log, selectionSharing, timing) {
+  var sBrushCnt;
+  sBrushCnt = 0;
+  return {
+    restrict: 'A',
+    require: ['^chart', '?^layout', '?x', '?y', '?rangeX', '?rangeY'],
+    link: function(scope, element, attrs, controllers) {
+      var axis, brusher, chart, layout, rangeX, rangeY, x, y, _brushGroup, _ref, _ref1, _ref2, _ref3, _ref4;
+      chart = controllers[0].me;
+      layout = (_ref = controllers[1]) != null ? _ref.me : void 0;
+      x = (_ref1 = controllers[2]) != null ? _ref1.me : void 0;
+      y = (_ref2 = controllers[3]) != null ? _ref2.me : void 0;
+      rangeX = (_ref3 = controllers[4]) != null ? _ref3.me : void 0;
+      rangeY = (_ref4 = controllers[5]) != null ? _ref4.me : void 0;
+      axis = x || y || rangeX || rangeY;
+      _brushGroup = void 0;
+      brusher = function(extent, idxRange) {
+        var l, _i, _len, _ref5, _results;
+        if (!axis) {
+          return;
+        }
+        if (extent.length > 0) {
+          axis.domain(extent).scale().domain(extent);
+        } else {
+          axis.domain(void 0);
+          axis.scale().domain(axis.getDomain(chart.getData()));
+          if (axis.isOrdinal()) {
+            idxRange = [0, axis.scale().domain().length - 1];
+          }
+        }
+        _ref5 = chart.layouts();
+        _results = [];
+        for (_i = 0, _len = _ref5.length; _i < _len; _i++) {
+          l = _ref5[_i];
+          if (l.scales().hasScale(axis)) {
+            _results.push(l.lifeCycle().brush(axis, true, idxRange));
+          }
+        }
+        return _results;
+      };
+      attrs.$observe('brushed', function(val) {
+        if (_.isString(val) && val.length > 0) {
+          _brushGroup = val;
+          return selectionSharing.register(_brushGroup, brusher);
+        } else {
+          return _brushGroup = void 0;
+        }
+      });
+      return scope.$on('$destroy', function() {
+        return selectionSharing.unregister(_brushGroup, brusher);
+      });
+    }
+  };
+});
+
 
 /**
   @ngdoc container
@@ -944,6 +963,2596 @@ angular.module('wk.chart').directive('tooltips', function($log, behavior) {
     return TooltipsController;
 
   })();
+});
+
+angular.module('wk.chart').factory('behaviorBrush', function($log, $window, selectionSharing, timing) {
+  var behaviorBrush;
+  behaviorBrush = function() {
+    var bottom, brushEnd, brushMove, brushStart, clearSelection, getSelectedObjects, hideBrushElements, left, me, positionBrushElements, resizeExtent, right, setSelection, startBottom, startLeft, startRight, startTop, top, _active, _area, _areaBox, _areaSelection, _backgroundBox, _boundsDomain, _boundsIdx, _boundsValues, _brushEvents, _brushGroup, _brushX, _brushXY, _brushY, _chart, _container, _data, _evTargetData, _extent, _overlay, _selectables, _startPos, _tooltip, _x, _y;
+    me = function() {};
+    _active = false;
+    _overlay = void 0;
+    _extent = void 0;
+    _startPos = void 0;
+    _evTargetData = void 0;
+    _area = void 0;
+    _chart = void 0;
+    _data = void 0;
+    _areaSelection = void 0;
+    _areaBox = void 0;
+    _backgroundBox = void 0;
+    _container = void 0;
+    _selectables = void 0;
+    _brushGroup = void 0;
+    _x = void 0;
+    _y = void 0;
+    _tooltip = void 0;
+    _brushXY = false;
+    _brushX = false;
+    _brushY = false;
+    _boundsIdx = void 0;
+    _boundsValues = void 0;
+    _boundsDomain = [];
+    _brushEvents = d3.dispatch('brushStart', 'brush', 'brushEnd');
+    left = top = right = bottom = startTop = startLeft = startRight = startBottom = void 0;
+    positionBrushElements = function(left, right, top, bottom) {
+      var height, width;
+      width = right - left;
+      height = bottom - top;
+      if (_brushXY) {
+        _overlay.selectAll('.wk-chart-n').attr('transform', "translate(" + left + "," + top + ")").select('rect').attr('width', width);
+        _overlay.selectAll('.wk-chart-s').attr('transform', "translate(" + left + "," + bottom + ")").select('rect').attr('width', width);
+        _overlay.selectAll('.wk-chart-w').attr('transform', "translate(" + left + "," + top + ")").select('rect').attr('height', height);
+        _overlay.selectAll('.wk-chart-e').attr('transform', "translate(" + right + "," + top + ")").select('rect').attr('height', height);
+        _overlay.selectAll('.wk-chart-ne').attr('transform', "translate(" + right + "," + top + ")");
+        _overlay.selectAll('.wk-chart-nw').attr('transform', "translate(" + left + "," + top + ")");
+        _overlay.selectAll('.wk-chart-se').attr('transform', "translate(" + right + "," + bottom + ")");
+        _overlay.selectAll('.wk-chart-sw').attr('transform', "translate(" + left + "," + bottom + ")");
+        _extent.attr('width', width).attr('height', height).attr('x', left).attr('y', top);
+      }
+      if (_brushX) {
+        _overlay.selectAll('.wk-chart-w').attr('transform', "translate(" + left + ",0)").select('rect').attr('height', height);
+        _overlay.selectAll('.wk-chart-e').attr('transform', "translate(" + right + ",0)").select('rect').attr('height', height);
+        _overlay.selectAll('.wk-chart-e').select('rect').attr('height', _areaBox.height);
+        _overlay.selectAll('.wk-chart-w').select('rect').attr('height', _areaBox.height);
+        _extent.attr('width', width).attr('height', _areaBox.height).attr('x', left).attr('y', 0);
+      }
+      if (_brushY) {
+        _overlay.selectAll('.wk-chart-n').attr('transform', "translate(0," + top + ")").select('rect').attr('width', width);
+        _overlay.selectAll('.wk-chart-s').attr('transform', "translate(0," + bottom + ")").select('rect').attr('width', width);
+        _overlay.selectAll('.wk-chart-n').select('rect').attr('width', _areaBox.width);
+        _overlay.selectAll('.wk-chart-s').select('rect').attr('width', _areaBox.width);
+        return _extent.attr('width', _areaBox.width).attr('height', height).attr('x', 0).attr('y', top);
+      }
+    };
+    hideBrushElements = function() {
+      d3.select(_area).selectAll('.wk-chart-resize').style('display', 'none');
+      return _extent.attr('width', 0).attr('height', 0).attr('x', 0).attr('y', 0).style('display', 'none');
+    };
+    getSelectedObjects = function() {
+      var er;
+      er = _extent.node().getBoundingClientRect();
+      _selectables.each(function(d) {
+        var cr, xHit, yHit;
+        cr = this.getBoundingClientRect();
+        xHit = er.left < cr.right - cr.width / 3 && cr.left + cr.width / 3 < er.right;
+        yHit = er.top < cr.bottom - cr.height / 3 && cr.top + cr.height / 3 < er.bottom;
+        return d3.select(this).classed('wk-chart-selected', yHit && xHit);
+      });
+      return _container.selectAll('.wk-chart-selected').data();
+    };
+    setSelection = function(left, right, top, bottom) {
+      var newDomain, step, _bottom, _left, _right, _top;
+      if (_brushX) {
+        _left = me.x().invert(left);
+        _right = me.x().invert(right);
+        if (_boundsIdx[0] !== _left || _boundsIdx[1] !== _right) {
+          _boundsIdx = [_left, _right];
+          if (me.x().isOrdinal()) {
+            _boundsValues = _data.map(function(d) {
+              return me.x().value(d);
+            }).slice(_left, _right + 1);
+          } else {
+            if (me.x().kind() === 'rangeX') {
+              if (me.x().upperProperty()) {
+                _boundsValues = [me.x().lowerValue(_data[_left]), me.x().upperValue(_data[_right])];
+              } else {
+                step = me.x().lowerValue(_data[1]) - me.x().lowerValue(_data[0]);
+                _boundsValues = [me.x().lowerValue(_data[_left]), me.x().lowerValue(_data[_right]) + step];
+              }
+            } else {
+              _boundsValues = [me.x().value(_data[_boundsIdx[0]]), me.x().value(_data[_right])];
+            }
+          }
+          _boundsDomain = _data.slice(_left, _right + 1);
+          _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain);
+          selectionSharing.setSelection(_boundsValues, _boundsIdx, _brushGroup);
+        }
+      }
+      if (_brushY) {
+        _bottom = me.y().invert(bottom);
+        _top = me.y().invert(top);
+        if (_boundsIdx[0] !== _bottom || _boundsIdx[1] !== _top) {
+          _boundsIdx = [_bottom, _top];
+          if (me.y().isOrdinal()) {
+            _boundsValues = _data.map(function(d) {
+              return me.y().value(d);
+            }).slice(_bottom, _top + 1);
+          } else {
+            if (me.y().kind() === 'rangeY') {
+              step = me.y().lowerValue(_data[1]) - me.y().lowerValue(_data[0]);
+              _boundsValues = [me.y().lowerValue(_data[_bottom]), me.y().lowerValue(_data[_top]) + step];
+            } else {
+              _boundsValues = [me.y().value(_data[_bottom]), me.y().value(_data[_top])];
+            }
+          }
+          _boundsDomain = _data.slice(_bottom, _top + 1);
+          _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain);
+          selectionSharing.setSelection(_boundsValues, _boundsIdx, _brushGroup);
+        }
+      }
+      if (_brushXY) {
+        newDomain = getSelectedObjects();
+        if (_.xor(_boundsDomain, newDomain).length > 0) {
+          _boundsIdx = [];
+          _boundsValues = [];
+          _boundsDomain = newDomain;
+          _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain);
+          return selectionSharing.setSelection(_boundsValues, _boundsIdx, _brushGroup);
+        }
+      }
+    };
+    clearSelection = function() {
+      _boundsIdx = [];
+      _boundsValues = [];
+      _boundsDomain = [];
+      _selectables.classed('wk-chart-selected', false);
+      selectionSharing.setSelection(_boundsValues, _boundsIdx, _brushGroup);
+      return _.delay(function() {
+        _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain);
+        return _brushEvents.brushEnd(_boundsIdx, _boundsValues, _boundsDomain);
+      }, 20);
+    };
+    brushStart = function() {
+      d3.event.preventDefault();
+      _evTargetData = d3.select(d3.event.target).datum();
+      _(!_evTargetData ? _evTargetData = {
+        name: 'forwarded'
+      } : void 0);
+      _areaBox = _area.getBBox();
+      _startPos = d3.mouse(_area);
+      startTop = top;
+      startLeft = left;
+      startRight = right;
+      startBottom = bottom;
+      d3.select(_area).style('pointer-events', 'none').selectAll(".wk-chart-resize").style("display", null);
+      _extent.style('display', null);
+      d3.select('body').style('cursor', d3.select(d3.event.target).style('cursor'));
+      d3.select($window).on('mousemove.brush', brushMove).on('mouseup.brush', brushEnd);
+      _tooltip.hide(true);
+      _boundsIdx = [void 0, void 0];
+      _boundsDomain = [void 0];
+      _selectables = _container.selectAll('.wk-chart-selectable');
+      _brushEvents.brushStart();
+      timing.clear();
+      return timing.init();
+    };
+    brushEnd = function() {
+      d3.select($window).on('mousemove.brush', null);
+      d3.select($window).on('mouseup.brush', null);
+      d3.select(_area).style('pointer-events', 'all').selectAll('.wk-chart-resize').style('display', null);
+      d3.select('body').style('cursor', null);
+      _tooltip.hide(false);
+      return _brushEvents.brushEnd(_boundsIdx, _boundsValues, _boundsDomain);
+    };
+    brushMove = function() {
+      var bottomMv, deltaX, deltaY, horMv, leftMv, pos, rightMv, topMv, vertMv;
+      pos = d3.mouse(_area);
+      deltaX = pos[0] - _startPos[0];
+      deltaY = pos[1] - _startPos[1];
+      leftMv = function(delta) {
+        pos = startLeft + delta;
+        left = pos >= 0 ? (pos < startRight ? pos : startRight) : 0;
+        return right = pos <= _areaBox.width ? (pos < startRight ? startRight : pos) : _areaBox.width;
+      };
+      rightMv = function(delta) {
+        pos = startRight + delta;
+        left = pos >= 0 ? (pos < startLeft ? pos : startLeft) : 0;
+        return right = pos <= _areaBox.width ? (pos < startLeft ? startLeft : pos) : _areaBox.width;
+      };
+      topMv = function(delta) {
+        pos = startTop + delta;
+        top = pos >= 0 ? (pos < startBottom ? pos : startBottom) : 0;
+        return bottom = pos <= _areaBox.height ? (pos > startBottom ? pos : startBottom) : _areaBox.height;
+      };
+      bottomMv = function(delta) {
+        pos = startBottom + delta;
+        top = pos >= 0 ? (pos < startTop ? pos : startTop) : 0;
+        return bottom = pos <= _areaBox.height ? (pos > startTop ? pos : startTop) : _areaBox.height;
+      };
+      horMv = function(delta) {
+        if (startLeft + delta >= 0) {
+          if (startRight + delta <= _areaBox.width) {
+            left = startLeft + delta;
+            return right = startRight + delta;
+          } else {
+            right = _areaBox.width;
+            return left = _areaBox.width - (startRight - startLeft);
+          }
+        } else {
+          left = 0;
+          return right = startRight - startLeft;
+        }
+      };
+      vertMv = function(delta) {
+        if (startTop + delta >= 0) {
+          if (startBottom + delta <= _areaBox.height) {
+            top = startTop + delta;
+            return bottom = startBottom + delta;
+          } else {
+            bottom = _areaBox.height;
+            return top = _areaBox.height - (startBottom - startTop);
+          }
+        } else {
+          top = 0;
+          return bottom = startBottom - startTop;
+        }
+      };
+      switch (_evTargetData.name) {
+        case 'background':
+        case 'forwarded':
+          if (deltaX + _startPos[0] > 0) {
+            left = deltaX < 0 ? _startPos[0] + deltaX : _startPos[0];
+            if (left + Math.abs(deltaX) < _areaBox.width) {
+              right = left + Math.abs(deltaX);
+            } else {
+              right = _areaBox.width;
+            }
+          } else {
+            left = 0;
+          }
+          if (deltaY + _startPos[1] > 0) {
+            top = deltaY < 0 ? _startPos[1] + deltaY : _startPos[1];
+            if (top + Math.abs(deltaY) < _areaBox.height) {
+              bottom = top + Math.abs(deltaY);
+            } else {
+              bottom = _areaBox.height;
+            }
+          } else {
+            top = 0;
+          }
+          break;
+        case 'extent':
+          vertMv(deltaY);
+          horMv(deltaX);
+          break;
+        case 'n':
+          topMv(deltaY);
+          break;
+        case 's':
+          bottomMv(deltaY);
+          break;
+        case 'w':
+          leftMv(deltaX);
+          break;
+        case 'e':
+          rightMv(deltaX);
+          break;
+        case 'nw':
+          topMv(deltaY);
+          leftMv(deltaX);
+          break;
+        case 'ne':
+          topMv(deltaY);
+          rightMv(deltaX);
+          break;
+        case 'sw':
+          bottomMv(deltaY);
+          leftMv(deltaX);
+          break;
+        case 'se':
+          bottomMv(deltaY);
+          rightMv(deltaX);
+      }
+      positionBrushElements(left, right, top, bottom);
+      return setSelection(left, right, top, bottom);
+    };
+    me.brush = function(s) {
+      if (arguments.length === 0) {
+        return _overlay;
+      } else {
+        if (!_active) {
+          return;
+        }
+        _overlay = s;
+        _brushXY = me.x() && me.y();
+        _brushX = me.x() && !me.y();
+        _brushY = me.y() && !me.x();
+        s.style({
+          'pointer-events': 'all',
+          cursor: 'crosshair'
+        });
+        _extent = s.append('rect').attr({
+          "class": 'wk-chart-extent',
+          x: 0,
+          y: 0,
+          width: 0,
+          height: 0
+        }).style('cursor', 'move').datum({
+          name: 'extent'
+        });
+        if (_brushY || _brushXY) {
+          s.append('g').attr('class', 'wk-chart-resize wk-chart-n').style({
+            cursor: 'ns-resize',
+            display: 'none'
+          }).append('rect').attr({
+            x: 0,
+            y: -3,
+            width: 0,
+            height: 6
+          }).datum({
+            name: 'n'
+          });
+          s.append('g').attr('class', 'wk-chart-resize wk-chart-s').style({
+            cursor: 'ns-resize',
+            display: 'none'
+          }).append('rect').attr({
+            x: 0,
+            y: -3,
+            width: 0,
+            height: 6
+          }).datum({
+            name: 's'
+          });
+        }
+        if (_brushX || _brushXY) {
+          s.append('g').attr('class', 'wk-chart-resize wk-chart-w').style({
+            cursor: 'ew-resize',
+            display: 'none'
+          }).append('rect').attr({
+            y: 0,
+            x: -3,
+            width: 6,
+            height: 0
+          }).datum({
+            name: 'w'
+          });
+          s.append('g').attr('class', 'wk-chart-resize wk-chart-e').style({
+            cursor: 'ew-resize',
+            display: 'none'
+          }).append('rect').attr({
+            y: 0,
+            x: -3,
+            width: 6,
+            height: 0
+          }).datum({
+            name: 'e'
+          });
+        }
+        if (_brushXY) {
+          s.append('g').attr('class', 'wk-chart-resize wk-chart-nw').style({
+            cursor: 'nwse-resize',
+            display: 'none'
+          }).append('rect').attr({
+            x: -3,
+            y: -3,
+            width: 6,
+            height: 6
+          }).datum({
+            name: 'nw'
+          });
+          s.append('g').attr('class', 'wk-chart-resize wk-chart-ne').style({
+            cursor: 'nesw-resize',
+            display: 'none'
+          }).append('rect').attr({
+            x: -3,
+            y: -3,
+            width: 6,
+            height: 6
+          }).datum({
+            name: 'ne'
+          });
+          s.append('g').attr('class', 'wk-chart-resize wk-chart-sw').style({
+            cursor: 'nesw-resize',
+            display: 'none'
+          }).append('rect').attr({
+            x: -3,
+            y: -3,
+            width: 6,
+            height: 6
+          }).datum({
+            name: 'sw'
+          });
+          s.append('g').attr('class', 'wk-chart-resize wk-chart-se').style({
+            cursor: 'nwse-resize',
+            display: 'none'
+          }).append('rect').attr({
+            x: -3,
+            y: -3,
+            width: 6,
+            height: 6
+          }).datum({
+            name: 'se'
+          });
+        }
+        s.on('mousedown.brush', brushStart);
+        return me;
+      }
+    };
+    resizeExtent = function() {
+      var horizontalRatio, newBox, verticalRatio;
+      if (_areaBox) {
+        newBox = _area.getBBox();
+        horizontalRatio = _areaBox.width / newBox.width;
+        verticalRatio = _areaBox.height / newBox.height;
+        top = top / verticalRatio;
+        startTop = startTop / verticalRatio;
+        bottom = bottom / verticalRatio;
+        startBottom = startBottom / verticalRatio;
+        left = left / horizontalRatio;
+        startLeft = startLeft / horizontalRatio;
+        right = right / horizontalRatio;
+        startRight = startRight / horizontalRatio;
+        _startPos[0] = _startPos[0] / horizontalRatio;
+        _startPos[1] = _startPos[1] / verticalRatio;
+        _areaBox = newBox;
+        return positionBrushElements(left, right, top, bottom);
+      }
+    };
+    me.chart = function(val) {
+      if (arguments.length === 0) {
+        return _chart;
+      } else {
+        _chart = val;
+        _chart.lifeCycle().on('resize.brush', resizeExtent);
+        return me;
+      }
+    };
+    me.active = function(val) {
+      if (arguments.length === 0) {
+        return _active;
+      } else {
+        _active = val;
+        return me;
+      }
+    };
+    me.x = function(val) {
+      if (arguments.length === 0) {
+        return _x;
+      } else {
+        _x = val;
+        return me;
+      }
+    };
+    me.y = function(val) {
+      if (arguments.length === 0) {
+        return _y;
+      } else {
+        _y = val;
+        return me;
+      }
+    };
+    me.area = function(val) {
+      if (arguments.length === 0) {
+        return _areaSelection;
+      } else {
+        if (!_areaSelection) {
+          _areaSelection = val;
+          _area = _areaSelection.node();
+          me.brush(_areaSelection);
+        }
+        return me;
+      }
+    };
+    me.container = function(val) {
+      if (arguments.length === 0) {
+        return _container;
+      } else {
+        _container = val;
+        _selectables = _container.selectAll('.wk-chart-selectable');
+        return me;
+      }
+    };
+    me.data = function(val) {
+      if (arguments.length === 0) {
+        return _data;
+      } else {
+        _data = val;
+        return me;
+      }
+    };
+    me.brushGroup = function(val) {
+      if (arguments.length === 0) {
+        return _brushGroup;
+      } else {
+        _brushGroup = val;
+        selectionSharing.createGroup(_brushGroup);
+        return me;
+      }
+    };
+    me.tooltip = function(val) {
+      if (arguments.length === 0) {
+        return _tooltip;
+      } else {
+        _tooltip = val;
+        return me;
+      }
+    };
+    me.on = function(name, callback) {
+      return _brushEvents.on(name, callback);
+    };
+    me.extent = function() {
+      return _boundsIdx;
+    };
+    me.events = function() {
+      return _brushEvents;
+    };
+    me.empty = function() {
+      return _boundsDomain.length === 0;
+    };
+    me.clearBrush = function() {
+      console.log('Brush cleared');
+      hideBrushElements();
+      return clearSelection();
+    };
+    return me;
+  };
+  return behaviorBrush;
+});
+
+angular.module('wk.chart').factory('behaviorSelect', function($log) {
+  var select, selectId;
+  selectId = 0;
+  select = function() {
+    var clicked, me, _active, _container, _id, _selectionEvents;
+    _id = "select" + (selectId++);
+    _container = void 0;
+    _active = false;
+    _selectionEvents = d3.dispatch('selected');
+    clicked = function() {
+      var allSelected, isSelected, obj;
+      if (!_active) {
+        return;
+      }
+      obj = d3.select(this);
+      if (!_active) {
+        return;
+      }
+      if (obj.classed('wk-chart-selectable')) {
+        isSelected = obj.classed('wk-chart-selected');
+        obj.classed('wk-chart-selected', !isSelected);
+        allSelected = _container.selectAll('.wk-chart-selected').data().map(function(d) {
+          if (d.data) {
+            return d.data;
+          } else {
+            return d;
+          }
+        });
+        return _selectionEvents.selected(allSelected);
+      }
+    };
+    me = function(sel) {
+      if (arguments.length === 0) {
+        return me;
+      } else {
+        sel.on('click', clicked);
+        return me;
+      }
+    };
+    me.id = function() {
+      return _id;
+    };
+    me.active = function(val) {
+      if (arguments.length === 0) {
+        return _active;
+      } else {
+        _active = val;
+        return me;
+      }
+    };
+    me.container = function(val) {
+      if (arguments.length === 0) {
+        return _container;
+      } else {
+        _container = val;
+        return me;
+      }
+    };
+    me.events = function() {
+      return _selectionEvents;
+    };
+    me.on = function(name, callback) {
+      _selectionEvents.on(name, callback);
+      return me;
+    };
+    return me;
+  };
+  return select;
+});
+
+angular.module('wk.chart').factory('behaviorTooltip', function($log, $document, $rootScope, $compile, $templateCache, wkChartTemplates) {
+  var behaviorTooltip;
+  behaviorTooltip = function() {
+    var body, bodyRect, compileTemplate, createClosure, forwardToBrush, me, positionBox, positionInitial, tooltipEnter, tooltipLeave, tooltipMove, _active, _area, _areaSelection, _chart, _compiledTempl, _container, _data, _hide, _markerG, _markerLine, _markerScale, _path, _scales, _showMarkerLine, _templ, _templScope, _tooltipDispatch;
+    _active = false;
+    _path = '';
+    _hide = false;
+    _showMarkerLine = void 0;
+    _markerG = void 0;
+    _markerLine = void 0;
+    _areaSelection = void 0;
+    _chart = void 0;
+    _area = void 0;
+    _container = void 0;
+    _scales = void 0;
+    _markerScale = void 0;
+    _data = void 0;
+    _tooltipDispatch = d3.dispatch('enter', 'moveData', 'moveMarker', 'leave');
+    _templ = wkChartTemplates.tooltipTemplate();
+    _templScope = void 0;
+    _compiledTempl = void 0;
+    body = $document.find('body');
+    bodyRect = body[0].getBoundingClientRect();
+    me = function() {};
+    positionBox = function() {
+      var clientX, clientY, rect;
+      rect = _compiledTempl[0].getBoundingClientRect();
+      clientX = bodyRect.right - 20 > d3.event.clientX + rect.width + 10 ? d3.event.clientX + 10 : d3.event.clientX - rect.width - 10;
+      clientY = bodyRect.bottom - 20 > d3.event.clientY + rect.height + 10 ? d3.event.clientY + 10 : d3.event.clientY - rect.height - 10;
+      _templScope.position = {
+        position: 'absolute',
+        left: clientX + 'px',
+        top: clientY + 'px',
+        'z-index': 1500,
+        opacity: 1
+      };
+      return _templScope.$apply();
+    };
+    positionInitial = function() {
+      _templScope.position = {
+        position: 'absolute',
+        left: 0 + 'px',
+        top: 0 + 'px',
+        'z-index': 1500,
+        opacity: 0
+      };
+      _templScope.$apply();
+      return _.throttle(positionBox, 200);
+    };
+    tooltipEnter = function() {
+      var value, _areaBox, _pos;
+      if (!_active || _hide) {
+        return;
+      }
+      body.append(_compiledTempl);
+      _templScope.layers = [];
+      if (_showMarkerLine) {
+        _pos = d3.mouse(this);
+        value = _markerScale.invert(_markerScale.isHorizontal() ? _pos[0] : _pos[1]);
+        _templScope.ttData = me.data()[value];
+      } else {
+        value = d3.select(this).datum();
+        _templScope.ttData = value.data ? value.data : value;
+      }
+      _tooltipDispatch.enter.apply(_templScope, [value]);
+      positionInitial();
+      if (_showMarkerLine) {
+        _areaBox = _areaSelection.select('.wk-chart-background').node().getBBox();
+        _pos = d3.mouse(_area);
+        _markerG = _container.append('g').attr('class', 'wk-chart-tooltip-marker');
+        _markerLine = _markerG.append('line');
+        if (_markerScale.isHorizontal()) {
+          _markerLine.attr({
+            "class": 'wk-chart-marker-line',
+            x0: 0,
+            x1: 0,
+            y0: 0,
+            y1: _areaBox.height
+          });
+        } else {
+          _markerLine.attr({
+            "class": 'wk-chart-marker-line',
+            x0: 0,
+            x1: _areaBox.width,
+            y0: 0,
+            y1: 0
+          });
+        }
+        _markerLine.style({
+          stroke: 'darkgrey',
+          'pointer-events': 'none'
+        });
+        return _tooltipDispatch.moveMarker.apply(_markerG, [value]);
+      }
+    };
+    tooltipMove = function() {
+      var dataIdx, _pos;
+      if (!_active || _hide) {
+        return;
+      }
+      _pos = d3.mouse(_area);
+      positionBox();
+      if (_showMarkerLine) {
+        dataIdx = _markerScale.invert(_markerScale.isHorizontal() ? _pos[0] : _pos[1]);
+        _tooltipDispatch.moveMarker.apply(_markerG, [dataIdx]);
+        _templScope.layers = [];
+        _templScope.ttData = me.data()[dataIdx];
+        _tooltipDispatch.moveData.apply(_templScope, [dataIdx]);
+      }
+      return _templScope.$apply();
+    };
+    tooltipLeave = function() {
+      if (_markerG) {
+        _markerG.remove();
+      }
+      _markerG = void 0;
+      return _compiledTempl.remove();
+    };
+    forwardToBrush = function(e) {
+      var brush_elm, new_click_event;
+      brush_elm = d3.select(_container.node().parentElement).select(".wk-chart-overlay").node();
+      if (d3.event.target !== brush_elm) {
+        new_click_event = new Event('mousedown');
+        new_click_event.pageX = d3.event.pageX;
+        new_click_event.clientX = d3.event.clientX;
+        new_click_event.pageY = d3.event.pageY;
+        new_click_event.clientY = d3.event.clientY;
+        return brush_elm.dispatchEvent(new_click_event);
+      }
+    };
+    me.hide = function(val) {
+      if (arguments.length === 0) {
+        return _hide;
+      } else {
+        _hide = val;
+        if (_markerG) {
+          _markerG.style('visibility', _hide ? 'hidden' : 'visible');
+        }
+        _templScope.ttShow = !_hide;
+        _templScope.$apply();
+        return me;
+      }
+    };
+    me.chart = function(chart) {
+      if (arguments.length === 0) {
+        return _chart;
+      } else {
+        _chart = chart;
+        return me;
+      }
+    };
+    me.active = function(val) {
+      if (arguments.length === 0) {
+        return _active;
+      } else {
+        _active = val;
+        return me;
+      }
+    };
+    me.template = function(path) {
+      var _customTempl;
+      if (arguments.length === 0) {
+        return _path;
+      } else {
+        _path = path;
+        if (_path.length > 0) {
+          _customTempl = $templateCache.get(_path);
+          _templ = "<div class=\"wk-chart-tooltip\" ng-style=\"position\">" + _customTempl + "</div>";
+        }
+        return me;
+      }
+    };
+    me.area = function(val) {
+      if (arguments.length === 0) {
+        return _areaSelection;
+      } else {
+        _areaSelection = val;
+        _area = _areaSelection.node();
+        if (_showMarkerLine) {
+          me.tooltip(_areaSelection);
+        }
+        return me;
+      }
+    };
+    me.container = function(val) {
+      if (arguments.length === 0) {
+        return _container;
+      } else {
+        _container = val;
+        return me;
+      }
+    };
+    me.markerScale = function(val) {
+      if (arguments.length === 0) {
+        return _markerScale;
+      } else {
+        if (val) {
+          _showMarkerLine = true;
+          _markerScale = val;
+        } else {
+          _showMarkerLine = false;
+        }
+        return me;
+      }
+    };
+    me.data = function(val) {
+      if (arguments.length === 0) {
+        return _data;
+      } else {
+        _data = val;
+        return me;
+      }
+    };
+    me.on = function(name, callback) {
+      return _tooltipDispatch.on(name, callback);
+    };
+    createClosure = function(scaleFn) {
+      return function() {
+        if (_templScope.ttData) {
+          return scaleFn(_templScope.ttData);
+        }
+      };
+    };
+    compileTemplate = function(template) {
+      var name, scale, _ref;
+      if (!_templScope) {
+        _templScope = _chart.scope().$new(true);
+        _templScope.properties = {};
+        _templScope.map = {};
+        _templScope.scale = {};
+        _templScope.label = {};
+        _templScope.value = {};
+        _ref = _chart.allScales().allKinds();
+        for (name in _ref) {
+          scale = _ref[name];
+          _templScope.map[name] = createClosure(scale.map);
+          _templScope.scale[name] = scale.scale();
+          _templScope.properties[name] = createClosure(scale.layerKeys);
+          _templScope.label[name] = scale.axisLabel();
+          _templScope.value[name] = createClosure(scale.value);
+        }
+      }
+      if (!_compiledTempl) {
+        return _compiledTempl = $compile(_templ)(_templScope);
+      }
+    };
+    me.tooltip = function(s) {
+      if (arguments.length === 0) {
+        return me;
+      } else {
+        compileTemplate(_templ);
+        s.on('mouseenter.tooltip', tooltipEnter).on('mousemove.tooltip', tooltipMove).on('mouseleave.tooltip', tooltipLeave);
+        if (!s.empty() && !s.classed('wk-chart-overlay')) {
+          return s.on('mousedown.tooltip', forwardToBrush);
+        }
+      }
+    };
+    return me;
+  };
+  return behaviorTooltip;
+});
+
+angular.module('wk.chart').factory('behavior', function($log, $window, behaviorTooltip, behaviorBrush, behaviorSelect) {
+  var behavior;
+  behavior = function() {
+    var area, chart, container, _brush, _selection, _tooltip;
+    _tooltip = behaviorTooltip();
+    _brush = behaviorBrush();
+    _selection = behaviorSelect();
+    _brush.tooltip(_tooltip);
+    area = function(area) {
+      _brush.area(area);
+      return _tooltip.area(area);
+    };
+    container = function(container) {
+      _brush.container(container);
+      _selection.container(container);
+      return _tooltip.container(container);
+    };
+    chart = function(chart) {
+      _brush.chart(chart);
+      return _tooltip.chart(chart);
+    };
+    return {
+      tooltip: _tooltip,
+      brush: _brush,
+      selected: _selection,
+      overlay: area,
+      container: container,
+      chart: chart
+    };
+  };
+  return behavior;
+});
+
+angular.module('wk.chart').factory('chart', function($log, scaleList, container, behavior, d3Animation) {
+  var chart, chartCntr;
+  chartCntr = 0;
+  chart = function() {
+    var debounced, lifecycleFull, me, _allScales, _animationDuration, _behavior, _brush, _container, _data, _id, _layouts, _lifeCycle, _ownedScales, _scope, _showTooltip, _subTitle, _title, _toolTipTemplate;
+    _id = "chart" + (chartCntr++);
+    me = function() {};
+    _layouts = [];
+    _container = void 0;
+    _allScales = void 0;
+    _ownedScales = void 0;
+    _data = void 0;
+    _showTooltip = false;
+    _scope = void 0;
+    _toolTipTemplate = '';
+    _title = void 0;
+    _subTitle = void 0;
+    _behavior = behavior();
+    _animationDuration = d3Animation.duration;
+    _lifeCycle = d3.dispatch('configure', 'resize', 'prepareData', 'scaleDomains', 'rescaleDomains', 'sizeContainer', 'drawAxis', 'drawChart', 'newData', 'update', 'updateAttrs', 'scopeApply');
+    _brush = d3.dispatch('draw', 'change');
+    me.id = function(id) {
+      return _id;
+    };
+    me.scope = function(scope) {
+      if (arguments.length === 0) {
+        return _scope;
+      } else {
+        _scope = scope;
+        return me;
+      }
+    };
+    me.showTooltip = function(trueFalse) {
+      if (arguments.length === 0) {
+        return _showTooltip;
+      } else {
+        _showTooltip = trueFalse;
+        _behavior.tooltip.active(_showTooltip);
+        return me;
+      }
+    };
+    me.toolTipTemplate = function(path) {
+      if (arguments.length === 0) {
+        return _toolTipTemplate;
+      } else {
+        _toolTipTemplate = path;
+        _behavior.tooltip.template(path);
+        return me;
+      }
+    };
+    me.title = function(val) {
+      if (arguments.length === 0) {
+        return _title;
+      } else {
+        _title = val;
+        return me;
+      }
+    };
+    me.subTitle = function(val) {
+      if (arguments.length === 0) {
+        return _subTitle;
+      } else {
+        _subTitle = val;
+        return me;
+      }
+    };
+    me.addLayout = function(layout) {
+      if (arguments.length === 0) {
+        return _layouts;
+      } else {
+        _layouts.push(layout);
+        return me;
+      }
+    };
+    me.addScale = function(scale, layout) {
+      _allScales.add(scale);
+      if (layout) {
+        layout.scales().add(scale);
+      } else {
+        _ownedScales.add(scale);
+      }
+      return me;
+    };
+    me.animationDuration = function(val) {
+      if (arguments.length === 0) {
+        return _animationDuration;
+      } else {
+        _animationDuration = val;
+        return me;
+      }
+    };
+    me.lifeCycle = function(val) {
+      return _lifeCycle;
+    };
+    me.layouts = function() {
+      return _layouts;
+    };
+    me.scales = function() {
+      return _ownedScales;
+    };
+    me.allScales = function() {
+      return _allScales;
+    };
+    me.hasScale = function(scale) {
+      return !!_allScales.has(scale);
+    };
+    me.container = function() {
+      return _container;
+    };
+    me.brush = function() {
+      return _brush;
+    };
+    me.getData = function() {
+      return _data;
+    };
+    me.behavior = function() {
+      return _behavior;
+    };
+    lifecycleFull = function(data, noAnimation) {
+      if (data) {
+        $log.log('executing full life cycle');
+        _data = data;
+        _scope.filteredData = data;
+        _scope.scales = _allScales;
+        _lifeCycle.prepareData(data, noAnimation);
+        _lifeCycle.scaleDomains(data, noAnimation);
+        _lifeCycle.sizeContainer(data, noAnimation);
+        _lifeCycle.drawAxis(noAnimation);
+        _lifeCycle.drawChart(data, noAnimation);
+        return _lifeCycle.scopeApply();
+      }
+    };
+    debounced = _.debounce(lifecycleFull, 100);
+    me.execLifeCycleFull = debounced;
+    me.resizeLifeCycle = function(noAnimation) {
+      if (_data) {
+        $log.log('executing resize life cycle');
+        _lifeCycle.sizeContainer(_data, noAnimation);
+        _lifeCycle.drawAxis(noAnimation);
+        _lifeCycle.drawChart(_data, noAnimation);
+        return _lifeCycle.scopeApply();
+      }
+    };
+    me.newDataLifeCycle = function(data, noAnimation) {
+      if (data) {
+        $log.log('executing new data life cycle');
+        _data = data;
+        _scope.filteredData = data;
+        _lifeCycle.prepareData(data, noAnimation);
+        _lifeCycle.scaleDomains(data, noAnimation);
+        _lifeCycle.drawAxis(noAnimation);
+        return _lifeCycle.drawChart(data, noAnimation);
+      }
+    };
+    me.attributeChange = function(noAnimation) {
+      if (_data) {
+        $log.log('executing attribute change life cycle');
+        _lifeCycle.sizeContainer(_data, noAnimation);
+        _lifeCycle.drawAxis(noAnimation);
+        return _lifeCycle.drawChart(_data, noAnimation);
+      }
+    };
+    me.brushExtentChanged = function() {
+      if (_data) {
+        _lifeCycle.drawAxis(true);
+        return _lifeCycle.drawChart(_data, true);
+      }
+    };
+    me.lifeCycle().on('newData.chart', me.execLifeCycleFull);
+    me.lifeCycle().on('resize.chart', me.resizeLifeCycle);
+    me.lifeCycle().on('update.chart', function(noAnimation) {
+      return me.execLifeCycleFull(_data, noAnimation);
+    });
+    me.lifeCycle().on('updateAttrs', me.attributeChange);
+    me.lifeCycle().on('rescaleDomains', _lifeCycle.scaleDomains(_data, true));
+    _behavior.chart(me);
+    _container = container().chart(me);
+    _allScales = scaleList();
+    _ownedScales = scaleList();
+    return me;
+  };
+  return chart;
+});
+
+angular.module('wk.chart').factory('container', function($log, $window, wkChartMargins, scaleList, axisConfig, d3Animation, behavior) {
+  var container, containerCnt;
+  containerCnt = 0;
+  container = function() {
+    var drawAndPositionText, drawAxis, drawGrid, drawTitleArea, getAxisRect, me, measureText, _behavior, _chart, _chartArea, _container, _containerId, _data, _duration, _element, _elementSelection, _genChartFrame, _innerHeight, _innerWidth, _layouts, _legends, _margin, _overlay, _removeAxis, _removeLabel, _spacedContainer, _svg, _titleHeight;
+    me = function() {};
+    _containerId = 'cntnr' + containerCnt++;
+    _chart = void 0;
+    _element = void 0;
+    _elementSelection = void 0;
+    _layouts = [];
+    _legends = [];
+    _svg = void 0;
+    _container = void 0;
+    _spacedContainer = void 0;
+    _chartArea = void 0;
+    _chartArea = void 0;
+    _margin = angular.copy(wkChartMargins["default"]);
+    _innerWidth = 0;
+    _innerHeight = 0;
+    _titleHeight = 0;
+    _data = void 0;
+    _overlay = void 0;
+    _behavior = void 0;
+    _duration = 0;
+    me.id = function() {
+      return _containerId;
+    };
+    me.chart = function(chart) {
+      if (arguments.length === 0) {
+        return _chart;
+      } else {
+        _chart = chart;
+        _chart.lifeCycle().on("sizeContainer." + (me.id()), me.drawChartFrame);
+        return me;
+      }
+    };
+    me.element = function(elem) {
+      var resizeTarget, _resizeHandler;
+      if (arguments.length === 0) {
+        return _element;
+      } else {
+        _resizeHandler = function() {
+          return me.chart().lifeCycle().resize(true);
+        };
+        _element = elem;
+        _elementSelection = d3.select(_element);
+        if (_elementSelection.empty()) {
+          $log.error("Error: Element " + _element + " does not exist");
+        } else {
+          _genChartFrame();
+          resizeTarget = _elementSelection.select('.wk-chart').node();
+          new ResizeSensor(resizeTarget, _resizeHandler);
+        }
+        return me;
+      }
+    };
+    me.addLayout = function(layout) {
+      _layouts.push(layout);
+      return me;
+    };
+    me.height = function() {
+      return _innerHeight;
+    };
+    me.width = function() {
+      return _innerWidth;
+    };
+    me.margins = function() {
+      return _margin;
+    };
+    me.getChartArea = function() {
+      return _chartArea;
+    };
+    me.getOverlay = function() {
+      return _overlay;
+    };
+    me.getContainer = function() {
+      return _spacedContainer;
+    };
+    drawAndPositionText = function(container, text, selector, fontSize, offset) {
+      var elem;
+      elem = container.select('.' + selector);
+      if (elem.empty()) {
+        elem = container.append('text').attr({
+          "class": selector,
+          'text-anchor': 'middle',
+          y: offset ? offset : 0
+        }).style('font-size', fontSize);
+      }
+      elem.text(text);
+      return elem.node().getBBox().height;
+    };
+    drawTitleArea = function(title, subTitle) {
+      var area, titleAreaHeight;
+      titleAreaHeight = 0;
+      area = _container.select('.wk-chart-title-area');
+      if (area.empty()) {
+        area = _container.append('g').attr('class', 'wk-chart-title-area wk-center-hor');
+      }
+      if (title) {
+        _titleHeight = drawAndPositionText(area, title, 'wk-chart-title', '2em');
+      }
+      if (subTitle) {
+        drawAndPositionText(area, subTitle, 'wk-chart-subtitle', '1.8em', _titleHeight);
+      }
+      return area.node().getBBox().height;
+    };
+    measureText = function(textList, container, textClasses) {
+      var bounds, measureContainer, t, _i, _len;
+      measureContainer = container.append('g');
+      for (_i = 0, _len = textList.length; _i < _len; _i++) {
+        t = textList[_i];
+        measureContainer.append('text').attr({
+          'class': textClasses
+        }).text(t);
+      }
+      bounds = measureContainer.node().getBBox();
+      measureContainer.remove();
+      return bounds;
+    };
+    getAxisRect = function(dim) {
+      var axis, box;
+      axis = _container.append('g');
+      dim.range([0, 500]);
+      axis.call(dim.axis());
+      if (dim.rotateTickLabels()) {
+        axis.selectAll("text").attr({
+          dy: '0.35em'
+        }).attr('transform', "rotate(" + (dim.rotateTickLabels()) + ", 0, " + (dim.axisOrient() === 'bottom' ? 10 : -10) + ")").style('text-anchor', dim.axisOrient() === 'bottom' ? 'end' : 'start');
+      }
+      box = axis.node().getBBox();
+      axis.remove();
+      return box;
+    };
+    drawAxis = function(dim) {
+      var axis;
+      axis = _container.select(".wk-chart-axis.wk-chart-" + (dim.axisOrient()));
+      if (axis.empty()) {
+        axis = _container.append('g').attr('class', 'wk-chart-axis wk-chart-' + dim.axisOrient());
+      }
+      axis.transition().duration(_duration).call(dim.axis());
+      if (dim.rotateTickLabels()) {
+        return axis.selectAll(".wk-chart-" + (dim.axisOrient()) + ".wk-chart-axis text").attr({
+          dy: '0.35em'
+        }).attr('transform', "rotate(" + (dim.rotateTickLabels()) + ", 0, " + (dim.axisOrient() === 'bottom' ? 10 : -10) + ")").style('text-anchor', dim.axisOrient() === 'bottom' ? 'end' : 'start');
+      } else {
+        return axis.selectAll(".wk-chart-" + (dim.axisOrient()) + ".wk-chart-axis text").attr('transform', null);
+      }
+    };
+    _removeAxis = function(orient) {
+      return _container.select(".wk-chart-axis.wk-chart-" + orient).remove();
+    };
+    _removeLabel = function(orient) {
+      return _container.select(".wk-chart-label.wk-chart-" + orient).remove();
+    };
+    drawGrid = function(s, noAnimation) {
+      var duration, gridLines, kind, offset, ticks;
+      duration = noAnimation ? 0 : _duration;
+      kind = s.kind();
+      ticks = s.isOrdinal() ? s.scale().range() : s.scale().ticks();
+      offset = s.isOrdinal() ? s.scale().rangeBand() / 2 : 0;
+      gridLines = _container.selectAll(".wk-chart-grid.wk-chart-" + kind).data(ticks, function(d) {
+        return d;
+      });
+      gridLines.enter().append('line').attr('class', "wk-chart-grid wk-chart-" + kind).style('pointer-events', 'none').style('opacity', 0);
+      if (kind === 'y') {
+        gridLines.transition().duration(duration).attr({
+          x1: 0,
+          x2: _innerWidth,
+          y1: function(d) {
+            if (s.isOrdinal()) {
+              return d + offset;
+            } else {
+              return s.scale()(d);
+            }
+          },
+          y2: function(d) {
+            if (s.isOrdinal()) {
+              return d + offset;
+            } else {
+              return s.scale()(d);
+            }
+          }
+        }).style('opacity', 1);
+      } else {
+        gridLines.transition().duration(duration).attr({
+          y1: 0,
+          y2: _innerHeight,
+          x1: function(d) {
+            if (s.isOrdinal()) {
+              return d + offset;
+            } else {
+              return s.scale()(d);
+            }
+          },
+          x2: function(d) {
+            if (s.isOrdinal()) {
+              return d + offset;
+            } else {
+              return s.scale()(d);
+            }
+          }
+        }).style('opacity', 1);
+      }
+      return gridLines.exit().transition().duration(duration).style('opacity', 0).remove();
+    };
+    _genChartFrame = function() {
+      _svg = _elementSelection.append('div').attr('class', 'wk-chart').append('svg').attr('class', 'wk-chart');
+      _svg.append('defs').append('clipPath').attr('id', "wk-chart-clip-" + _containerId).append('rect');
+      _container = _svg.append('g').attr('class', 'wk-chart-container');
+      _overlay = _container.append('g').attr('class', 'wk-chart-overlay').style('pointer-events', 'all');
+      _overlay.append('rect').style('visibility', 'hidden').attr('class', 'wk-chart-background').datum({
+        name: 'background'
+      });
+      return _chartArea = _container.append('g').attr('class', 'wk-chart-area');
+    };
+    me.drawChartFrame = function(data, notAnimated) {
+      var axis, axisRect, bounds, dataLabelHeight, dataLabelRect, dataLabelWidth, k, l, label, labelHeight, leftMargin, s, titleAreaHeight, topMargin, _frameHeight, _frameWidth, _height, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _width;
+      bounds = _elementSelection.node().getBoundingClientRect();
+      _duration = notAnimated ? 0 : me.chart().animationDuration();
+      _height = bounds.height;
+      _width = bounds.width;
+      titleAreaHeight = drawTitleArea(_chart.title(), _chart.subTitle());
+      axisRect = {
+        top: {
+          height: 0,
+          width: 0
+        },
+        bottom: {
+          height: 0,
+          width: 0
+        },
+        left: {
+          height: 0,
+          width: 0
+        },
+        right: {
+          height: 0,
+          width: 0
+        }
+      };
+      labelHeight = {
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0
+      };
+      dataLabelRect = {
+        width: 0,
+        height: 0
+      };
+      for (_i = 0, _len = _layouts.length; _i < _len; _i++) {
+        l = _layouts[_i];
+        dataLabelHeight = dataLabelWidth = 0;
+        _ref = l.scales().allKinds();
+        for (k in _ref) {
+          s = _ref[k];
+          if (s.showAxis()) {
+            s.axis().scale(s.scale()).orient(s.axisOrient());
+            axis = _container.select(".wk-chart-axis.wk-chart-" + (s.axisOrient()));
+            axisRect[s.axisOrient()] = getAxisRect(s);
+            label = _container.select(".wk-chart-label.wk-chart-" + (s.axisOrient()));
+            if (s.showLabel()) {
+              if (label.empty()) {
+                label = _container.append('g').attr('class', 'wk-chart-label wk-chart-' + s.axisOrient());
+              }
+              labelHeight[s.axisOrient()] = drawAndPositionText(label, s.axisLabel(), 'wk-chart-label-text', '1.5em');
+            } else {
+              label.remove();
+            }
+          }
+          if (s.axisOrientOld() && s.axisOrientOld() !== s.axisOrient()) {
+            _removeAxis(s.axisOrientOld());
+            _removeLabel(s.axisOrientOld());
+          }
+          if (l.showDataLabels() === k) {
+            if (s.isHorizontal()) {
+              dataLabelWidth = wkChartMargins.dataLabelPadding.hor + measureText(s.formattedValue(data), _container, 'wk-chart-data-label').width;
+            } else {
+              dataLabelHeight = wkChartMargins.dataLabelPadding.vert + measureText(s.formattedValue(data), _container, 'wk-chart-data-label').height;
+            }
+          }
+        }
+      }
+      _frameHeight = titleAreaHeight + axisRect.top.height + labelHeight.top + axisRect.bottom.height + labelHeight.bottom + _margin.top + _margin.bottom;
+      _frameWidth = axisRect.right.width + labelHeight.right + axisRect.left.width + labelHeight.left + _margin.left + _margin.right;
+      if (_frameHeight < _height) {
+        _innerHeight = _height - _frameHeight;
+      } else {
+        _innerHeight = 0;
+      }
+      if (_frameWidth < _width) {
+        _innerWidth = _width - _frameWidth;
+      } else {
+        _innerWidth = 0;
+      }
+      for (_j = 0, _len1 = _layouts.length; _j < _len1; _j++) {
+        l = _layouts[_j];
+        _ref1 = l.scales().allKinds();
+        for (k in _ref1) {
+          s = _ref1[k];
+          if (k === 'x' || k === 'rangeX') {
+            if (l.showDataLabels() === 'x') {
+              s.range([0, _innerWidth - dataLabelWidth]);
+            } else {
+              s.range([0, _innerWidth]);
+            }
+          } else if (k === 'y' || k === 'rangeY') {
+            if (l.showDataLabels() === 'y') {
+              s.range([_innerHeight, dataLabelHeight]);
+            } else {
+              s.range([_innerHeight, 0]);
+            }
+          }
+          if (s.showAxis()) {
+            drawAxis(s);
+          }
+        }
+      }
+      leftMargin = axisRect.left.width + labelHeight.left + _margin.left;
+      topMargin = titleAreaHeight + axisRect.top.height + labelHeight.top + _margin.top;
+      _spacedContainer = _container.attr('transform', "translate(" + leftMargin + ", " + topMargin + ")");
+      _svg.select("#wk-chart-clip-" + _containerId + " rect").attr('width', _innerWidth).attr('height', _innerHeight);
+      _spacedContainer.select('.wk-chart-overlay>.wk-chart-background').attr('width', _innerWidth).attr('height', _innerHeight);
+      _spacedContainer.select('.wk-chart-area').style('clip-path', "url(#wk-chart-clip-" + _containerId + ")");
+      _spacedContainer.select('.wk-chart-overlay').style('clip-path', "url(#wk-chart-clip-" + _containerId + ")");
+      _container.selectAll('.wk-chart-axis.wk-chart-right').attr('transform', "translate(" + _innerWidth + ", 0)");
+      _container.selectAll('.wk-chart-axis.wk-chart-bottom').attr('transform', "translate(0, " + _innerHeight + ")");
+      _container.select('.wk-chart-label.wk-chart-left').attr('transform', "translate(" + (-axisRect.left.width - labelHeight.left / 2) + ", " + (_innerHeight / 2) + ") rotate(-90)");
+      _container.select('.wk-chart-label.wk-chart-right').attr('transform', "translate(" + (_innerWidth + axisRect.right.width + labelHeight.right / 2) + ", " + (_innerHeight / 2) + ") rotate(90)");
+      _container.select('.wk-chart-label.wk-chart-top').attr('transform', "translate(" + (_innerWidth / 2) + ", " + (-axisRect.top.height - labelHeight.top / 2) + ")");
+      _container.select('.wk-chart-label.wk-chart-bottom').attr('transform', "translate(" + (_innerWidth / 2) + ", " + (_innerHeight + axisRect.bottom.height + labelHeight.bottom) + ")");
+      _container.selectAll('.wk-chart-title-area').attr('transform', "translate(" + (_innerWidth / 2) + ", " + (-topMargin + _titleHeight) + ")");
+      for (_k = 0, _len2 = _layouts.length; _k < _len2; _k++) {
+        l = _layouts[_k];
+        _ref2 = l.scales().allKinds();
+        for (k in _ref2) {
+          s = _ref2[k];
+          if (s.showAxis() && s.showGrid()) {
+            drawGrid(s);
+          }
+        }
+      }
+      _chart.behavior().overlay(_overlay);
+      return _chart.behavior().container(_chartArea);
+    };
+    me.drawSingleAxis = function(scale) {
+      var a;
+      if (scale.showAxis()) {
+        a = _spacedContainer.select(".wk-chart-axis.wk-chart-" + (scale.axis().orient()));
+        a.call(scale.axis());
+        if (scale.showGrid()) {
+          drawGrid(scale, true);
+        }
+      }
+      return me;
+    };
+    return me;
+  };
+  return container;
+});
+
+angular.module('wk.chart').factory('layout', function($log, scale, scaleList, timing) {
+  var layout, layoutCntr;
+  layoutCntr = 0;
+  layout = function() {
+    var buildArgs, getDrawArea, me, _chart, _container, _data, _id, _layoutLifeCycle, _scaleList, _showLabels;
+    _id = "layout" + (layoutCntr++);
+    _container = void 0;
+    _data = void 0;
+    _chart = void 0;
+    _scaleList = scaleList();
+    _showLabels = false;
+    _layoutLifeCycle = d3.dispatch('configure', 'drawChart', 'prepareData', 'brush', 'redraw', 'drawAxis', 'update', 'updateAttrs', 'brushDraw');
+    me = function() {};
+    me.id = function(id) {
+      return _id;
+    };
+    me.chart = function(chart) {
+      if (arguments.length === 0) {
+        return _chart;
+      } else {
+        _chart = chart;
+        _scaleList.parentScales(chart.scales());
+        _chart.lifeCycle().on("configure." + (me.id()), function() {
+          return _layoutLifeCycle.configure.apply(me.scales());
+        });
+        _chart.lifeCycle().on("drawChart." + (me.id()), me.draw);
+        _chart.lifeCycle().on("prepareData." + (me.id()), me.prepareData);
+        return me;
+      }
+    };
+    me.scales = function() {
+      return _scaleList;
+    };
+    me.scaleProperties = function() {
+      return me.scales().getScaleProperties();
+    };
+    me.container = function(obj) {
+      if (arguments.length === 0) {
+        return _container;
+      } else {
+        _container = obj;
+        return me;
+      }
+    };
+    me.showDataLabels = function(trueFalse) {
+      if (arguments.length === 0) {
+        return _showLabels;
+      } else {
+        _showLabels = trueFalse;
+        return me;
+      }
+    };
+    me.behavior = function() {
+      return me.chart().behavior();
+    };
+    me.prepareData = function(data) {
+      var args, kind, _i, _len, _ref;
+      args = [];
+      _ref = ['x', 'y', 'color', 'size', 'shape', 'rangeX', 'rangeY'];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        kind = _ref[_i];
+        args.push(_scaleList.getKind(kind));
+      }
+      return _layoutLifeCycle.prepareData.apply(data, args);
+    };
+    me.lifeCycle = function() {
+      return _layoutLifeCycle;
+    };
+    getDrawArea = function() {
+      var container, drawArea;
+      container = _container.getChartArea();
+      drawArea = container.select("." + (me.id()));
+      if (drawArea.empty()) {
+        drawArea = container.append('g').attr('class', function(d) {
+          return me.id();
+        });
+      }
+      return drawArea;
+    };
+    buildArgs = function(data, notAnimated) {
+      var args, kind, options, _i, _len, _ref;
+      options = {
+        height: _container.height(),
+        width: _container.width(),
+        margins: _container.margins(),
+        duration: notAnimated ? 0 : me.chart().animationDuration()
+      };
+      args = [data, options];
+      _ref = ['x', 'y', 'color', 'size', 'shape', 'rangeX', 'rangeY'];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        kind = _ref[_i];
+        args.push(_scaleList.getKind(kind));
+      }
+      return args;
+    };
+    me.draw = function(data, notAnimated) {
+      _data = data;
+      _layoutLifeCycle.drawChart.apply(getDrawArea(), buildArgs(data, notAnimated));
+      _layoutLifeCycle.on('redraw', me.redraw);
+      _layoutLifeCycle.on('update', me.chart().lifeCycle().update);
+      _layoutLifeCycle.on('drawAxis', me.chart().lifeCycle().drawAxis);
+      _layoutLifeCycle.on('updateAttrs', me.chart().lifeCycle().updateAttrs);
+      return _layoutLifeCycle.on('brush', function(axis, notAnimated, idxRange) {
+        _container.drawSingleAxis(axis);
+        return _layoutLifeCycle.brushDraw.apply(getDrawArea(), [axis, idxRange, _container.width(), _container.height()]);
+      });
+    };
+    return me;
+  };
+  return layout;
+});
+
+angular.module('wk.chart').factory('legend', function($log, $compile, $rootScope, $templateCache, wkChartTemplates) {
+  var legend, legendCnt, uniqueValues;
+  legendCnt = 0;
+  uniqueValues = function(arr) {
+    var e, set, _i, _len;
+    set = {};
+    for (_i = 0, _len = arr.length; _i < _len; _i++) {
+      e = arr[_i];
+      set[e] = 0;
+    }
+    return Object.keys(set);
+  };
+  legend = function() {
+    var me, _containerDiv, _data, _id, _layout, _legendDiv, _legendScope, _options, _parsedTemplate, _position, _scale, _show, _showValues, _template, _templatePath, _title;
+    _id = "legend-" + (legendCnt++);
+    _position = 'top-right';
+    _scale = void 0;
+    _templatePath = void 0;
+    _legendScope = $rootScope.$new(true);
+    _template = void 0;
+    _parsedTemplate = void 0;
+    _containerDiv = void 0;
+    _legendDiv = void 0;
+    _title = void 0;
+    _layout = void 0;
+    _data = void 0;
+    _options = void 0;
+    _show = false;
+    _showValues = false;
+    me = {};
+    me.position = function(pos) {
+      if (arguments.length === 0) {
+        return _position;
+      } else {
+        _position = pos;
+        return me;
+      }
+    };
+    me.show = function(val) {
+      if (arguments.length === 0) {
+        return _show;
+      } else {
+        _show = val;
+        return me;
+      }
+    };
+    me.showValues = function(val) {
+      if (arguments.length === 0) {
+        return _showValues;
+      } else {
+        _showValues = val;
+        return me;
+      }
+    };
+    me.div = function(selection) {
+      if (arguments.length === 0) {
+        return _legendDiv;
+      } else {
+        _legendDiv = selection;
+        return me;
+      }
+    };
+    me.layout = function(layout) {
+      if (arguments.length === 0) {
+        return _layout;
+      } else {
+        _layout = layout;
+        return me;
+      }
+    };
+    me.scale = function(scale) {
+      if (arguments.length === 0) {
+        return _scale;
+      } else {
+        _scale = scale;
+        return me;
+      }
+    };
+    me.title = function(title) {
+      if (arguments.length === 0) {
+        return _title;
+      } else {
+        _title = title;
+        return me;
+      }
+    };
+    me.template = function(path) {
+      if (arguments.length === 0) {
+        return _templatePath;
+      } else {
+        _templatePath = path;
+        _template = $templateCache.get(_templatePath);
+        _parsedTemplate = $compile(_template)(_legendScope);
+        return me;
+      }
+    };
+    me.draw = function(data, options) {
+      var chartAreaRect, containerRect, layers, p, s, _i, _len, _ref, _ref1;
+      _data = data;
+      _options = options;
+      _containerDiv = _legendDiv || d3.select(me.scale().parent().container().element()).select('.wk-chart');
+      if (me.show()) {
+        if (_containerDiv.select('.wk-chart-legend').empty()) {
+          angular.element(_containerDiv.node()).append(_parsedTemplate);
+        }
+        if (me.showValues()) {
+          layers = uniqueValues(_scale.value(data));
+        } else {
+          layers = _scale.layerKeys(data);
+        }
+        s = _scale.scale();
+        if ((_ref = me.layout()) != null ? _ref.scales().layerScale() : void 0) {
+          s = me.layout().scales().layerScale().scale();
+        }
+        if (_scale.kind() !== 'shape') {
+          _legendScope.legendRows = layers.map(function(d) {
+            return {
+              value: d,
+              color: {
+                'background-color': s(d)
+              }
+            };
+          });
+        } else {
+          _legendScope.legendRows = layers.map(function(d) {
+            return {
+              value: d,
+              path: d3.svg.symbol().type(s(d)).size(80)()
+            };
+          });
+        }
+        _legendScope.showLegend = true;
+        _legendScope.position = {
+          position: _legendDiv ? 'relative' : 'absolute'
+        };
+        if (!_legendDiv) {
+          containerRect = _containerDiv.node().getBoundingClientRect();
+          chartAreaRect = _containerDiv.select('.wk-chart-overlay rect').node().getBoundingClientRect();
+          _ref1 = _position.split('-');
+          for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+            p = _ref1[_i];
+            _legendScope.position[p] = "" + (Math.abs(containerRect[p] - chartAreaRect[p])) + "px";
+          }
+        }
+        _legendScope.title = _title;
+      } else {
+        _parsedTemplate.remove();
+      }
+      return me;
+    };
+    _parsedTemplate = $compile(wkChartTemplates.legendTemplate())(_legendScope);
+    me.register = function(layout) {
+      layout.lifeCycle().on("drawChart." + _id, me.draw);
+      return me;
+    };
+    me.redraw = function() {
+      if (_data && _options) {
+        me.draw(_data, _options);
+      }
+      return me;
+    };
+    return me;
+  };
+  return legend;
+});
+
+var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+angular.module('wk.chart').factory('scale', function($log, legend, formatDefaults, wkChartScales, wkChartLocale) {
+  var scale;
+  scale = function() {
+    var calcDomain, keys, layerMax, layerMin, layerTotal, me, parsedValue, _axis, _axisLabel, _axisOrient, _axisOrientOld, _calculatedDomain, _chart, _domain, _domainCalc, _exponent, _id, _inputFormatFn, _inputFormatString, _isHorizontal, _isOrdinal, _isVertical, _kind, _layerExclude, _layerProp, _layout, _legend, _lowerProperty, _outputFormatFn, _outputFormatString, _parent, _property, _range, _rangeOuterPadding, _rangePadding, _resetOnNewData, _rotateTickLabels, _scale, _scaleType, _showAxis, _showGrid, _showLabel, _tickFormat, _tickValues, _ticks, _upperProperty;
+    _id = '';
+    _scale = d3.scale.linear();
+    _scaleType = 'linear';
+    _exponent = 1;
+    _isOrdinal = false;
+    _domain = void 0;
+    _domainCalc = void 0;
+    _calculatedDomain = void 0;
+    _resetOnNewData = false;
+    _property = '';
+    _layerProp = '';
+    _layerExclude = [];
+    _lowerProperty = '';
+    _upperProperty = '';
+    _range = void 0;
+    _rangePadding = 0.3;
+    _rangeOuterPadding = 0.3;
+    _inputFormatString = void 0;
+    _inputFormatFn = function(data) {
+      if (isNaN(+data) || _.isDate(data)) {
+        return data;
+      } else {
+        return +data;
+      }
+    };
+    _showAxis = false;
+    _axisOrient = void 0;
+    _axisOrientOld = void 0;
+    _axis = void 0;
+    _ticks = void 0;
+    _tickFormat = void 0;
+    _tickValues = void 0;
+    _rotateTickLabels = void 0;
+    _showLabel = false;
+    _axisLabel = void 0;
+    _showGrid = false;
+    _isHorizontal = false;
+    _isVertical = false;
+    _kind = void 0;
+    _parent = void 0;
+    _chart = void 0;
+    _layout = void 0;
+    _legend = legend();
+    _outputFormatString = void 0;
+    _outputFormatFn = void 0;
+    _tickFormat = wkChartLocale.timeFormat.multi([
+      [
+        ".%L", function(d) {
+          return d.getMilliseconds();
+        }
+      ], [
+        ":%S", function(d) {
+          return d.getSeconds();
+        }
+      ], [
+        "%I:%M", function(d) {
+          return d.getMinutes();
+        }
+      ], [
+        "%I %p", function(d) {
+          return d.getHours();
+        }
+      ], [
+        "%a %d", function(d) {
+          return d.getDay() && d.getDate() !== 1;
+        }
+      ], [
+        "%b %d", function(d) {
+          return d.getDate() !== 1;
+        }
+      ], [
+        "%B", function(d) {
+          return d.getMonth();
+        }
+      ], [
+        "%Y", function() {
+          return true;
+        }
+      ]
+    ]);
+    me = function() {};
+    keys = function(data) {
+      if (_.isArray(data)) {
+        return _.reject(_.keys(data[0]), function(d) {
+          return d === '$$hashKey';
+        });
+      } else {
+        return _.reject(_.keys(data), function(d) {
+          return d === '$$hashKey';
+        });
+      }
+    };
+    layerTotal = function(d, layerKeys) {
+      return layerKeys.reduce(function(prev, next) {
+        return +prev + +me.layerValue(d, next);
+      }, 0);
+    };
+    layerMax = function(data, layerKeys) {
+      return d3.max(data, function(d) {
+        return d3.max(layerKeys, function(k) {
+          return me.layerValue(d, k);
+        });
+      });
+    };
+    layerMin = function(data, layerKeys) {
+      return d3.min(data, function(d) {
+        return d3.min(layerKeys, function(k) {
+          return me.layerValue(d, k);
+        });
+      });
+    };
+    parsedValue = function(v) {
+      if (_inputFormatFn.parse) {
+        return _inputFormatFn.parse(v);
+      } else {
+        return _inputFormatFn(v);
+      }
+    };
+    calcDomain = {
+      extent: function(data) {
+        var layerKeys;
+        layerKeys = me.layerKeys(data);
+        return [layerMin(data, layerKeys), layerMax(data, layerKeys)];
+      },
+      max: function(data) {
+        var layerKeys;
+        layerKeys = me.layerKeys(data);
+        return [0, layerMax(data, layerKeys)];
+      },
+      min: function(data) {
+        var layerKeys;
+        layerKeys = me.layerKeys(data);
+        return [0, layerMin(data, layerKeys)];
+      },
+      totalExtent: function(data) {
+        var layerKeys;
+        if (data[0].hasOwnProperty('total')) {
+          return d3.extent(data.map(function(d) {
+            return d.total;
+          }));
+        } else {
+          layerKeys = me.layerKeys(data);
+          return d3.extent(data.map(function(d) {
+            return layerTotal(d, layerKeys);
+          }));
+        }
+      },
+      total: function(data) {
+        var layerKeys;
+        if (data[0].hasOwnProperty('total')) {
+          return [
+            0, d3.max(data.map(function(d) {
+              return d.total;
+            }))
+          ];
+        } else {
+          layerKeys = me.layerKeys(data);
+          return [
+            0, d3.max(data.map(function(d) {
+              return layerTotal(d, layerKeys);
+            }))
+          ];
+        }
+      },
+      rangeExtent: function(data) {
+        var start, step;
+        if (me.upperProperty()) {
+          return [d3.min(me.lowerValue(data)), d3.max(me.upperValue(data))];
+        } else {
+          if (data.length > 1) {
+            start = me.lowerValue(data[0]);
+            step = me.lowerValue(data[1]) - start;
+            return [me.lowerValue(data[0]), start + step * data.length];
+          }
+        }
+      },
+      rangeMin: function(data) {
+        return [0, d3.min(me.lowerValue(data))];
+      },
+      rangeMax: function(data) {
+        var start, step;
+        if (me.upperProperty()) {
+          return [0, d3.max(me.upperValue(data))];
+        } else {
+          start = me.lowerValue(data[0]);
+          step = me.lowerValue(data[1]) - start;
+          return [0, start + step * data.length];
+        }
+      }
+    };
+    me.id = function() {
+      return _kind + '.' + _parent.id();
+    };
+    me.kind = function(kind) {
+      if (arguments.length === 0) {
+        return _kind;
+      } else {
+        _kind = kind;
+        return me;
+      }
+    };
+    me.parent = function(parent) {
+      if (arguments.length === 0) {
+        return _parent;
+      } else {
+        _parent = parent;
+        return me;
+      }
+    };
+    me.chart = function(val) {
+      if (arguments.length === 0) {
+        return _chart;
+      } else {
+        _chart = val;
+        return me;
+      }
+    };
+    me.layout = function(val) {
+      if (arguments.length === 0) {
+        return _layout;
+      } else {
+        _layout = val;
+        return me;
+      }
+    };
+    me.scale = function() {
+      return _scale;
+    };
+    me.legend = function() {
+      return _legend;
+    };
+    me.isOrdinal = function() {
+      return _isOrdinal;
+    };
+    me.isHorizontal = function(trueFalse) {
+      if (arguments.length === 0) {
+        return _isHorizontal;
+      } else {
+        _isHorizontal = trueFalse;
+        if (trueFalse) {
+          _isVertical = false;
+        }
+        return me;
+      }
+    };
+    me.isVertical = function(trueFalse) {
+      if (arguments.length === 0) {
+        return _isVertical;
+      } else {
+        _isVertical = trueFalse;
+        if (trueFalse) {
+          _isHorizontal = false;
+        }
+        return me;
+      }
+    };
+    me.scaleType = function(type) {
+      if (arguments.length === 0) {
+        return _scaleType;
+      } else {
+        if (d3.scale.hasOwnProperty(type)) {
+          _scale = d3.scale[type]();
+          _scaleType = type;
+          me.format(formatDefaults.number);
+        } else if (type === 'time') {
+          _scale = d3.time.scale();
+          _scaleType = 'time';
+          if (_inputFormatString) {
+            me.dataFormat(_inputFormatString);
+          }
+          me.format(formatDefaults.date);
+        } else if (wkChartScales.hasOwnProperty(type)) {
+          _scaleType = type;
+          _scale = wkChartScales[type]();
+        } else {
+          $log.error('Error: illegal scale type:', type);
+        }
+        _isOrdinal = _scaleType === 'ordinal' || _scaleType === 'category10' || _scaleType === 'category20' || _scaleType === 'category20b' || _scaleType === 'category20c';
+        if (_range) {
+          me.range(_range);
+        }
+        if (_showAxis) {
+          _axis.scale(_scale);
+        }
+        if (_exponent && _scaleType === 'pow') {
+          _scale.exponent(_exponent);
+        }
+        return me;
+      }
+    };
+    me.exponent = function(value) {
+      if (arguments.length === 0) {
+        return _exponent;
+      } else {
+        _exponent = value;
+        if (_scaleType === 'pow') {
+          _scale.exponent(_exponent);
+        }
+        return me;
+      }
+    };
+    me.domain = function(dom) {
+      if (arguments.length === 0) {
+        return _domain;
+      } else {
+        _domain = dom;
+        if (_.isArray(_domain)) {
+          _scale.domain(_domain);
+        }
+        return me;
+      }
+    };
+    me.domainCalc = function(rule) {
+      if (arguments.length === 0) {
+        if (_isOrdinal) {
+          return void 0;
+        } else {
+          return _domainCalc;
+        }
+      } else {
+        if (calcDomain.hasOwnProperty(rule)) {
+          _domainCalc = rule;
+        } else {
+          $log.error('illegal domain calculation rule:', rule, " expected", _.keys(calcDomain));
+        }
+        return me;
+      }
+    };
+    me.getDomain = function(data) {
+      if (arguments.length === 0) {
+        return _scale.domain();
+      } else {
+        if (!_domain && me.domainCalc()) {
+          return _calculatedDomain;
+        } else {
+          if (_domain) {
+            return _domain;
+          } else {
+            return me.value(data);
+          }
+        }
+      }
+    };
+    me.resetOnNewData = function(trueFalse) {
+      if (arguments.length === 0) {
+        return _resetOnNewData;
+      } else {
+        _resetOnNewData = trueFalse;
+        return me;
+      }
+    };
+    me.range = function(range) {
+      var _ref;
+      if (arguments.length === 0) {
+        return _scale.range();
+      } else {
+        _range = range;
+        if (_scaleType === 'ordinal' && ((_ref = me.kind()) === 'x' || _ref === 'y')) {
+          _scale.rangeBands(range, _rangePadding, _rangeOuterPadding);
+        } else if (!(_scaleType === 'category10' || _scaleType === 'category20' || _scaleType === 'category20b' || _scaleType === 'category20c')) {
+          _scale.range(range);
+        }
+        return me;
+      }
+    };
+    me.rangePadding = function(config) {
+      if (arguments.length === 0) {
+        return {
+          padding: _rangePadding,
+          outerPadding: _rangeOuterPadding
+        };
+      } else {
+        _rangePadding = config.padding;
+        _rangeOuterPadding = config.outerPadding;
+        return me;
+      }
+    };
+    me.property = function(name) {
+      if (arguments.length === 0) {
+        return _property;
+      } else {
+        _property = name;
+        return me;
+      }
+    };
+    me.layerProperty = function(name) {
+      if (arguments.length === 0) {
+        return _layerProp;
+      } else {
+        _layerProp = name;
+        return me;
+      }
+    };
+    me.layerExclude = function(excl) {
+      if (arguments.length === 0) {
+        return _layerExclude;
+      } else {
+        _layerExclude = excl;
+        return me;
+      }
+    };
+    me.layerKeys = function(data) {
+      if (_property) {
+        if (_.isArray(_property)) {
+          return _.intersection(_property, keys(data));
+        } else {
+          return [_property];
+        }
+      } else {
+        return _.reject(keys(data), function(d) {
+          return __indexOf.call(_layerExclude, d) >= 0;
+        });
+      }
+    };
+    me.lowerProperty = function(name) {
+      if (arguments.length === 0) {
+        return _lowerProperty;
+      } else {
+        _lowerProperty = name;
+        return me;
+      }
+    };
+    me.upperProperty = function(name) {
+      if (arguments.length === 0) {
+        return _upperProperty;
+      } else {
+        _upperProperty = name;
+        return me;
+      }
+    };
+    me.dataFormat = function(format) {
+      if (arguments.length === 0) {
+        return _inputFormatString;
+      } else {
+        _inputFormatString = format;
+        if (_scaleType === 'time') {
+          _inputFormatFn = wkChartLocale.timeFormat(format);
+        } else {
+          _inputFormatFn = function(d) {
+            return d;
+          };
+        }
+        return me;
+      }
+    };
+    me.value = function(data) {
+      if (_layerProp) {
+        if (_.isArray(data)) {
+          return data.map(function(d) {
+            return parsedValue(d[_property][_layerProp]);
+          });
+        } else {
+          return parsedValue(data[_property][_layerProp]);
+        }
+      } else {
+        if (_.isArray(data)) {
+          return data.map(function(d) {
+            return parsedValue(d[_property]);
+          });
+        } else {
+          return parsedValue(data[_property]);
+        }
+      }
+    };
+    me.layerValue = function(data, layerKey) {
+      if (_layerProp) {
+        return parsedValue(data[layerKey][_layerProp]);
+      } else {
+        return parsedValue(data[layerKey]);
+      }
+    };
+    me.lowerValue = function(data) {
+      if (_.isArray(data)) {
+        return data.map(function(d) {
+          return parsedValue(d[_lowerProperty]);
+        });
+      } else {
+        return parsedValue(data[_lowerProperty]);
+      }
+    };
+    me.upperValue = function(data) {
+      if (_.isArray(data)) {
+        return data.map(function(d) {
+          return parsedValue(d[_upperProperty]);
+        });
+      } else {
+        return parsedValue(data[_upperProperty]);
+      }
+    };
+    me.formattedValue = function(data) {
+      if (_.isArray(data)) {
+        return data.map(function(d) {
+          return me.formatValue(me.value(d));
+        });
+      } else {
+        return me.formatValue(me.value(data));
+      }
+    };
+    me.formatValue = function(val) {
+      if (_outputFormatString && val && (val.getUTCDate || !isNaN(val))) {
+        return _outputFormatFn(val);
+      } else {
+        return val;
+      }
+    };
+    me.map = function(data) {
+      if (Array.isArray(data)) {
+        return data.map(function(d) {
+          return _scale(me.value(data));
+        });
+      } else {
+        return _scale(me.value(data));
+      }
+    };
+    me.invert = function(mappedValue) {
+      var bisect, domain, idx, interval, range, step, val, _data;
+      if (_.has(me.scale(), 'invert')) {
+        _data = me.chart().getData();
+        if (me.kind() === 'rangeX' || me.kind() === 'rangeY') {
+          val = me.scale().invert(mappedValue);
+          if (me.upperProperty()) {
+            bisect = d3.bisector(me.upperValue).left;
+          } else {
+            step = me.lowerValue(_data[1]) - me.lowerValue(_data[0]);
+            bisect = d3.bisector(function(d) {
+              return me.lowerValue(d) + step;
+            }).left;
+          }
+        } else {
+          range = _scale.range();
+          interval = (range[1] - range[0]) / _data.length;
+          val = me.scale().invert(mappedValue - interval / 2);
+          bisect = d3.bisector(me.value).left;
+        }
+        idx = bisect(_data, val);
+        idx = idx < 0 ? 0 : idx >= _data.length ? _data.length - 1 : idx;
+        return idx;
+      }
+      if (_.has(me.scale(), 'invertExtent')) {
+        return me.scale().invertExtent(mappedValue);
+      }
+      if (me.resetOnNewData()) {
+        domain = _scale.domain();
+        range = _scale.range();
+        if (_isVertical) {
+          interval = range[0] - range[1];
+          idx = range.length - Math.floor(mappedValue / interval) - 1;
+          if (idx < 0) {
+            idx = 0;
+          }
+        } else {
+          interval = range[1] - range[0];
+          idx = Math.floor(mappedValue / interval);
+        }
+        return idx;
+      }
+    };
+    me.invertOrdinal = function(mappedValue) {
+      var idx;
+      if (me.isOrdinal() && me.resetOnNewData()) {
+        idx = me.invert(mappedValue);
+        return _scale.domain()[idx];
+      }
+    };
+    me.showAxis = function(trueFalse) {
+      if (arguments.length === 0) {
+        return _showAxis;
+      } else {
+        _showAxis = trueFalse;
+        if (trueFalse) {
+          _axis = d3.svg.axis();
+          if (me.scaleType() === 'time') {
+            _axis.tickFormat(_tickFormat);
+          }
+        } else {
+          _axis = void 0;
+        }
+        return me;
+      }
+    };
+    me.axisOrient = function(val) {
+      if (arguments.length === 0) {
+        return _axisOrient;
+      } else {
+        _axisOrientOld = _axisOrient;
+        _axisOrient = val;
+        return me;
+      }
+    };
+    me.axisOrientOld = function(val) {
+      if (arguments.length === 0) {
+        return _axisOrientOld;
+      } else {
+        _axisOrientOld = val;
+        return me;
+      }
+    };
+    me.axis = function() {
+      return _axis;
+    };
+    me.ticks = function(val) {
+      if (arguments.length === 0) {
+        return _ticks;
+      } else {
+        _ticks = val;
+        if (me.axis()) {
+          me.axis().ticks(_ticks);
+        }
+        return me;
+      }
+    };
+    me.tickFormat = function(val) {
+      if (arguments.length === 0) {
+        return _tickFormat;
+      } else {
+        _tickFormat = val;
+        if (me.axis()) {
+          me.axis().tickFormat(val);
+        }
+        return me;
+      }
+    };
+    me.tickValues = function(val) {
+      if (arguments.length === 0) {
+        return _tickValues;
+      } else {
+        _tickValues = val;
+        if (me.axis()) {
+          me.axis().tickValues(val);
+        }
+        return me;
+      }
+    };
+    me.showLabel = function(val) {
+      if (arguments.length === 0) {
+        return _showLabel;
+      } else {
+        _showLabel = val;
+        return me;
+      }
+    };
+    me.axisLabel = function(text) {
+      if (arguments.length === 0) {
+        if (_axisLabel) {
+          return _axisLabel;
+        } else {
+          return me.property();
+        }
+      } else {
+        _axisLabel = text;
+        return me;
+      }
+    };
+    me.rotateTickLabels = function(nbr) {
+      if (arguments.length === 0) {
+        return _rotateTickLabels;
+      } else {
+        _rotateTickLabels = nbr;
+        return me;
+      }
+    };
+    me.format = function(val) {
+      if (arguments.length === 0) {
+        return _outputFormatString;
+      } else {
+        if (val.length > 0) {
+          _outputFormatString = val;
+        } else {
+          _outputFormatString = me.scaleType() === 'time' ? formatDefaults.date : formatDefaults.number;
+        }
+        _outputFormatFn = me.scaleType() === 'time' ? wkChartLocale.timeFormat(_outputFormatString) : wkChartLocale.numberFormat(_outputFormatString);
+        return me;
+      }
+    };
+    me.showGrid = function(trueFalse) {
+      if (arguments.length === 0) {
+        return _showGrid;
+      } else {
+        _showGrid = trueFalse;
+        return me;
+      }
+    };
+    me.register = function() {
+      me.chart().lifeCycle().on("scaleDomains." + (me.id()), function(data) {
+        var domain;
+        if (me.resetOnNewData()) {
+          domain = me.getDomain(data);
+          if (_scaleType === 'linear' && _.some(domain, isNaN)) {
+            throw "Scale " + (me.kind()) + ", Type '" + _scaleType + "': cannot compute domain for property '" + _property + "' . Possible reasons: property not set, data not compatible with defined type. Domain:" + domain;
+          }
+          return _scale.domain(domain);
+        }
+      });
+      return me.chart().lifeCycle().on("prepareData." + (me.id()), function(data) {
+        var calcRule;
+        calcRule = me.domainCalc();
+        if (me.parent().scaleProperties) {
+          me.layerExclude(me.parent().scaleProperties());
+        }
+        if (calcRule && calcDomain[calcRule]) {
+          return _calculatedDomain = calcDomain[calcRule](data);
+        }
+      });
+    };
+    me.update = function(noAnimation) {
+      me.parent().lifeCycle().update(noAnimation);
+      return me;
+    };
+    me.updateAttrs = function() {
+      return me.parent().lifeCycle().updateAttrs();
+    };
+    me.drawAxis = function() {
+      me.parent().lifeCycle().drawAxis();
+      return me;
+    };
+    return me;
+  };
+  return scale;
+});
+
+angular.module('wk.chart').factory('scaleList', function($log) {
+  var scaleList;
+  return scaleList = function() {
+    var me, _kindList, _layerScale, _list, _owner, _parentList, _requiredScales;
+    _list = {};
+    _kindList = {};
+    _parentList = {};
+    _owner = void 0;
+    _requiredScales = [];
+    _layerScale = void 0;
+    me = function() {};
+    me.owner = function(owner) {
+      if (arguments.length === 0) {
+        return _owner;
+      } else {
+        _owner = owner;
+        return me;
+      }
+    };
+    me.add = function(scale) {
+      if (_list[scale.id()]) {
+        $log.error("scaleList.add: scale " + (scale.id()) + " already defined in scaleList of " + (_owner.id()) + ". Duplicate scales are not allowed");
+      }
+      _list[scale.id()] = scale;
+      _kindList[scale.kind()] = scale;
+      return me;
+    };
+    me.hasScale = function(scale) {
+      var s;
+      s = me.getKind(scale.kind());
+      return s.id() === scale.id();
+    };
+    me.getKind = function(kind) {
+      if (_kindList[kind]) {
+        return _kindList[kind];
+      } else if (_parentList.getKind) {
+        return _parentList.getKind(kind);
+      } else {
+        return void 0;
+      }
+    };
+    me.hasKind = function(kind) {
+      return !!me.getKind(kind);
+    };
+    me.remove = function(scale) {
+      if (!_list[scale.id()]) {
+        $log.warn("scaleList.delete: scale " + (scale.id()) + " not defined in scaleList of " + (_owner.id()) + ". Ignoring");
+        return me;
+      }
+      delete _list[scale.id()];
+      delete me[scale.id];
+      return me;
+    };
+    me.parentScales = function(scaleList) {
+      if (arguments.length === 0) {
+        return _parentList;
+      } else {
+        _parentList = scaleList;
+        return me;
+      }
+    };
+    me.getOwned = function() {
+      return _list;
+    };
+    me.allKinds = function() {
+      var k, ret, s, _ref;
+      ret = {};
+      if (_parentList.allKinds) {
+        _ref = _parentList.allKinds();
+        for (k in _ref) {
+          s = _ref[k];
+          ret[k] = s;
+        }
+      }
+      for (k in _kindList) {
+        s = _kindList[k];
+        ret[k] = s;
+      }
+      return ret;
+    };
+    me.requiredScales = function(req) {
+      var k, _i, _len;
+      if (arguments.length === 0) {
+        return _requiredScales;
+      } else {
+        _requiredScales = req;
+        for (_i = 0, _len = req.length; _i < _len; _i++) {
+          k = req[_i];
+          if (!me.hasKind(k)) {
+            throw "Fatal Error: scale '" + k + "' required but not defined";
+          }
+        }
+      }
+      return me;
+    };
+    me.getScales = function(kindList) {
+      var kind, l, _i, _len;
+      l = {};
+      for (_i = 0, _len = kindList.length; _i < _len; _i++) {
+        kind = kindList[_i];
+        if (me.hasKind(kind)) {
+          l[kind] = me.getKind(kind);
+        } else {
+          throw "Fatal Error: scale '" + kind + "' required but not defined";
+        }
+      }
+      return l;
+    };
+    me.getScaleProperties = function() {
+      var k, l, prop, s, _ref;
+      l = [];
+      _ref = me.allKinds();
+      for (k in _ref) {
+        s = _ref[k];
+        prop = s.property();
+        if (prop) {
+          if (Array.isArray(prop)) {
+            l.concat(prop);
+          } else {
+            l.push(prop);
+          }
+        }
+      }
+      return l;
+    };
+    me.layerScale = function(kind) {
+      if (arguments.length === 0) {
+        if (_layerScale) {
+          return me.getKind(_layerScale);
+        }
+        return void 0;
+      } else {
+        _layerScale = kind;
+        return me;
+      }
+    };
+    return me;
+  };
 });
 
 
@@ -4608,2578 +7217,6 @@ angular.module('wk.chart').directive('spider', function($log, utils) {
       });
       return layout.lifeCycle().on('drawChart', draw);
     }
-  };
-});
-
-angular.module('wk.chart').factory('behaviorBrush', function($log, $window, selectionSharing, timing) {
-  var behaviorBrush;
-  behaviorBrush = function() {
-    var bottom, brushEnd, brushMove, brushStart, getSelectedObjects, left, me, positionBrushElements, resizeExtent, right, setSelection, startBottom, startLeft, startRight, startTop, top, _active, _area, _areaBox, _areaSelection, _backgroundBox, _boundsDomain, _boundsIdx, _boundsValues, _brushEvents, _brushGroup, _brushX, _brushXY, _brushY, _chart, _container, _data, _evTargetData, _extent, _overlay, _selectables, _startPos, _tooltip, _x, _y;
-    me = function() {};
-    _active = false;
-    _overlay = void 0;
-    _extent = void 0;
-    _startPos = void 0;
-    _evTargetData = void 0;
-    _area = void 0;
-    _chart = void 0;
-    _data = void 0;
-    _areaSelection = void 0;
-    _areaBox = void 0;
-    _backgroundBox = void 0;
-    _container = void 0;
-    _selectables = void 0;
-    _brushGroup = void 0;
-    _x = void 0;
-    _y = void 0;
-    _tooltip = void 0;
-    _brushXY = false;
-    _brushX = false;
-    _brushY = false;
-    _boundsIdx = void 0;
-    _boundsValues = void 0;
-    _boundsDomain = [];
-    _brushEvents = d3.dispatch('brushStart', 'brush', 'brushEnd');
-    left = top = right = bottom = startTop = startLeft = startRight = startBottom = void 0;
-    positionBrushElements = function(left, right, top, bottom) {
-      var height, width;
-      width = right - left;
-      height = bottom - top;
-      if (_brushXY) {
-        _overlay.selectAll('.wk-chart-n').attr('transform', "translate(" + left + "," + top + ")").select('rect').attr('width', width);
-        _overlay.selectAll('.wk-chart-s').attr('transform', "translate(" + left + "," + bottom + ")").select('rect').attr('width', width);
-        _overlay.selectAll('.wk-chart-w').attr('transform', "translate(" + left + "," + top + ")").select('rect').attr('height', height);
-        _overlay.selectAll('.wk-chart-e').attr('transform', "translate(" + right + "," + top + ")").select('rect').attr('height', height);
-        _overlay.selectAll('.wk-chart-ne').attr('transform', "translate(" + right + "," + top + ")");
-        _overlay.selectAll('.wk-chart-nw').attr('transform', "translate(" + left + "," + top + ")");
-        _overlay.selectAll('.wk-chart-se').attr('transform', "translate(" + right + "," + bottom + ")");
-        _overlay.selectAll('.wk-chart-sw').attr('transform', "translate(" + left + "," + bottom + ")");
-        _extent.attr('width', width).attr('height', height).attr('x', left).attr('y', top);
-      }
-      if (_brushX) {
-        _overlay.selectAll('.wk-chart-w').attr('transform', "translate(" + left + ",0)").select('rect').attr('height', height);
-        _overlay.selectAll('.wk-chart-e').attr('transform', "translate(" + right + ",0)").select('rect').attr('height', height);
-        _overlay.selectAll('.wk-chart-e').select('rect').attr('height', _areaBox.height);
-        _overlay.selectAll('.wk-chart-w').select('rect').attr('height', _areaBox.height);
-        _extent.attr('width', width).attr('height', _areaBox.height).attr('x', left).attr('y', 0);
-      }
-      if (_brushY) {
-        _overlay.selectAll('.wk-chart-n').attr('transform', "translate(0," + top + ")").select('rect').attr('width', width);
-        _overlay.selectAll('.wk-chart-s').attr('transform', "translate(0," + bottom + ")").select('rect').attr('width', width);
-        _overlay.selectAll('.wk-chart-n').select('rect').attr('width', _areaBox.width);
-        _overlay.selectAll('.wk-chart-s').select('rect').attr('width', _areaBox.width);
-        return _extent.attr('width', _areaBox.width).attr('height', height).attr('x', 0).attr('y', top);
-      }
-    };
-    getSelectedObjects = function() {
-      var er;
-      er = _extent.node().getBoundingClientRect();
-      _selectables.each(function(d) {
-        var cr, xHit, yHit;
-        cr = this.getBoundingClientRect();
-        xHit = er.left < cr.right - cr.width / 3 && cr.left + cr.width / 3 < er.right;
-        yHit = er.top < cr.bottom - cr.height / 3 && cr.top + cr.height / 3 < er.bottom;
-        return d3.select(this).classed('wk-chart-selected', yHit && xHit);
-      });
-      return _container.selectAll('.wk-chart-selected').data();
-    };
-    setSelection = function(left, right, top, bottom) {
-      var newDomain, step, _bottom, _left, _right, _top;
-      if (_brushX) {
-        _left = me.x().invert(left);
-        _right = me.x().invert(right);
-        if (_boundsIdx[0] !== _left || _boundsIdx[1] !== _right) {
-          _boundsIdx = [_left, _right];
-          if (me.x().isOrdinal()) {
-            _boundsValues = _data.map(function(d) {
-              return me.x().value(d);
-            }).slice(_left, _right + 1);
-          } else {
-            if (me.x().kind() === 'rangeX') {
-              if (me.x().upperProperty()) {
-                _boundsValues = [me.x().lowerValue(_data[_left]), me.x().upperValue(_data[_right])];
-              } else {
-                step = me.x().lowerValue(_data[1]) - me.x().lowerValue(_data[0]);
-                _boundsValues = [me.x().lowerValue(_data[_left]), me.x().lowerValue(_data[_right]) + step];
-              }
-            } else {
-              _boundsValues = [me.x().value(_data[_boundsIdx[0]]), me.x().value(_data[_right])];
-            }
-          }
-          _boundsDomain = _data.slice(_left, _right + 1);
-          _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain);
-          selectionSharing.setSelection(_boundsValues, _boundsIdx, _brushGroup);
-        }
-      }
-      if (_brushY) {
-        _bottom = me.y().invert(bottom);
-        _top = me.y().invert(top);
-        if (_boundsIdx[0] !== _bottom || _boundsIdx[1] !== _top) {
-          _boundsIdx = [_bottom, _top];
-          if (me.y().isOrdinal()) {
-            _boundsValues = _data.map(function(d) {
-              return me.y().value(d);
-            }).slice(_bottom, _top + 1);
-          } else {
-            if (me.y().kind() === 'rangeY') {
-              step = me.y().lowerValue(_data[1]) - me.y().lowerValue(_data[0]);
-              _boundsValues = [me.y().lowerValue(_data[_bottom]), me.y().lowerValue(_data[_top]) + step];
-            } else {
-              _boundsValues = [me.y().value(_data[_bottom]), me.y().value(_data[_top])];
-            }
-          }
-          _boundsDomain = _data.slice(_bottom, _top + 1);
-          _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain);
-          selectionSharing.setSelection(_boundsValues, _boundsIdx, _brushGroup);
-        }
-      }
-      if (_brushXY) {
-        newDomain = getSelectedObjects();
-        if (_.xor(_boundsDomain, newDomain).length > 0) {
-          _boundsIdx = [];
-          _boundsValues = [];
-          _boundsDomain = newDomain;
-          _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain);
-          return selectionSharing.setSelection(_boundsValues, _boundsIdx, _brushGroup);
-        }
-      }
-    };
-    brushStart = function() {
-      d3.event.preventDefault();
-      _evTargetData = d3.select(d3.event.target).datum();
-      _(!_evTargetData ? _evTargetData = {
-        name: 'forwarded'
-      } : void 0);
-      _areaBox = _area.getBBox();
-      _startPos = d3.mouse(_area);
-      startTop = top;
-      startLeft = left;
-      startRight = right;
-      startBottom = bottom;
-      d3.select(_area).style('pointer-events', 'none').selectAll(".wk-chart-resize").style("display", null);
-      d3.select('body').style('cursor', d3.select(d3.event.target).style('cursor'));
-      d3.select($window).on('mousemove.brush', brushMove).on('mouseup.brush', brushEnd);
-      _tooltip.hide(true);
-      _boundsIdx = [void 0, void 0];
-      _boundsDomain = [void 0];
-      _selectables = _container.selectAll('.wk-chart-selectable');
-      _brushEvents.brushStart();
-      timing.clear();
-      return timing.init();
-    };
-    brushEnd = function() {
-      d3.select($window).on('mousemove.brush', null);
-      d3.select($window).on('mouseup.brush', null);
-      d3.select(_area).style('pointer-events', 'all').selectAll('.wk-chart-resize').style('display', null);
-      d3.select('body').style('cursor', null);
-      if (bottom - top === 0 || right - left === 0) {
-        d3.select(_area).selectAll('.wk-chart-resize').style('display', 'none');
-      }
-      _tooltip.hide(false);
-      _brushEvents.brushEnd(_boundsIdx, _boundsValues, _boundsDomain);
-      return timing.report();
-    };
-    brushMove = function() {
-      var bottomMv, deltaX, deltaY, horMv, leftMv, pos, rightMv, topMv, vertMv;
-      pos = d3.mouse(_area);
-      deltaX = pos[0] - _startPos[0];
-      deltaY = pos[1] - _startPos[1];
-      leftMv = function(delta) {
-        pos = startLeft + delta;
-        left = pos >= 0 ? (pos < startRight ? pos : startRight) : 0;
-        return right = pos <= _areaBox.width ? (pos < startRight ? startRight : pos) : _areaBox.width;
-      };
-      rightMv = function(delta) {
-        pos = startRight + delta;
-        left = pos >= 0 ? (pos < startLeft ? pos : startLeft) : 0;
-        return right = pos <= _areaBox.width ? (pos < startLeft ? startLeft : pos) : _areaBox.width;
-      };
-      topMv = function(delta) {
-        pos = startTop + delta;
-        top = pos >= 0 ? (pos < startBottom ? pos : startBottom) : 0;
-        return bottom = pos <= _areaBox.height ? (pos > startBottom ? pos : startBottom) : _areaBox.height;
-      };
-      bottomMv = function(delta) {
-        pos = startBottom + delta;
-        top = pos >= 0 ? (pos < startTop ? pos : startTop) : 0;
-        return bottom = pos <= _areaBox.height ? (pos > startTop ? pos : startTop) : _areaBox.height;
-      };
-      horMv = function(delta) {
-        if (startLeft + delta >= 0) {
-          if (startRight + delta <= _areaBox.width) {
-            left = startLeft + delta;
-            return right = startRight + delta;
-          } else {
-            right = _areaBox.width;
-            return left = _areaBox.width - (startRight - startLeft);
-          }
-        } else {
-          left = 0;
-          return right = startRight - startLeft;
-        }
-      };
-      vertMv = function(delta) {
-        if (startTop + delta >= 0) {
-          if (startBottom + delta <= _areaBox.height) {
-            top = startTop + delta;
-            return bottom = startBottom + delta;
-          } else {
-            bottom = _areaBox.height;
-            return top = _areaBox.height - (startBottom - startTop);
-          }
-        } else {
-          top = 0;
-          return bottom = startBottom - startTop;
-        }
-      };
-      switch (_evTargetData.name) {
-        case 'background':
-        case 'forwarded':
-          if (deltaX + _startPos[0] > 0) {
-            left = deltaX < 0 ? _startPos[0] + deltaX : _startPos[0];
-            if (left + Math.abs(deltaX) < _areaBox.width) {
-              right = left + Math.abs(deltaX);
-            } else {
-              right = _areaBox.width;
-            }
-          } else {
-            left = 0;
-          }
-          if (deltaY + _startPos[1] > 0) {
-            top = deltaY < 0 ? _startPos[1] + deltaY : _startPos[1];
-            if (top + Math.abs(deltaY) < _areaBox.height) {
-              bottom = top + Math.abs(deltaY);
-            } else {
-              bottom = _areaBox.height;
-            }
-          } else {
-            top = 0;
-          }
-          break;
-        case 'extent':
-          vertMv(deltaY);
-          horMv(deltaX);
-          break;
-        case 'n':
-          topMv(deltaY);
-          break;
-        case 's':
-          bottomMv(deltaY);
-          break;
-        case 'w':
-          leftMv(deltaX);
-          break;
-        case 'e':
-          rightMv(deltaX);
-          break;
-        case 'nw':
-          topMv(deltaY);
-          leftMv(deltaX);
-          break;
-        case 'ne':
-          topMv(deltaY);
-          rightMv(deltaX);
-          break;
-        case 'sw':
-          bottomMv(deltaY);
-          leftMv(deltaX);
-          break;
-        case 'se':
-          bottomMv(deltaY);
-          rightMv(deltaX);
-      }
-      positionBrushElements(left, right, top, bottom);
-      return setSelection(left, right, top, bottom);
-    };
-    me.brush = function(s) {
-      if (arguments.length === 0) {
-        return _overlay;
-      } else {
-        if (!_active) {
-          return;
-        }
-        _overlay = s;
-        _brushXY = me.x() && me.y();
-        _brushX = me.x() && !me.y();
-        _brushY = me.y() && !me.x();
-        s.style({
-          'pointer-events': 'all',
-          cursor: 'crosshair'
-        });
-        _extent = s.append('rect').attr({
-          "class": 'wk-chart-extent',
-          x: 0,
-          y: 0,
-          width: 0,
-          height: 0
-        }).style('cursor', 'move').datum({
-          name: 'extent'
-        });
-        if (_brushY || _brushXY) {
-          s.append('g').attr('class', 'wk-chart-resize wk-chart-n').style({
-            cursor: 'ns-resize',
-            display: 'none'
-          }).append('rect').attr({
-            x: 0,
-            y: -3,
-            width: 0,
-            height: 6
-          }).datum({
-            name: 'n'
-          });
-          s.append('g').attr('class', 'wk-chart-resize wk-chart-s').style({
-            cursor: 'ns-resize',
-            display: 'none'
-          }).append('rect').attr({
-            x: 0,
-            y: -3,
-            width: 0,
-            height: 6
-          }).datum({
-            name: 's'
-          });
-        }
-        if (_brushX || _brushXY) {
-          s.append('g').attr('class', 'wk-chart-resize wk-chart-w').style({
-            cursor: 'ew-resize',
-            display: 'none'
-          }).append('rect').attr({
-            y: 0,
-            x: -3,
-            width: 6,
-            height: 0
-          }).datum({
-            name: 'w'
-          });
-          s.append('g').attr('class', 'wk-chart-resize wk-chart-e').style({
-            cursor: 'ew-resize',
-            display: 'none'
-          }).append('rect').attr({
-            y: 0,
-            x: -3,
-            width: 6,
-            height: 0
-          }).datum({
-            name: 'e'
-          });
-        }
-        if (_brushXY) {
-          s.append('g').attr('class', 'wk-chart-resize wk-chart-nw').style({
-            cursor: 'nwse-resize',
-            display: 'none'
-          }).append('rect').attr({
-            x: -3,
-            y: -3,
-            width: 6,
-            height: 6
-          }).datum({
-            name: 'nw'
-          });
-          s.append('g').attr('class', 'wk-chart-resize wk-chart-ne').style({
-            cursor: 'nesw-resize',
-            display: 'none'
-          }).append('rect').attr({
-            x: -3,
-            y: -3,
-            width: 6,
-            height: 6
-          }).datum({
-            name: 'ne'
-          });
-          s.append('g').attr('class', 'wk-chart-resize wk-chart-sw').style({
-            cursor: 'nesw-resize',
-            display: 'none'
-          }).append('rect').attr({
-            x: -3,
-            y: -3,
-            width: 6,
-            height: 6
-          }).datum({
-            name: 'sw'
-          });
-          s.append('g').attr('class', 'wk-chart-resize wk-chart-se').style({
-            cursor: 'nwse-resize',
-            display: 'none'
-          }).append('rect').attr({
-            x: -3,
-            y: -3,
-            width: 6,
-            height: 6
-          }).datum({
-            name: 'se'
-          });
-        }
-        s.on('mousedown.brush', brushStart);
-        return me;
-      }
-    };
-    resizeExtent = function() {
-      var horizontalRatio, newBox, verticalRatio;
-      if (_areaBox) {
-        newBox = _area.getBBox();
-        horizontalRatio = _areaBox.width / newBox.width;
-        verticalRatio = _areaBox.height / newBox.height;
-        top = top / verticalRatio;
-        startTop = startTop / verticalRatio;
-        bottom = bottom / verticalRatio;
-        startBottom = startBottom / verticalRatio;
-        left = left / horizontalRatio;
-        startLeft = startLeft / horizontalRatio;
-        right = right / horizontalRatio;
-        startRight = startRight / horizontalRatio;
-        _startPos[0] = _startPos[0] / horizontalRatio;
-        _startPos[1] = _startPos[1] / verticalRatio;
-        _areaBox = newBox;
-        return positionBrushElements(left, right, top, bottom);
-      }
-    };
-    me.chart = function(val) {
-      if (arguments.length === 0) {
-        return _chart;
-      } else {
-        _chart = val;
-        _chart.lifeCycle().on('resize.brush', resizeExtent);
-        return me;
-      }
-    };
-    me.active = function(val) {
-      if (arguments.length === 0) {
-        return _active;
-      } else {
-        _active = val;
-        return me;
-      }
-    };
-    me.x = function(val) {
-      if (arguments.length === 0) {
-        return _x;
-      } else {
-        _x = val;
-        return me;
-      }
-    };
-    me.y = function(val) {
-      if (arguments.length === 0) {
-        return _y;
-      } else {
-        _y = val;
-        return me;
-      }
-    };
-    me.area = function(val) {
-      if (arguments.length === 0) {
-        return _areaSelection;
-      } else {
-        if (!_areaSelection) {
-          _areaSelection = val;
-          _area = _areaSelection.node();
-          me.brush(_areaSelection);
-        }
-        return me;
-      }
-    };
-    me.container = function(val) {
-      if (arguments.length === 0) {
-        return _container;
-      } else {
-        _container = val;
-        _selectables = _container.selectAll('.wk-chart-selectable');
-        return me;
-      }
-    };
-    me.data = function(val) {
-      if (arguments.length === 0) {
-        return _data;
-      } else {
-        _data = val;
-        return me;
-      }
-    };
-    me.brushGroup = function(val) {
-      if (arguments.length === 0) {
-        return _brushGroup;
-      } else {
-        _brushGroup = val;
-        selectionSharing.createGroup(_brushGroup);
-        return me;
-      }
-    };
-    me.tooltip = function(val) {
-      if (arguments.length === 0) {
-        return _tooltip;
-      } else {
-        _tooltip = val;
-        return me;
-      }
-    };
-    me.on = function(name, callback) {
-      return _brushEvents.on(name, callback);
-    };
-    me.extent = function() {
-      return _boundsIdx;
-    };
-    me.events = function() {
-      return _brushEvents;
-    };
-    me.empty = function() {
-      return _boundsIdx === void 0;
-    };
-    return me;
-  };
-  return behaviorBrush;
-});
-
-angular.module('wk.chart').factory('behaviorSelect', function($log) {
-  var select, selectId;
-  selectId = 0;
-  select = function() {
-    var clicked, me, _active, _container, _id, _selectionEvents;
-    _id = "select" + (selectId++);
-    _container = void 0;
-    _active = false;
-    _selectionEvents = d3.dispatch('selected');
-    clicked = function() {
-      var allSelected, isSelected, obj;
-      if (!_active) {
-        return;
-      }
-      obj = d3.select(this);
-      if (!_active) {
-        return;
-      }
-      if (obj.classed('wk-chart-selectable')) {
-        isSelected = obj.classed('wk-chart-selected');
-        obj.classed('wk-chart-selected', !isSelected);
-        allSelected = _container.selectAll('.wk-chart-selected').data().map(function(d) {
-          if (d.data) {
-            return d.data;
-          } else {
-            return d;
-          }
-        });
-        return _selectionEvents.selected(allSelected);
-      }
-    };
-    me = function(sel) {
-      if (arguments.length === 0) {
-        return me;
-      } else {
-        sel.on('click', clicked);
-        return me;
-      }
-    };
-    me.id = function() {
-      return _id;
-    };
-    me.active = function(val) {
-      if (arguments.length === 0) {
-        return _active;
-      } else {
-        _active = val;
-        return me;
-      }
-    };
-    me.container = function(val) {
-      if (arguments.length === 0) {
-        return _container;
-      } else {
-        _container = val;
-        return me;
-      }
-    };
-    me.events = function() {
-      return _selectionEvents;
-    };
-    me.on = function(name, callback) {
-      _selectionEvents.on(name, callback);
-      return me;
-    };
-    return me;
-  };
-  return select;
-});
-
-angular.module('wk.chart').factory('behaviorTooltip', function($log, $document, $rootScope, $compile, $templateCache, wkChartTemplates) {
-  var behaviorTooltip;
-  behaviorTooltip = function() {
-    var body, bodyRect, compileTemplate, createClosure, forwardToBrush, me, positionBox, positionInitial, tooltipEnter, tooltipLeave, tooltipMove, _active, _area, _areaSelection, _chart, _compiledTempl, _container, _data, _hide, _markerG, _markerLine, _markerScale, _path, _scales, _showMarkerLine, _templ, _templScope, _tooltipDispatch;
-    _active = false;
-    _path = '';
-    _hide = false;
-    _showMarkerLine = void 0;
-    _markerG = void 0;
-    _markerLine = void 0;
-    _areaSelection = void 0;
-    _chart = void 0;
-    _area = void 0;
-    _container = void 0;
-    _scales = void 0;
-    _markerScale = void 0;
-    _data = void 0;
-    _tooltipDispatch = d3.dispatch('enter', 'moveData', 'moveMarker', 'leave');
-    _templ = wkChartTemplates.tooltipTemplate();
-    _templScope = void 0;
-    _compiledTempl = void 0;
-    body = $document.find('body');
-    bodyRect = body[0].getBoundingClientRect();
-    me = function() {};
-    positionBox = function() {
-      var clientX, clientY, rect;
-      rect = _compiledTempl[0].getBoundingClientRect();
-      clientX = bodyRect.right - 20 > d3.event.clientX + rect.width + 10 ? d3.event.clientX + 10 : d3.event.clientX - rect.width - 10;
-      clientY = bodyRect.bottom - 20 > d3.event.clientY + rect.height + 10 ? d3.event.clientY + 10 : d3.event.clientY - rect.height - 10;
-      _templScope.position = {
-        position: 'absolute',
-        left: clientX + 'px',
-        top: clientY + 'px',
-        'z-index': 1500,
-        opacity: 1
-      };
-      return _templScope.$apply();
-    };
-    positionInitial = function() {
-      _templScope.position = {
-        position: 'absolute',
-        left: 0 + 'px',
-        top: 0 + 'px',
-        'z-index': 1500,
-        opacity: 0
-      };
-      _templScope.$apply();
-      return _.throttle(positionBox, 200);
-    };
-    tooltipEnter = function() {
-      var value, _areaBox, _pos;
-      if (!_active || _hide) {
-        return;
-      }
-      body.append(_compiledTempl);
-      _templScope.layers = [];
-      if (_showMarkerLine) {
-        _pos = d3.mouse(this);
-        value = _markerScale.invert(_markerScale.isHorizontal() ? _pos[0] : _pos[1]);
-        _templScope.ttData = me.data()[value];
-      } else {
-        value = d3.select(this).datum();
-        _templScope.ttData = value.data ? value.data : value;
-      }
-      _tooltipDispatch.enter.apply(_templScope, [value]);
-      positionInitial();
-      if (_showMarkerLine) {
-        _areaBox = _areaSelection.select('.wk-chart-background').node().getBBox();
-        _pos = d3.mouse(_area);
-        _markerG = _container.append('g').attr('class', 'wk-chart-tooltip-marker');
-        _markerLine = _markerG.append('line');
-        if (_markerScale.isHorizontal()) {
-          _markerLine.attr({
-            "class": 'wk-chart-marker-line',
-            x0: 0,
-            x1: 0,
-            y0: 0,
-            y1: _areaBox.height
-          });
-        } else {
-          _markerLine.attr({
-            "class": 'wk-chart-marker-line',
-            x0: 0,
-            x1: _areaBox.width,
-            y0: 0,
-            y1: 0
-          });
-        }
-        _markerLine.style({
-          stroke: 'darkgrey',
-          'pointer-events': 'none'
-        });
-        return _tooltipDispatch.moveMarker.apply(_markerG, [value]);
-      }
-    };
-    tooltipMove = function() {
-      var dataIdx, _pos;
-      if (!_active || _hide) {
-        return;
-      }
-      _pos = d3.mouse(_area);
-      positionBox();
-      if (_showMarkerLine) {
-        dataIdx = _markerScale.invert(_markerScale.isHorizontal() ? _pos[0] : _pos[1]);
-        _tooltipDispatch.moveMarker.apply(_markerG, [dataIdx]);
-        _templScope.layers = [];
-        _templScope.ttData = me.data()[dataIdx];
-        _tooltipDispatch.moveData.apply(_templScope, [dataIdx]);
-      }
-      return _templScope.$apply();
-    };
-    tooltipLeave = function() {
-      if (_markerG) {
-        _markerG.remove();
-      }
-      _markerG = void 0;
-      return _compiledTempl.remove();
-    };
-    forwardToBrush = function(e) {
-      var brush_elm, new_click_event;
-      brush_elm = d3.select(_container.node().parentElement).select(".wk-chart-overlay").node();
-      if (d3.event.target !== brush_elm) {
-        new_click_event = new Event('mousedown');
-        new_click_event.pageX = d3.event.pageX;
-        new_click_event.clientX = d3.event.clientX;
-        new_click_event.pageY = d3.event.pageY;
-        new_click_event.clientY = d3.event.clientY;
-        return brush_elm.dispatchEvent(new_click_event);
-      }
-    };
-    me.hide = function(val) {
-      if (arguments.length === 0) {
-        return _hide;
-      } else {
-        _hide = val;
-        if (_markerG) {
-          _markerG.style('visibility', _hide ? 'hidden' : 'visible');
-        }
-        _templScope.ttShow = !_hide;
-        _templScope.$apply();
-        return me;
-      }
-    };
-    me.chart = function(chart) {
-      if (arguments.length === 0) {
-        return _chart;
-      } else {
-        _chart = chart;
-        return me;
-      }
-    };
-    me.active = function(val) {
-      if (arguments.length === 0) {
-        return _active;
-      } else {
-        _active = val;
-        return me;
-      }
-    };
-    me.template = function(path) {
-      var _customTempl;
-      if (arguments.length === 0) {
-        return _path;
-      } else {
-        _path = path;
-        if (_path.length > 0) {
-          _customTempl = $templateCache.get(_path);
-          _templ = "<div class=\"wk-chart-tooltip\" ng-style=\"position\">" + _customTempl + "</div>";
-        }
-        return me;
-      }
-    };
-    me.area = function(val) {
-      if (arguments.length === 0) {
-        return _areaSelection;
-      } else {
-        _areaSelection = val;
-        _area = _areaSelection.node();
-        if (_showMarkerLine) {
-          me.tooltip(_areaSelection);
-        }
-        return me;
-      }
-    };
-    me.container = function(val) {
-      if (arguments.length === 0) {
-        return _container;
-      } else {
-        _container = val;
-        return me;
-      }
-    };
-    me.markerScale = function(val) {
-      if (arguments.length === 0) {
-        return _markerScale;
-      } else {
-        if (val) {
-          _showMarkerLine = true;
-          _markerScale = val;
-        } else {
-          _showMarkerLine = false;
-        }
-        return me;
-      }
-    };
-    me.data = function(val) {
-      if (arguments.length === 0) {
-        return _data;
-      } else {
-        _data = val;
-        return me;
-      }
-    };
-    me.on = function(name, callback) {
-      return _tooltipDispatch.on(name, callback);
-    };
-    createClosure = function(scaleFn) {
-      return function() {
-        if (_templScope.ttData) {
-          return scaleFn(_templScope.ttData);
-        }
-      };
-    };
-    compileTemplate = function(template) {
-      var name, scale, _ref;
-      if (!_templScope) {
-        _templScope = _chart.scope().$new(true);
-        _templScope.properties = {};
-        _templScope.map = {};
-        _templScope.scale = {};
-        _templScope.label = {};
-        _templScope.value = {};
-        _ref = _chart.allScales().allKinds();
-        for (name in _ref) {
-          scale = _ref[name];
-          _templScope.map[name] = createClosure(scale.map);
-          _templScope.scale[name] = scale.scale();
-          _templScope.properties[name] = createClosure(scale.layerKeys);
-          _templScope.label[name] = scale.axisLabel();
-          _templScope.value[name] = createClosure(scale.value);
-        }
-      }
-      if (!_compiledTempl) {
-        return _compiledTempl = $compile(_templ)(_templScope);
-      }
-    };
-    me.tooltip = function(s) {
-      if (arguments.length === 0) {
-        return me;
-      } else {
-        compileTemplate(_templ);
-        s.on('mouseenter.tooltip', tooltipEnter).on('mousemove.tooltip', tooltipMove).on('mouseleave.tooltip', tooltipLeave);
-        if (!s.empty() && !s.classed('wk-chart-overlay')) {
-          return s.on('mousedown.tooltip', forwardToBrush);
-        }
-      }
-    };
-    return me;
-  };
-  return behaviorTooltip;
-});
-
-angular.module('wk.chart').factory('behavior', function($log, $window, behaviorTooltip, behaviorBrush, behaviorSelect) {
-  var behavior;
-  behavior = function() {
-    var area, chart, container, _brush, _selection, _tooltip;
-    _tooltip = behaviorTooltip();
-    _brush = behaviorBrush();
-    _selection = behaviorSelect();
-    _brush.tooltip(_tooltip);
-    area = function(area) {
-      _brush.area(area);
-      return _tooltip.area(area);
-    };
-    container = function(container) {
-      _brush.container(container);
-      _selection.container(container);
-      return _tooltip.container(container);
-    };
-    chart = function(chart) {
-      _brush.chart(chart);
-      return _tooltip.chart(chart);
-    };
-    return {
-      tooltip: _tooltip,
-      brush: _brush,
-      selected: _selection,
-      overlay: area,
-      container: container,
-      chart: chart
-    };
-  };
-  return behavior;
-});
-
-angular.module('wk.chart').factory('chart', function($log, scaleList, container, behavior, d3Animation) {
-  var chart, chartCntr;
-  chartCntr = 0;
-  chart = function() {
-    var debounced, lifecycleFull, me, _allScales, _animationDuration, _behavior, _brush, _container, _data, _id, _layouts, _lifeCycle, _ownedScales, _scope, _showTooltip, _subTitle, _title, _toolTipTemplate;
-    _id = "chart" + (chartCntr++);
-    me = function() {};
-    _layouts = [];
-    _container = void 0;
-    _allScales = void 0;
-    _ownedScales = void 0;
-    _data = void 0;
-    _showTooltip = false;
-    _scope = void 0;
-    _toolTipTemplate = '';
-    _title = void 0;
-    _subTitle = void 0;
-    _behavior = behavior();
-    _animationDuration = d3Animation.duration;
-    _lifeCycle = d3.dispatch('configure', 'resize', 'prepareData', 'scaleDomains', 'sizeContainer', 'drawAxis', 'drawChart', 'newData', 'update', 'updateAttrs', 'scopeApply');
-    _brush = d3.dispatch('draw', 'change');
-    me.id = function(id) {
-      return _id;
-    };
-    me.scope = function(scope) {
-      if (arguments.length === 0) {
-        return _scope;
-      } else {
-        _scope = scope;
-        return me;
-      }
-    };
-    me.showTooltip = function(trueFalse) {
-      if (arguments.length === 0) {
-        return _showTooltip;
-      } else {
-        _showTooltip = trueFalse;
-        _behavior.tooltip.active(_showTooltip);
-        return me;
-      }
-    };
-    me.toolTipTemplate = function(path) {
-      if (arguments.length === 0) {
-        return _toolTipTemplate;
-      } else {
-        _toolTipTemplate = path;
-        _behavior.tooltip.template(path);
-        return me;
-      }
-    };
-    me.title = function(val) {
-      if (arguments.length === 0) {
-        return _title;
-      } else {
-        _title = val;
-        return me;
-      }
-    };
-    me.subTitle = function(val) {
-      if (arguments.length === 0) {
-        return _subTitle;
-      } else {
-        _subTitle = val;
-        return me;
-      }
-    };
-    me.addLayout = function(layout) {
-      if (arguments.length === 0) {
-        return _layouts;
-      } else {
-        _layouts.push(layout);
-        return me;
-      }
-    };
-    me.addScale = function(scale, layout) {
-      _allScales.add(scale);
-      if (layout) {
-        layout.scales().add(scale);
-      } else {
-        _ownedScales.add(scale);
-      }
-      return me;
-    };
-    me.animationDuration = function(val) {
-      if (arguments.length === 0) {
-        return _animationDuration;
-      } else {
-        _animationDuration = val;
-        return me;
-      }
-    };
-    me.lifeCycle = function(val) {
-      return _lifeCycle;
-    };
-    me.layouts = function() {
-      return _layouts;
-    };
-    me.scales = function() {
-      return _ownedScales;
-    };
-    me.allScales = function() {
-      return _allScales;
-    };
-    me.hasScale = function(scale) {
-      return !!_allScales.has(scale);
-    };
-    me.container = function() {
-      return _container;
-    };
-    me.brush = function() {
-      return _brush;
-    };
-    me.getData = function() {
-      return _data;
-    };
-    me.behavior = function() {
-      return _behavior;
-    };
-    lifecycleFull = function(data, noAnimation) {
-      if (data) {
-        $log.log('executing full life cycle');
-        _data = data;
-        _scope.filteredData = data;
-        _scope.scales = _allScales;
-        _lifeCycle.prepareData(data, noAnimation);
-        _lifeCycle.scaleDomains(data, noAnimation);
-        _lifeCycle.sizeContainer(data, noAnimation);
-        _lifeCycle.drawAxis(noAnimation);
-        _lifeCycle.drawChart(data, noAnimation);
-        return _lifeCycle.scopeApply();
-      }
-    };
-    debounced = _.debounce(lifecycleFull, 100);
-    me.execLifeCycleFull = debounced;
-    me.resizeLifeCycle = function(noAnimation) {
-      if (_data) {
-        $log.log('executing resize life cycle');
-        _lifeCycle.sizeContainer(_data, noAnimation);
-        _lifeCycle.drawAxis(noAnimation);
-        _lifeCycle.drawChart(_data, noAnimation);
-        return _lifeCycle.scopeApply();
-      }
-    };
-    me.newDataLifeCycle = function(data, noAnimation) {
-      if (data) {
-        $log.log('executing new data life cycle');
-        _data = data;
-        _scope.filteredData = data;
-        _lifeCycle.prepareData(data, noAnimation);
-        _lifeCycle.scaleDomains(data, noAnimation);
-        _lifeCycle.drawAxis(noAnimation);
-        return _lifeCycle.drawChart(data, noAnimation);
-      }
-    };
-    me.attributeChange = function(noAnimation) {
-      if (_data) {
-        $log.log('executing attribute change life cycle');
-        _lifeCycle.sizeContainer(_data, noAnimation);
-        _lifeCycle.drawAxis(noAnimation);
-        return _lifeCycle.drawChart(_data, noAnimation);
-      }
-    };
-    me.brushExtentChanged = function() {
-      if (_data) {
-        _lifeCycle.drawAxis(true);
-        return _lifeCycle.drawChart(_data, true);
-      }
-    };
-    me.lifeCycle().on('newData.chart', me.execLifeCycleFull);
-    me.lifeCycle().on('resize.chart', me.resizeLifeCycle);
-    me.lifeCycle().on('update.chart', function(noAnimation) {
-      return me.execLifeCycleFull(_data, noAnimation);
-    });
-    me.lifeCycle().on('updateAttrs', me.attributeChange);
-    _behavior.chart(me);
-    _container = container().chart(me);
-    _allScales = scaleList();
-    _ownedScales = scaleList();
-    return me;
-  };
-  return chart;
-});
-
-angular.module('wk.chart').factory('container', function($log, $window, wkChartMargins, scaleList, axisConfig, d3Animation, behavior) {
-  var container, containerCnt;
-  containerCnt = 0;
-  container = function() {
-    var drawAndPositionText, drawAxis, drawGrid, drawTitleArea, getAxisRect, me, measureText, _behavior, _chart, _chartArea, _container, _containerId, _data, _duration, _element, _elementSelection, _genChartFrame, _innerHeight, _innerWidth, _layouts, _legends, _margin, _overlay, _removeAxis, _removeLabel, _spacedContainer, _svg, _titleHeight;
-    me = function() {};
-    _containerId = 'cntnr' + containerCnt++;
-    _chart = void 0;
-    _element = void 0;
-    _elementSelection = void 0;
-    _layouts = [];
-    _legends = [];
-    _svg = void 0;
-    _container = void 0;
-    _spacedContainer = void 0;
-    _chartArea = void 0;
-    _chartArea = void 0;
-    _margin = angular.copy(wkChartMargins["default"]);
-    _innerWidth = 0;
-    _innerHeight = 0;
-    _titleHeight = 0;
-    _data = void 0;
-    _overlay = void 0;
-    _behavior = void 0;
-    _duration = 0;
-    me.id = function() {
-      return _containerId;
-    };
-    me.chart = function(chart) {
-      if (arguments.length === 0) {
-        return _chart;
-      } else {
-        _chart = chart;
-        _chart.lifeCycle().on("sizeContainer." + (me.id()), me.drawChartFrame);
-        return me;
-      }
-    };
-    me.element = function(elem) {
-      var resizeTarget, _resizeHandler;
-      if (arguments.length === 0) {
-        return _element;
-      } else {
-        _resizeHandler = function() {
-          return me.chart().lifeCycle().resize(true);
-        };
-        _element = elem;
-        _elementSelection = d3.select(_element);
-        if (_elementSelection.empty()) {
-          $log.error("Error: Element " + _element + " does not exist");
-        } else {
-          _genChartFrame();
-          resizeTarget = _elementSelection.select('.wk-chart').node();
-          new ResizeSensor(resizeTarget, _resizeHandler);
-        }
-        return me;
-      }
-    };
-    me.addLayout = function(layout) {
-      _layouts.push(layout);
-      return me;
-    };
-    me.height = function() {
-      return _innerHeight;
-    };
-    me.width = function() {
-      return _innerWidth;
-    };
-    me.margins = function() {
-      return _margin;
-    };
-    me.getChartArea = function() {
-      return _chartArea;
-    };
-    me.getOverlay = function() {
-      return _overlay;
-    };
-    me.getContainer = function() {
-      return _spacedContainer;
-    };
-    drawAndPositionText = function(container, text, selector, fontSize, offset) {
-      var elem;
-      elem = container.select('.' + selector);
-      if (elem.empty()) {
-        elem = container.append('text').attr({
-          "class": selector,
-          'text-anchor': 'middle',
-          y: offset ? offset : 0
-        }).style('font-size', fontSize);
-      }
-      elem.text(text);
-      return elem.node().getBBox().height;
-    };
-    drawTitleArea = function(title, subTitle) {
-      var area, titleAreaHeight;
-      titleAreaHeight = 0;
-      area = _container.select('.wk-chart-title-area');
-      if (area.empty()) {
-        area = _container.append('g').attr('class', 'wk-chart-title-area wk-center-hor');
-      }
-      if (title) {
-        _titleHeight = drawAndPositionText(area, title, 'wk-chart-title', '2em');
-      }
-      if (subTitle) {
-        drawAndPositionText(area, subTitle, 'wk-chart-subtitle', '1.8em', _titleHeight);
-      }
-      return area.node().getBBox().height;
-    };
-    measureText = function(textList, container, textClasses) {
-      var bounds, measureContainer, t, _i, _len;
-      measureContainer = container.append('g');
-      for (_i = 0, _len = textList.length; _i < _len; _i++) {
-        t = textList[_i];
-        measureContainer.append('text').attr({
-          'class': textClasses
-        }).text(t);
-      }
-      bounds = measureContainer.node().getBBox();
-      measureContainer.remove();
-      return bounds;
-    };
-    getAxisRect = function(dim) {
-      var axis, box;
-      axis = _container.append('g');
-      dim.range([0, 500]);
-      axis.call(dim.axis());
-      if (dim.rotateTickLabels()) {
-        axis.selectAll("text").attr({
-          dy: '0.35em'
-        }).attr('transform', "rotate(" + (dim.rotateTickLabels()) + ", 0, " + (dim.axisOrient() === 'bottom' ? 10 : -10) + ")").style('text-anchor', dim.axisOrient() === 'bottom' ? 'end' : 'start');
-      }
-      box = axis.node().getBBox();
-      axis.remove();
-      return box;
-    };
-    drawAxis = function(dim) {
-      var axis;
-      axis = _container.select(".wk-chart-axis.wk-chart-" + (dim.axisOrient()));
-      if (axis.empty()) {
-        axis = _container.append('g').attr('class', 'wk-chart-axis wk-chart-' + dim.axisOrient());
-      }
-      axis.transition().duration(_duration).call(dim.axis());
-      if (dim.rotateTickLabels()) {
-        return axis.selectAll(".wk-chart-" + (dim.axisOrient()) + ".wk-chart-axis text").attr({
-          dy: '0.35em'
-        }).attr('transform', "rotate(" + (dim.rotateTickLabels()) + ", 0, " + (dim.axisOrient() === 'bottom' ? 10 : -10) + ")").style('text-anchor', dim.axisOrient() === 'bottom' ? 'end' : 'start');
-      } else {
-        return axis.selectAll(".wk-chart-" + (dim.axisOrient()) + ".wk-chart-axis text").attr('transform', null);
-      }
-    };
-    _removeAxis = function(orient) {
-      return _container.select(".wk-chart-axis.wk-chart-" + orient).remove();
-    };
-    _removeLabel = function(orient) {
-      return _container.select(".wk-chart-label.wk-chart-" + orient).remove();
-    };
-    drawGrid = function(s, noAnimation) {
-      var duration, gridLines, kind, offset, ticks;
-      duration = noAnimation ? 0 : _duration;
-      kind = s.kind();
-      ticks = s.isOrdinal() ? s.scale().range() : s.scale().ticks();
-      offset = s.isOrdinal() ? s.scale().rangeBand() / 2 : 0;
-      gridLines = _container.selectAll(".wk-chart-grid.wk-chart-" + kind).data(ticks, function(d) {
-        return d;
-      });
-      gridLines.enter().append('line').attr('class', "wk-chart-grid wk-chart-" + kind).style('pointer-events', 'none').style('opacity', 0);
-      if (kind === 'y') {
-        gridLines.transition().duration(duration).attr({
-          x1: 0,
-          x2: _innerWidth,
-          y1: function(d) {
-            if (s.isOrdinal()) {
-              return d + offset;
-            } else {
-              return s.scale()(d);
-            }
-          },
-          y2: function(d) {
-            if (s.isOrdinal()) {
-              return d + offset;
-            } else {
-              return s.scale()(d);
-            }
-          }
-        }).style('opacity', 1);
-      } else {
-        gridLines.transition().duration(duration).attr({
-          y1: 0,
-          y2: _innerHeight,
-          x1: function(d) {
-            if (s.isOrdinal()) {
-              return d + offset;
-            } else {
-              return s.scale()(d);
-            }
-          },
-          x2: function(d) {
-            if (s.isOrdinal()) {
-              return d + offset;
-            } else {
-              return s.scale()(d);
-            }
-          }
-        }).style('opacity', 1);
-      }
-      return gridLines.exit().transition().duration(duration).style('opacity', 0).remove();
-    };
-    _genChartFrame = function() {
-      _svg = _elementSelection.append('div').attr('class', 'wk-chart').append('svg').attr('class', 'wk-chart');
-      _svg.append('defs').append('clipPath').attr('id', "wk-chart-clip-" + _containerId).append('rect');
-      _container = _svg.append('g').attr('class', 'wk-chart-container');
-      _overlay = _container.append('g').attr('class', 'wk-chart-overlay').style('pointer-events', 'all');
-      _overlay.append('rect').style('visibility', 'hidden').attr('class', 'wk-chart-background').datum({
-        name: 'background'
-      });
-      return _chartArea = _container.append('g').attr('class', 'wk-chart-area');
-    };
-    me.drawChartFrame = function(data, notAnimated) {
-      var axis, axisRect, bounds, dataLabelHeight, dataLabelRect, dataLabelWidth, k, l, label, labelHeight, leftMargin, s, titleAreaHeight, topMargin, _frameHeight, _frameWidth, _height, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2, _width;
-      bounds = _elementSelection.node().getBoundingClientRect();
-      _duration = notAnimated ? 0 : me.chart().animationDuration();
-      _height = bounds.height;
-      _width = bounds.width;
-      titleAreaHeight = drawTitleArea(_chart.title(), _chart.subTitle());
-      axisRect = {
-        top: {
-          height: 0,
-          width: 0
-        },
-        bottom: {
-          height: 0,
-          width: 0
-        },
-        left: {
-          height: 0,
-          width: 0
-        },
-        right: {
-          height: 0,
-          width: 0
-        }
-      };
-      labelHeight = {
-        top: 0,
-        bottom: 0,
-        left: 0,
-        right: 0
-      };
-      dataLabelRect = {
-        width: 0,
-        height: 0
-      };
-      for (_i = 0, _len = _layouts.length; _i < _len; _i++) {
-        l = _layouts[_i];
-        dataLabelHeight = dataLabelWidth = 0;
-        _ref = l.scales().allKinds();
-        for (k in _ref) {
-          s = _ref[k];
-          if (s.showAxis()) {
-            s.axis().scale(s.scale()).orient(s.axisOrient());
-            axis = _container.select(".wk-chart-axis.wk-chart-" + (s.axisOrient()));
-            axisRect[s.axisOrient()] = getAxisRect(s);
-            label = _container.select(".wk-chart-label.wk-chart-" + (s.axisOrient()));
-            if (s.showLabel()) {
-              if (label.empty()) {
-                label = _container.append('g').attr('class', 'wk-chart-label wk-chart-' + s.axisOrient());
-              }
-              labelHeight[s.axisOrient()] = drawAndPositionText(label, s.axisLabel(), 'wk-chart-label-text', '1.5em');
-            } else {
-              label.remove();
-            }
-          }
-          if (s.axisOrientOld() && s.axisOrientOld() !== s.axisOrient()) {
-            _removeAxis(s.axisOrientOld());
-            _removeLabel(s.axisOrientOld());
-          }
-          if (l.showDataLabels() === k) {
-            if (s.isHorizontal()) {
-              dataLabelWidth = wkChartMargins.dataLabelPadding.hor + measureText(s.formattedValue(data), _container, 'wk-chart-data-label').width;
-            } else {
-              dataLabelHeight = wkChartMargins.dataLabelPadding.vert + measureText(s.formattedValue(data), _container, 'wk-chart-data-label').height;
-            }
-          }
-        }
-      }
-      _frameHeight = titleAreaHeight + axisRect.top.height + labelHeight.top + axisRect.bottom.height + labelHeight.bottom + _margin.top + _margin.bottom;
-      _frameWidth = axisRect.right.width + labelHeight.right + axisRect.left.width + labelHeight.left + _margin.left + _margin.right;
-      if (_frameHeight < _height) {
-        _innerHeight = _height - _frameHeight;
-      } else {
-        _innerHeight = 0;
-      }
-      if (_frameWidth < _width) {
-        _innerWidth = _width - _frameWidth;
-      } else {
-        _innerWidth = 0;
-      }
-      for (_j = 0, _len1 = _layouts.length; _j < _len1; _j++) {
-        l = _layouts[_j];
-        _ref1 = l.scales().allKinds();
-        for (k in _ref1) {
-          s = _ref1[k];
-          if (k === 'x' || k === 'rangeX') {
-            if (l.showDataLabels() === 'x') {
-              s.range([0, _innerWidth - dataLabelWidth]);
-            } else {
-              s.range([0, _innerWidth]);
-            }
-          } else if (k === 'y' || k === 'rangeY') {
-            if (l.showDataLabels() === 'y') {
-              s.range([_innerHeight, dataLabelHeight]);
-            } else {
-              s.range([_innerHeight, 0]);
-            }
-          }
-          if (s.showAxis()) {
-            drawAxis(s);
-          }
-        }
-      }
-      leftMargin = axisRect.left.width + labelHeight.left + _margin.left;
-      topMargin = titleAreaHeight + axisRect.top.height + labelHeight.top + _margin.top;
-      _spacedContainer = _container.attr('transform', "translate(" + leftMargin + ", " + topMargin + ")");
-      _svg.select("#wk-chart-clip-" + _containerId + " rect").attr('width', _innerWidth).attr('height', _innerHeight);
-      _spacedContainer.select('.wk-chart-overlay>.wk-chart-background').attr('width', _innerWidth).attr('height', _innerHeight);
-      _spacedContainer.select('.wk-chart-area').style('clip-path', "url(#wk-chart-clip-" + _containerId + ")");
-      _spacedContainer.select('.wk-chart-overlay').style('clip-path', "url(#wk-chart-clip-" + _containerId + ")");
-      _container.selectAll('.wk-chart-axis.wk-chart-right').attr('transform', "translate(" + _innerWidth + ", 0)");
-      _container.selectAll('.wk-chart-axis.wk-chart-bottom').attr('transform', "translate(0, " + _innerHeight + ")");
-      _container.select('.wk-chart-label.wk-chart-left').attr('transform', "translate(" + (-axisRect.left.width - labelHeight.left / 2) + ", " + (_innerHeight / 2) + ") rotate(-90)");
-      _container.select('.wk-chart-label.wk-chart-right').attr('transform', "translate(" + (_innerWidth + axisRect.right.width + labelHeight.right / 2) + ", " + (_innerHeight / 2) + ") rotate(90)");
-      _container.select('.wk-chart-label.wk-chart-top').attr('transform', "translate(" + (_innerWidth / 2) + ", " + (-axisRect.top.height - labelHeight.top / 2) + ")");
-      _container.select('.wk-chart-label.wk-chart-bottom').attr('transform', "translate(" + (_innerWidth / 2) + ", " + (_innerHeight + axisRect.bottom.height + labelHeight.bottom) + ")");
-      _container.selectAll('.wk-chart-title-area').attr('transform', "translate(" + (_innerWidth / 2) + ", " + (-topMargin + _titleHeight) + ")");
-      for (_k = 0, _len2 = _layouts.length; _k < _len2; _k++) {
-        l = _layouts[_k];
-        _ref2 = l.scales().allKinds();
-        for (k in _ref2) {
-          s = _ref2[k];
-          if (s.showAxis() && s.showGrid()) {
-            drawGrid(s);
-          }
-        }
-      }
-      _chart.behavior().overlay(_overlay);
-      return _chart.behavior().container(_chartArea);
-    };
-    me.drawSingleAxis = function(scale) {
-      var a;
-      if (scale.showAxis()) {
-        a = _spacedContainer.select(".wk-chart-axis.wk-chart-" + (scale.axis().orient()));
-        a.call(scale.axis());
-        if (scale.showGrid()) {
-          drawGrid(scale, true);
-        }
-      }
-      return me;
-    };
-    return me;
-  };
-  return container;
-});
-
-angular.module('wk.chart').factory('layout', function($log, scale, scaleList, timing) {
-  var layout, layoutCntr;
-  layoutCntr = 0;
-  layout = function() {
-    var buildArgs, getDrawArea, me, _chart, _container, _data, _id, _layoutLifeCycle, _scaleList, _showLabels;
-    _id = "layout" + (layoutCntr++);
-    _container = void 0;
-    _data = void 0;
-    _chart = void 0;
-    _scaleList = scaleList();
-    _showLabels = false;
-    _layoutLifeCycle = d3.dispatch('configure', 'drawChart', 'prepareData', 'brush', 'redraw', 'drawAxis', 'update', 'updateAttrs', 'brushDraw');
-    me = function() {};
-    me.id = function(id) {
-      return _id;
-    };
-    me.chart = function(chart) {
-      if (arguments.length === 0) {
-        return _chart;
-      } else {
-        _chart = chart;
-        _scaleList.parentScales(chart.scales());
-        _chart.lifeCycle().on("configure." + (me.id()), function() {
-          return _layoutLifeCycle.configure.apply(me.scales());
-        });
-        _chart.lifeCycle().on("drawChart." + (me.id()), me.draw);
-        _chart.lifeCycle().on("prepareData." + (me.id()), me.prepareData);
-        return me;
-      }
-    };
-    me.scales = function() {
-      return _scaleList;
-    };
-    me.scaleProperties = function() {
-      return me.scales().getScaleProperties();
-    };
-    me.container = function(obj) {
-      if (arguments.length === 0) {
-        return _container;
-      } else {
-        _container = obj;
-        return me;
-      }
-    };
-    me.showDataLabels = function(trueFalse) {
-      if (arguments.length === 0) {
-        return _showLabels;
-      } else {
-        _showLabels = trueFalse;
-        return me;
-      }
-    };
-    me.behavior = function() {
-      return me.chart().behavior();
-    };
-    me.prepareData = function(data) {
-      var args, kind, _i, _len, _ref;
-      args = [];
-      _ref = ['x', 'y', 'color', 'size', 'shape', 'rangeX', 'rangeY'];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        kind = _ref[_i];
-        args.push(_scaleList.getKind(kind));
-      }
-      return _layoutLifeCycle.prepareData.apply(data, args);
-    };
-    me.lifeCycle = function() {
-      return _layoutLifeCycle;
-    };
-    getDrawArea = function() {
-      var container, drawArea;
-      container = _container.getChartArea();
-      drawArea = container.select("." + (me.id()));
-      if (drawArea.empty()) {
-        drawArea = container.append('g').attr('class', function(d) {
-          return me.id();
-        });
-      }
-      return drawArea;
-    };
-    buildArgs = function(data, notAnimated) {
-      var args, kind, options, _i, _len, _ref;
-      options = {
-        height: _container.height(),
-        width: _container.width(),
-        margins: _container.margins(),
-        duration: notAnimated ? 0 : me.chart().animationDuration()
-      };
-      args = [data, options];
-      _ref = ['x', 'y', 'color', 'size', 'shape', 'rangeX', 'rangeY'];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        kind = _ref[_i];
-        args.push(_scaleList.getKind(kind));
-      }
-      return args;
-    };
-    me.draw = function(data, notAnimated) {
-      _data = data;
-      _layoutLifeCycle.drawChart.apply(getDrawArea(), buildArgs(data, notAnimated));
-      _layoutLifeCycle.on('redraw', me.redraw);
-      _layoutLifeCycle.on('update', me.chart().lifeCycle().update);
-      _layoutLifeCycle.on('drawAxis', me.chart().lifeCycle().drawAxis);
-      _layoutLifeCycle.on('updateAttrs', me.chart().lifeCycle().updateAttrs);
-      return _layoutLifeCycle.on('brush', function(axis, notAnimated, idxRange) {
-        _container.drawSingleAxis(axis);
-        return _layoutLifeCycle.brushDraw.apply(getDrawArea(), [axis, idxRange, _container.width(), _container.height()]);
-      });
-    };
-    return me;
-  };
-  return layout;
-});
-
-angular.module('wk.chart').factory('legend', function($log, $compile, $rootScope, $templateCache, wkChartTemplates) {
-  var legend, legendCnt, uniqueValues;
-  legendCnt = 0;
-  uniqueValues = function(arr) {
-    var e, set, _i, _len;
-    set = {};
-    for (_i = 0, _len = arr.length; _i < _len; _i++) {
-      e = arr[_i];
-      set[e] = 0;
-    }
-    return Object.keys(set);
-  };
-  legend = function() {
-    var me, _containerDiv, _data, _id, _layout, _legendDiv, _legendScope, _options, _parsedTemplate, _position, _scale, _show, _showValues, _template, _templatePath, _title;
-    _id = "legend-" + (legendCnt++);
-    _position = 'top-right';
-    _scale = void 0;
-    _templatePath = void 0;
-    _legendScope = $rootScope.$new(true);
-    _template = void 0;
-    _parsedTemplate = void 0;
-    _containerDiv = void 0;
-    _legendDiv = void 0;
-    _title = void 0;
-    _layout = void 0;
-    _data = void 0;
-    _options = void 0;
-    _show = false;
-    _showValues = false;
-    me = {};
-    me.position = function(pos) {
-      if (arguments.length === 0) {
-        return _position;
-      } else {
-        _position = pos;
-        return me;
-      }
-    };
-    me.show = function(val) {
-      if (arguments.length === 0) {
-        return _show;
-      } else {
-        _show = val;
-        return me;
-      }
-    };
-    me.showValues = function(val) {
-      if (arguments.length === 0) {
-        return _showValues;
-      } else {
-        _showValues = val;
-        return me;
-      }
-    };
-    me.div = function(selection) {
-      if (arguments.length === 0) {
-        return _legendDiv;
-      } else {
-        _legendDiv = selection;
-        return me;
-      }
-    };
-    me.layout = function(layout) {
-      if (arguments.length === 0) {
-        return _layout;
-      } else {
-        _layout = layout;
-        return me;
-      }
-    };
-    me.scale = function(scale) {
-      if (arguments.length === 0) {
-        return _scale;
-      } else {
-        _scale = scale;
-        return me;
-      }
-    };
-    me.title = function(title) {
-      if (arguments.length === 0) {
-        return _title;
-      } else {
-        _title = title;
-        return me;
-      }
-    };
-    me.template = function(path) {
-      if (arguments.length === 0) {
-        return _templatePath;
-      } else {
-        _templatePath = path;
-        _template = $templateCache.get(_templatePath);
-        _parsedTemplate = $compile(_template)(_legendScope);
-        return me;
-      }
-    };
-    me.draw = function(data, options) {
-      var chartAreaRect, containerRect, layers, p, s, _i, _len, _ref, _ref1;
-      _data = data;
-      _options = options;
-      _containerDiv = _legendDiv || d3.select(me.scale().parent().container().element()).select('.wk-chart');
-      if (me.show()) {
-        if (_containerDiv.select('.wk-chart-legend').empty()) {
-          angular.element(_containerDiv.node()).append(_parsedTemplate);
-        }
-        if (me.showValues()) {
-          layers = uniqueValues(_scale.value(data));
-        } else {
-          layers = _scale.layerKeys(data);
-        }
-        s = _scale.scale();
-        if ((_ref = me.layout()) != null ? _ref.scales().layerScale() : void 0) {
-          s = me.layout().scales().layerScale().scale();
-        }
-        if (_scale.kind() !== 'shape') {
-          _legendScope.legendRows = layers.map(function(d) {
-            return {
-              value: d,
-              color: {
-                'background-color': s(d)
-              }
-            };
-          });
-        } else {
-          _legendScope.legendRows = layers.map(function(d) {
-            return {
-              value: d,
-              path: d3.svg.symbol().type(s(d)).size(80)()
-            };
-          });
-        }
-        _legendScope.showLegend = true;
-        _legendScope.position = {
-          position: _legendDiv ? 'relative' : 'absolute'
-        };
-        if (!_legendDiv) {
-          containerRect = _containerDiv.node().getBoundingClientRect();
-          chartAreaRect = _containerDiv.select('.wk-chart-overlay rect').node().getBoundingClientRect();
-          _ref1 = _position.split('-');
-          for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-            p = _ref1[_i];
-            _legendScope.position[p] = "" + (Math.abs(containerRect[p] - chartAreaRect[p])) + "px";
-          }
-        }
-        _legendScope.title = _title;
-      } else {
-        _parsedTemplate.remove();
-      }
-      return me;
-    };
-    _parsedTemplate = $compile(wkChartTemplates.legendTemplate())(_legendScope);
-    me.register = function(layout) {
-      layout.lifeCycle().on("drawChart." + _id, me.draw);
-      return me;
-    };
-    me.redraw = function() {
-      if (_data && _options) {
-        me.draw(_data, _options);
-      }
-      return me;
-    };
-    return me;
-  };
-  return legend;
-});
-
-var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
-
-angular.module('wk.chart').factory('scale', function($log, legend, formatDefaults, wkChartScales, wkChartLocale) {
-  var scale;
-  scale = function() {
-    var calcDomain, keys, layerMax, layerMin, layerTotal, me, parsedValue, _axis, _axisLabel, _axisOrient, _axisOrientOld, _calculatedDomain, _chart, _domain, _domainCalc, _exponent, _id, _inputFormatFn, _inputFormatString, _isHorizontal, _isOrdinal, _isVertical, _kind, _layerExclude, _layerProp, _layout, _legend, _lowerProperty, _outputFormatFn, _outputFormatString, _parent, _property, _range, _rangeOuterPadding, _rangePadding, _resetOnNewData, _rotateTickLabels, _scale, _scaleType, _showAxis, _showGrid, _showLabel, _tickFormat, _tickValues, _ticks, _upperProperty;
-    _id = '';
-    _scale = d3.scale.linear();
-    _scaleType = 'linear';
-    _exponent = 1;
-    _isOrdinal = false;
-    _domain = void 0;
-    _domainCalc = void 0;
-    _calculatedDomain = void 0;
-    _resetOnNewData = false;
-    _property = '';
-    _layerProp = '';
-    _layerExclude = [];
-    _lowerProperty = '';
-    _upperProperty = '';
-    _range = void 0;
-    _rangePadding = 0.3;
-    _rangeOuterPadding = 0.3;
-    _inputFormatString = void 0;
-    _inputFormatFn = function(data) {
-      if (isNaN(+data) || _.isDate(data)) {
-        return data;
-      } else {
-        return +data;
-      }
-    };
-    _showAxis = false;
-    _axisOrient = void 0;
-    _axisOrientOld = void 0;
-    _axis = void 0;
-    _ticks = void 0;
-    _tickFormat = void 0;
-    _tickValues = void 0;
-    _rotateTickLabels = void 0;
-    _showLabel = false;
-    _axisLabel = void 0;
-    _showGrid = false;
-    _isHorizontal = false;
-    _isVertical = false;
-    _kind = void 0;
-    _parent = void 0;
-    _chart = void 0;
-    _layout = void 0;
-    _legend = legend();
-    _outputFormatString = void 0;
-    _outputFormatFn = void 0;
-    _tickFormat = wkChartLocale.timeFormat.multi([
-      [
-        ".%L", function(d) {
-          return d.getMilliseconds();
-        }
-      ], [
-        ":%S", function(d) {
-          return d.getSeconds();
-        }
-      ], [
-        "%I:%M", function(d) {
-          return d.getMinutes();
-        }
-      ], [
-        "%I %p", function(d) {
-          return d.getHours();
-        }
-      ], [
-        "%a %d", function(d) {
-          return d.getDay() && d.getDate() !== 1;
-        }
-      ], [
-        "%b %d", function(d) {
-          return d.getDate() !== 1;
-        }
-      ], [
-        "%B", function(d) {
-          return d.getMonth();
-        }
-      ], [
-        "%Y", function() {
-          return true;
-        }
-      ]
-    ]);
-    me = function() {};
-    keys = function(data) {
-      if (_.isArray(data)) {
-        return _.reject(_.keys(data[0]), function(d) {
-          return d === '$$hashKey';
-        });
-      } else {
-        return _.reject(_.keys(data), function(d) {
-          return d === '$$hashKey';
-        });
-      }
-    };
-    layerTotal = function(d, layerKeys) {
-      return layerKeys.reduce(function(prev, next) {
-        return +prev + +me.layerValue(d, next);
-      }, 0);
-    };
-    layerMax = function(data, layerKeys) {
-      return d3.max(data, function(d) {
-        return d3.max(layerKeys, function(k) {
-          return me.layerValue(d, k);
-        });
-      });
-    };
-    layerMin = function(data, layerKeys) {
-      return d3.min(data, function(d) {
-        return d3.min(layerKeys, function(k) {
-          return me.layerValue(d, k);
-        });
-      });
-    };
-    parsedValue = function(v) {
-      if (_inputFormatFn.parse) {
-        return _inputFormatFn.parse(v);
-      } else {
-        return _inputFormatFn(v);
-      }
-    };
-    calcDomain = {
-      extent: function(data) {
-        var layerKeys;
-        layerKeys = me.layerKeys(data);
-        return [layerMin(data, layerKeys), layerMax(data, layerKeys)];
-      },
-      max: function(data) {
-        var layerKeys;
-        layerKeys = me.layerKeys(data);
-        return [0, layerMax(data, layerKeys)];
-      },
-      min: function(data) {
-        var layerKeys;
-        layerKeys = me.layerKeys(data);
-        return [0, layerMin(data, layerKeys)];
-      },
-      totalExtent: function(data) {
-        var layerKeys;
-        if (data[0].hasOwnProperty('total')) {
-          return d3.extent(data.map(function(d) {
-            return d.total;
-          }));
-        } else {
-          layerKeys = me.layerKeys(data);
-          return d3.extent(data.map(function(d) {
-            return layerTotal(d, layerKeys);
-          }));
-        }
-      },
-      total: function(data) {
-        var layerKeys;
-        if (data[0].hasOwnProperty('total')) {
-          return [
-            0, d3.max(data.map(function(d) {
-              return d.total;
-            }))
-          ];
-        } else {
-          layerKeys = me.layerKeys(data);
-          return [
-            0, d3.max(data.map(function(d) {
-              return layerTotal(d, layerKeys);
-            }))
-          ];
-        }
-      },
-      rangeExtent: function(data) {
-        var start, step;
-        if (me.upperProperty()) {
-          return [d3.min(me.lowerValue(data)), d3.max(me.upperValue(data))];
-        } else {
-          if (data.length > 1) {
-            start = me.lowerValue(data[0]);
-            step = me.lowerValue(data[1]) - start;
-            return [me.lowerValue(data[0]), start + step * data.length];
-          }
-        }
-      },
-      rangeMin: function(data) {
-        return [0, d3.min(me.lowerValue(data))];
-      },
-      rangeMax: function(data) {
-        var start, step;
-        if (me.upperProperty()) {
-          return [0, d3.max(me.upperValue(data))];
-        } else {
-          start = me.lowerValue(data[0]);
-          step = me.lowerValue(data[1]) - start;
-          return [0, start + step * data.length];
-        }
-      }
-    };
-    me.id = function() {
-      return _kind + '.' + _parent.id();
-    };
-    me.kind = function(kind) {
-      if (arguments.length === 0) {
-        return _kind;
-      } else {
-        _kind = kind;
-        return me;
-      }
-    };
-    me.parent = function(parent) {
-      if (arguments.length === 0) {
-        return _parent;
-      } else {
-        _parent = parent;
-        return me;
-      }
-    };
-    me.chart = function(val) {
-      if (arguments.length === 0) {
-        return _chart;
-      } else {
-        _chart = val;
-        return me;
-      }
-    };
-    me.layout = function(val) {
-      if (arguments.length === 0) {
-        return _layout;
-      } else {
-        _layout = val;
-        return me;
-      }
-    };
-    me.scale = function() {
-      return _scale;
-    };
-    me.legend = function() {
-      return _legend;
-    };
-    me.isOrdinal = function() {
-      return _isOrdinal;
-    };
-    me.isHorizontal = function(trueFalse) {
-      if (arguments.length === 0) {
-        return _isHorizontal;
-      } else {
-        _isHorizontal = trueFalse;
-        if (trueFalse) {
-          _isVertical = false;
-        }
-        return me;
-      }
-    };
-    me.isVertical = function(trueFalse) {
-      if (arguments.length === 0) {
-        return _isVertical;
-      } else {
-        _isVertical = trueFalse;
-        if (trueFalse) {
-          _isHorizontal = false;
-        }
-        return me;
-      }
-    };
-    me.scaleType = function(type) {
-      if (arguments.length === 0) {
-        return _scaleType;
-      } else {
-        if (d3.scale.hasOwnProperty(type)) {
-          _scale = d3.scale[type]();
-          _scaleType = type;
-          me.format(formatDefaults.number);
-        } else if (type === 'time') {
-          _scale = d3.time.scale();
-          _scaleType = 'time';
-          if (_inputFormatString) {
-            me.dataFormat(_inputFormatString);
-          }
-          me.format(formatDefaults.date);
-        } else if (wkChartScales.hasOwnProperty(type)) {
-          _scaleType = type;
-          _scale = wkChartScales[type]();
-        } else {
-          $log.error('Error: illegal scale type:', type);
-        }
-        _isOrdinal = _scaleType === 'ordinal' || _scaleType === 'category10' || _scaleType === 'category20' || _scaleType === 'category20b' || _scaleType === 'category20c';
-        if (_range) {
-          me.range(_range);
-        }
-        if (_showAxis) {
-          _axis.scale(_scale);
-        }
-        if (_exponent && _scaleType === 'pow') {
-          _scale.exponent(_exponent);
-        }
-        return me;
-      }
-    };
-    me.exponent = function(value) {
-      if (arguments.length === 0) {
-        return _exponent;
-      } else {
-        _exponent = value;
-        if (_scaleType === 'pow') {
-          _scale.exponent(_exponent);
-        }
-        return me;
-      }
-    };
-    me.domain = function(dom) {
-      if (arguments.length === 0) {
-        return _domain;
-      } else {
-        _domain = dom;
-        if (_.isArray(_domain)) {
-          _scale.domain(_domain);
-        }
-        return me;
-      }
-    };
-    me.domainCalc = function(rule) {
-      if (arguments.length === 0) {
-        if (_isOrdinal) {
-          return void 0;
-        } else {
-          return _domainCalc;
-        }
-      } else {
-        if (calcDomain.hasOwnProperty(rule)) {
-          _domainCalc = rule;
-        } else {
-          $log.error('illegal domain calculation rule:', rule, " expected", _.keys(calcDomain));
-        }
-        return me;
-      }
-    };
-    me.getDomain = function(data) {
-      if (arguments.length === 0) {
-        return _scale.domain();
-      } else {
-        if (!_domain && me.domainCalc()) {
-          return _calculatedDomain;
-        } else {
-          if (_domain) {
-            return _domain;
-          } else {
-            return me.value(data);
-          }
-        }
-      }
-    };
-    me.resetOnNewData = function(trueFalse) {
-      if (arguments.length === 0) {
-        return _resetOnNewData;
-      } else {
-        _resetOnNewData = trueFalse;
-        return me;
-      }
-    };
-    me.range = function(range) {
-      var _ref;
-      if (arguments.length === 0) {
-        return _scale.range();
-      } else {
-        _range = range;
-        if (_scaleType === 'ordinal' && ((_ref = me.kind()) === 'x' || _ref === 'y')) {
-          _scale.rangeBands(range, _rangePadding, _rangeOuterPadding);
-        } else if (!(_scaleType === 'category10' || _scaleType === 'category20' || _scaleType === 'category20b' || _scaleType === 'category20c')) {
-          _scale.range(range);
-        }
-        return me;
-      }
-    };
-    me.rangePadding = function(config) {
-      if (arguments.length === 0) {
-        return {
-          padding: _rangePadding,
-          outerPadding: _rangeOuterPadding
-        };
-      } else {
-        _rangePadding = config.padding;
-        _rangeOuterPadding = config.outerPadding;
-        return me;
-      }
-    };
-    me.property = function(name) {
-      if (arguments.length === 0) {
-        return _property;
-      } else {
-        _property = name;
-        return me;
-      }
-    };
-    me.layerProperty = function(name) {
-      if (arguments.length === 0) {
-        return _layerProp;
-      } else {
-        _layerProp = name;
-        return me;
-      }
-    };
-    me.layerExclude = function(excl) {
-      if (arguments.length === 0) {
-        return _layerExclude;
-      } else {
-        _layerExclude = excl;
-        return me;
-      }
-    };
-    me.layerKeys = function(data) {
-      if (_property) {
-        if (_.isArray(_property)) {
-          return _.intersection(_property, keys(data));
-        } else {
-          return [_property];
-        }
-      } else {
-        return _.reject(keys(data), function(d) {
-          return __indexOf.call(_layerExclude, d) >= 0;
-        });
-      }
-    };
-    me.lowerProperty = function(name) {
-      if (arguments.length === 0) {
-        return _lowerProperty;
-      } else {
-        _lowerProperty = name;
-        return me;
-      }
-    };
-    me.upperProperty = function(name) {
-      if (arguments.length === 0) {
-        return _upperProperty;
-      } else {
-        _upperProperty = name;
-        return me;
-      }
-    };
-    me.dataFormat = function(format) {
-      if (arguments.length === 0) {
-        return _inputFormatString;
-      } else {
-        _inputFormatString = format;
-        if (_scaleType === 'time') {
-          _inputFormatFn = wkChartLocale.timeFormat(format);
-        } else {
-          _inputFormatFn = function(d) {
-            return d;
-          };
-        }
-        return me;
-      }
-    };
-    me.value = function(data) {
-      if (_layerProp) {
-        if (_.isArray(data)) {
-          return data.map(function(d) {
-            return parsedValue(d[_property][_layerProp]);
-          });
-        } else {
-          return parsedValue(data[_property][_layerProp]);
-        }
-      } else {
-        if (_.isArray(data)) {
-          return data.map(function(d) {
-            return parsedValue(d[_property]);
-          });
-        } else {
-          return parsedValue(data[_property]);
-        }
-      }
-    };
-    me.layerValue = function(data, layerKey) {
-      if (_layerProp) {
-        return parsedValue(data[layerKey][_layerProp]);
-      } else {
-        return parsedValue(data[layerKey]);
-      }
-    };
-    me.lowerValue = function(data) {
-      if (_.isArray(data)) {
-        return data.map(function(d) {
-          return parsedValue(d[_lowerProperty]);
-        });
-      } else {
-        return parsedValue(data[_lowerProperty]);
-      }
-    };
-    me.upperValue = function(data) {
-      if (_.isArray(data)) {
-        return data.map(function(d) {
-          return parsedValue(d[_upperProperty]);
-        });
-      } else {
-        return parsedValue(data[_upperProperty]);
-      }
-    };
-    me.formattedValue = function(data) {
-      if (_.isArray(data)) {
-        return data.map(function(d) {
-          return me.formatValue(me.value(d));
-        });
-      } else {
-        return me.formatValue(me.value(data));
-      }
-    };
-    me.formatValue = function(val) {
-      if (_outputFormatString && val && (val.getUTCDate || !isNaN(val))) {
-        return _outputFormatFn(val);
-      } else {
-        return val;
-      }
-    };
-    me.map = function(data) {
-      if (Array.isArray(data)) {
-        return data.map(function(d) {
-          return _scale(me.value(data));
-        });
-      } else {
-        return _scale(me.value(data));
-      }
-    };
-    me.invert = function(mappedValue) {
-      var bisect, domain, idx, interval, range, step, val, _data;
-      if (_.has(me.scale(), 'invert')) {
-        _data = me.chart().getData();
-        if (me.kind() === 'rangeX' || me.kind() === 'rangeY') {
-          val = me.scale().invert(mappedValue);
-          if (me.upperProperty()) {
-            bisect = d3.bisector(me.upperValue).left;
-          } else {
-            step = me.lowerValue(_data[1]) - me.lowerValue(_data[0]);
-            bisect = d3.bisector(function(d) {
-              return me.lowerValue(d) + step;
-            }).left;
-          }
-        } else {
-          range = _scale.range();
-          interval = (range[1] - range[0]) / _data.length;
-          val = me.scale().invert(mappedValue - interval / 2);
-          bisect = d3.bisector(me.value).left;
-        }
-        idx = bisect(_data, val);
-        idx = idx < 0 ? 0 : idx >= _data.length ? _data.length - 1 : idx;
-        return idx;
-      }
-      if (_.has(me.scale(), 'invertExtent')) {
-        return me.scale().invertExtent(mappedValue);
-      }
-      if (me.resetOnNewData()) {
-        domain = _scale.domain();
-        range = _scale.range();
-        if (_isVertical) {
-          interval = range[0] - range[1];
-          idx = range.length - Math.floor(mappedValue / interval) - 1;
-          if (idx < 0) {
-            idx = 0;
-          }
-        } else {
-          interval = range[1] - range[0];
-          idx = Math.floor(mappedValue / interval);
-        }
-        return idx;
-      }
-    };
-    me.invertOrdinal = function(mappedValue) {
-      var idx;
-      if (me.isOrdinal() && me.resetOnNewData()) {
-        idx = me.invert(mappedValue);
-        return _scale.domain()[idx];
-      }
-    };
-    me.showAxis = function(trueFalse) {
-      if (arguments.length === 0) {
-        return _showAxis;
-      } else {
-        _showAxis = trueFalse;
-        if (trueFalse) {
-          _axis = d3.svg.axis();
-          if (me.scaleType() === 'time') {
-            _axis.tickFormat(_tickFormat);
-          }
-        } else {
-          _axis = void 0;
-        }
-        return me;
-      }
-    };
-    me.axisOrient = function(val) {
-      if (arguments.length === 0) {
-        return _axisOrient;
-      } else {
-        _axisOrientOld = _axisOrient;
-        _axisOrient = val;
-        return me;
-      }
-    };
-    me.axisOrientOld = function(val) {
-      if (arguments.length === 0) {
-        return _axisOrientOld;
-      } else {
-        _axisOrientOld = val;
-        return me;
-      }
-    };
-    me.axis = function() {
-      return _axis;
-    };
-    me.ticks = function(val) {
-      if (arguments.length === 0) {
-        return _ticks;
-      } else {
-        _ticks = val;
-        if (me.axis()) {
-          me.axis().ticks(_ticks);
-        }
-        return me;
-      }
-    };
-    me.tickFormat = function(val) {
-      if (arguments.length === 0) {
-        return _tickFormat;
-      } else {
-        _tickFormat = val;
-        if (me.axis()) {
-          me.axis().tickFormat(val);
-        }
-        return me;
-      }
-    };
-    me.tickValues = function(val) {
-      if (arguments.length === 0) {
-        return _tickValues;
-      } else {
-        _tickValues = val;
-        if (me.axis()) {
-          me.axis().tickValues(val);
-        }
-        return me;
-      }
-    };
-    me.showLabel = function(val) {
-      if (arguments.length === 0) {
-        return _showLabel;
-      } else {
-        _showLabel = val;
-        return me;
-      }
-    };
-    me.axisLabel = function(text) {
-      if (arguments.length === 0) {
-        if (_axisLabel) {
-          return _axisLabel;
-        } else {
-          return me.property();
-        }
-      } else {
-        _axisLabel = text;
-        return me;
-      }
-    };
-    me.rotateTickLabels = function(nbr) {
-      if (arguments.length === 0) {
-        return _rotateTickLabels;
-      } else {
-        _rotateTickLabels = nbr;
-        return me;
-      }
-    };
-    me.format = function(val) {
-      if (arguments.length === 0) {
-        return _outputFormatString;
-      } else {
-        if (val.length > 0) {
-          _outputFormatString = val;
-        } else {
-          _outputFormatString = me.scaleType() === 'time' ? formatDefaults.date : formatDefaults.number;
-        }
-        _outputFormatFn = me.scaleType() === 'time' ? wkChartLocale.timeFormat(_outputFormatString) : wkChartLocale.numberFormat(_outputFormatString);
-        return me;
-      }
-    };
-    me.showGrid = function(trueFalse) {
-      if (arguments.length === 0) {
-        return _showGrid;
-      } else {
-        _showGrid = trueFalse;
-        return me;
-      }
-    };
-    me.register = function() {
-      me.chart().lifeCycle().on("scaleDomains." + (me.id()), function(data) {
-        var domain;
-        if (me.resetOnNewData()) {
-          domain = me.getDomain(data);
-          if (_scaleType === 'linear' && _.some(domain, isNaN)) {
-            throw "Scale " + (me.kind()) + ", Type '" + _scaleType + "': cannot compute domain for property '" + _property + "' . Possible reasons: property not set, data not compatible with defined type. Domain:" + domain;
-          }
-          return _scale.domain(domain);
-        }
-      });
-      return me.chart().lifeCycle().on("prepareData." + (me.id()), function(data) {
-        var calcRule;
-        calcRule = me.domainCalc();
-        if (me.parent().scaleProperties) {
-          me.layerExclude(me.parent().scaleProperties());
-        }
-        if (calcRule && calcDomain[calcRule]) {
-          return _calculatedDomain = calcDomain[calcRule](data);
-        }
-      });
-    };
-    me.update = function(noAnimation) {
-      me.parent().lifeCycle().update(noAnimation);
-      return me;
-    };
-    me.updateAttrs = function() {
-      return me.parent().lifeCycle().updateAttrs();
-    };
-    me.drawAxis = function() {
-      me.parent().lifeCycle().drawAxis();
-      return me;
-    };
-    return me;
-  };
-  return scale;
-});
-
-angular.module('wk.chart').factory('scaleList', function($log) {
-  var scaleList;
-  return scaleList = function() {
-    var me, _kindList, _layerScale, _list, _owner, _parentList, _requiredScales;
-    _list = {};
-    _kindList = {};
-    _parentList = {};
-    _owner = void 0;
-    _requiredScales = [];
-    _layerScale = void 0;
-    me = function() {};
-    me.owner = function(owner) {
-      if (arguments.length === 0) {
-        return _owner;
-      } else {
-        _owner = owner;
-        return me;
-      }
-    };
-    me.add = function(scale) {
-      if (_list[scale.id()]) {
-        $log.error("scaleList.add: scale " + (scale.id()) + " already defined in scaleList of " + (_owner.id()) + ". Duplicate scales are not allowed");
-      }
-      _list[scale.id()] = scale;
-      _kindList[scale.kind()] = scale;
-      return me;
-    };
-    me.hasScale = function(scale) {
-      var s;
-      s = me.getKind(scale.kind());
-      return s.id() === scale.id();
-    };
-    me.getKind = function(kind) {
-      if (_kindList[kind]) {
-        return _kindList[kind];
-      } else if (_parentList.getKind) {
-        return _parentList.getKind(kind);
-      } else {
-        return void 0;
-      }
-    };
-    me.hasKind = function(kind) {
-      return !!me.getKind(kind);
-    };
-    me.remove = function(scale) {
-      if (!_list[scale.id()]) {
-        $log.warn("scaleList.delete: scale " + (scale.id()) + " not defined in scaleList of " + (_owner.id()) + ". Ignoring");
-        return me;
-      }
-      delete _list[scale.id()];
-      delete me[scale.id];
-      return me;
-    };
-    me.parentScales = function(scaleList) {
-      if (arguments.length === 0) {
-        return _parentList;
-      } else {
-        _parentList = scaleList;
-        return me;
-      }
-    };
-    me.getOwned = function() {
-      return _list;
-    };
-    me.allKinds = function() {
-      var k, ret, s, _ref;
-      ret = {};
-      if (_parentList.allKinds) {
-        _ref = _parentList.allKinds();
-        for (k in _ref) {
-          s = _ref[k];
-          ret[k] = s;
-        }
-      }
-      for (k in _kindList) {
-        s = _kindList[k];
-        ret[k] = s;
-      }
-      return ret;
-    };
-    me.requiredScales = function(req) {
-      var k, _i, _len;
-      if (arguments.length === 0) {
-        return _requiredScales;
-      } else {
-        _requiredScales = req;
-        for (_i = 0, _len = req.length; _i < _len; _i++) {
-          k = req[_i];
-          if (!me.hasKind(k)) {
-            throw "Fatal Error: scale '" + k + "' required but not defined";
-          }
-        }
-      }
-      return me;
-    };
-    me.getScales = function(kindList) {
-      var kind, l, _i, _len;
-      l = {};
-      for (_i = 0, _len = kindList.length; _i < _len; _i++) {
-        kind = kindList[_i];
-        if (me.hasKind(kind)) {
-          l[kind] = me.getKind(kind);
-        } else {
-          throw "Fatal Error: scale '" + kind + "' required but not defined";
-        }
-      }
-      return l;
-    };
-    me.getScaleProperties = function() {
-      var k, l, prop, s, _ref;
-      l = [];
-      _ref = me.allKinds();
-      for (k in _ref) {
-        s = _ref[k];
-        prop = s.property();
-        if (prop) {
-          if (Array.isArray(prop)) {
-            l.concat(prop);
-          } else {
-            l.push(prop);
-          }
-        }
-      }
-      return l;
-    };
-    me.layerScale = function(kind) {
-      if (arguments.length === 0) {
-        if (_layerScale) {
-          return me.getKind(_layerScale);
-        }
-        return void 0;
-      } else {
-        _layerScale = kind;
-        return me;
-      }
-    };
-    return me;
   };
 });
 

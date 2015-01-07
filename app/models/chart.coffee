@@ -25,7 +25,7 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
 
     #--- LifeCycle Dispatcher ------------------------------------------------------------------------------------------
 
-    _lifeCycle = d3.dispatch('configure', 'resize', 'prepareData', 'scaleDomains', 'sizeContainer', 'drawAxis', 'drawChart', 'newData', 'update', 'updateAttrs', 'scopeApply' )
+    _lifeCycle = d3.dispatch('configure', 'resize', 'prepareData', 'scaleDomains', 'rescaleDomains', 'sizeContainer', 'drawAxis', 'drawChart', 'newData', 'update', 'updateAttrs', 'scopeApply' )
     _brush = d3.dispatch('draw', 'change')
 
     #--- Getter/Setter Functions ---------------------------------------------------------------------------------------
@@ -167,6 +167,7 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
     me.lifeCycle().on 'resize.chart', me.resizeLifeCycle
     me.lifeCycle().on 'update.chart', (noAnimation) -> me.execLifeCycleFull(_data, noAnimation)
     me.lifeCycle().on 'updateAttrs', me.attributeChange
+    me.lifeCycle().on 'rescaleDomains', _lifeCycle.scaleDomains(_data, true) #no animation
 
     #--- Initialization ------------------------------------------------------------------------------------------------
 

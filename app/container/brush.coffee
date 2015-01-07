@@ -63,6 +63,14 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       ###
       brushEnd: '&'
 
+      ###*
+        @ngdoc attr
+        @name brush#clearBrush
+        @param clearBrush {function} assigns a function that clears the brush selection when called to the bound scope variable.
+      * > you should not re-assign this expression !!!
+      ###
+      clearBrush: "="
+
     link:(scope, element, attrs, controllers) ->
       chart = controllers[0].me
       layout = controllers[1]?.me
@@ -78,6 +86,7 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       _brushGroup = undefined
 
       brush = chart.behavior().brush
+
       if not x and not y and not rangeX and not rangeY
         #layout brush, get x and y from layout scales
         scales = layout.scales().getScales(['x', 'y'])
@@ -87,6 +96,9 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
         brush.x(x or rangeX)
         brush.y(y or rangeY)
       brush.active(true)
+
+      scope.$watch 'clearBrush' , (val) ->
+        scope.clearBrush = brush.clearBrush
 
       attrs.$observe 'brush', (val) ->
         if _.isString(val) and val.length > 0

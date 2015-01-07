@@ -61,6 +61,10 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
         _overlay.selectAll('.wk-chart-s').select('rect').attr('width', _areaBox.width)
         _extent.attr('width', _areaBox.width).attr('height', height).attr('x', 0).attr('y', top)
 
+    hideBrushElements = () ->
+      d3.select(_area).selectAll('.wk-chart-resize').style('display', 'none')
+      _extent.attr('width',0).attr('height', 0).attr('x', 0).attr('y', 0).style('display', 'none')
+
     #-------------------------------------------------------------------------------------------------------------------
 
     getSelectedObjects = () ->
@@ -123,6 +127,21 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
           _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain)
           selectionSharing.setSelection _boundsValues, _boundsIdx, _brushGroup
 
+    clearSelection = () ->
+      _boundsIdx = []
+      _boundsValues = []
+      _boundsDomain = []
+      _selectables.classed('wk-chart-selected', false)
+      selectionSharing.setSelection _boundsValues, _boundsIdx, _brushGroup
+      _.delay(   # ensure digest cycle from button pressed is completed
+          () ->
+            _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain)
+            _brushEvents.brushEnd(_boundsIdx, _boundsValues, _boundsDomain)
+        , 20
+      )
+
+
+
     #--- BrushStart Event Handler --------------------------------------------------------------------------------------
 
 
@@ -140,6 +159,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       startRight = right
       startBottom = bottom
       d3.select(_area).style('pointer-events','none').selectAll(".wk-chart-resize").style("display", null)
+      _extent.style('display',null)
       d3.select('body').style('cursor', d3.select(d3.event.target).style('cursor'))
 
       d3.select($window).on('mousemove.brush', brushMove).on('mouseup.brush', brushEnd)
@@ -159,14 +179,11 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
 
       d3.select($window).on 'mousemove.brush', null
       d3.select($window).on 'mouseup.brush', null
-      d3.select(_area).style('pointer-events','all').selectAll('.wk-chart-resize').style('display', null) # show the resize handlers
+      d3.select(_area).style('pointer-events','all').selectAll('.wk-chart-resize').style('display', null) # show the resize handles
       d3.select('body').style('cursor', null)
-      if bottom - top is 0 or right - left is 0
-        #brush is empty
-        d3.select(_area).selectAll('.wk-chart-resize').style('display', 'none')
       _tooltip.hide(false)
       _brushEvents.brushEnd(_boundsIdx, _boundsValues, _boundsDomain)
-      timing.report()
+      #timing.report()
 
     #--- BrushMove Event Handler ---------------------------------------------------------------------------------------
 
@@ -397,7 +414,13 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       return _brushEvents
 
     me.empty = () ->
-      return _boundsIdx is undefined
+      return _boundsDomain.length is 0
+
+    me.clearBrush = () ->
+      console.log 'Brush cleared'
+      hideBrushElements()
+      clearSelection()
+
 
     return me
   return behaviorBrush
