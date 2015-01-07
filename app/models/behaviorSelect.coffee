@@ -37,6 +37,16 @@ angular.module('wk.chart').factory 'behaviorSelect', ($log) ->
         _active = val
         return me #to enable chaining
 
+    me.clearSelection = () ->
+      $log.log 'selection Cleared'
+      _container.selectAll('.wk-chart-selected').classed('wk-chart-selected', false)
+      _.delay(
+        () ->
+          _selectionEvents.selected([])
+      ,
+        20
+      )
+
     me.container = (val) ->
       if arguments.length is 0 then return _container
       else

@@ -27,6 +27,13 @@ angular.module('wk.chart').directive 'selection', ($log) ->
       ###
       selectedDomainChange: '&'
 
+      ###*
+        @ngdoc attr
+        @name brush#clearBrush
+        @param clearBrush {function} assigns a function that clears the brush selection when called to the bound scope variable.
+      ###
+      clearSelection: "="
+
     require: 'layout'
 
     link: (scope, element, attrs, controller) ->
@@ -34,6 +41,9 @@ angular.module('wk.chart').directive 'selection', ($log) ->
 
       layout.lifeCycle().on 'configure.selection', ->
         _selection = layout.behavior().selected
+        scope.$watch 'clearSelection' , (val) ->
+          scope.clearSelection = _selection.clearSelection
+
         _selection.active(true)
         _selection.on 'selected', (selectedObjects) ->
           scope.selectedDomain = selectedObjects

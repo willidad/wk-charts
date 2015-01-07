@@ -67,7 +67,6 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
         @ngdoc attr
         @name brush#clearBrush
         @param clearBrush {function} assigns a function that clears the brush selection when called to the bound scope variable.
-      * > you should not re-assign this expression !!!
       ###
       clearBrush: "="
 
