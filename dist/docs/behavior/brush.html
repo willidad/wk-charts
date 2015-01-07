@@ -38,7 +38,7 @@
   
     <ul>
     <li>as attribute:
-        <pre><code>&lt;x, y, range-x, range-y or layout&#13;&#10;  [brush=&quot;&quot;]&#13;&#10;  [brush-extent=&quot;&quot;]&#13;&#10;  [selected-values=&quot;&quot;]&#13;&#10;  [selected-domain=&quot;&quot;]&#13;&#10;  [selected-domain-change=&quot;&quot;]&#13;&#10;  [brush-start=&quot;&quot;]&#13;&#10;  [brush-end=&quot;&quot;]&#13;&#10;  [selected-domain-change=&quot;&quot;]&gt;&#13;&#10;...&#13;&#10;&lt;/x, y, range-x, range-y or layout&gt;&#13;</code></pre>
+        <pre><code>&lt;x, y, range-x, range-y or layout&#13;&#10;  [brush=&quot;&quot;]&#13;&#10;  [brush-extent=&quot;&quot;]&#13;&#10;  [selected-values=&quot;&quot;]&#13;&#10;  [selected-domain=&quot;&quot;]&#13;&#10;  [selected-domain-change=&quot;&quot;]&#13;&#10;  [brush-start=&quot;&quot;]&#13;&#10;  [brush-end=&quot;&quot;]&gt;&#13;&#10;...&#13;&#10;&lt;/x, y, range-x, range-y or layout&gt;&#13;</code></pre>
       </li>
     </ul>
   </div>
@@ -84,7 +84,7 @@
         <a href="" class="label type-hint type-hint-array">array</a>
       </td>
       <td>
-        <p>Contains the start and end index into the data array for the brushed axis. Is undefined if brush is empty, axis is an ordinal type scale, or is xy (layout) brushes</p>
+        <p>Contains the start and end index into the data array for the brushed axis. Is undefined if brush is empty or is a xy (layout) brush</p>
 
       </td>
     </tr>
@@ -165,22 +165,6 @@
       </td>
       <td>
         <p>expression to evaluate upon a end of brushing. is fired on &#39;mouseup&#39;. The selected domain is available as ´domain´</p>
-
-      </td>
-    </tr>
-    
-    <tr>
-      <td>
-        <div><strong>selectedDomainChange </strong></div>
-        
-        
-
-      </td>
-      <td>
-        <a href="" class="label type-hint type-hint-expression">expression</a>
-      </td>
-      <td>
-        <p>expression to evaluate upon a change of the brushes selected domain. The selected domain is available as ´domain´</p>
 
       </td>
     </tr>

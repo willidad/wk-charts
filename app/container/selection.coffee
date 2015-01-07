@@ -22,7 +22,7 @@ angular.module('wk.chart').directive 'selection', ($log) ->
 
       ###*
         @ngdoc attr
-        @name brush#selectedDomainChange
+        @name selection#selectedDomainChange
         @param selectedDomainChange {expression} expression to evaluate upon a change of the brushes selected domain. The selected domain is available as ´domain´
       ###
       selectedDomainChange: '&'

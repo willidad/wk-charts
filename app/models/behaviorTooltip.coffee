@@ -160,7 +160,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       else
         _path = path
         if _path.length > 0
-          _customTempl = $templateCache.get('templates/' + _path)
+          _customTempl = $templateCache.get(_path)
           # wrap template into positioning div
           #_customTemplWrapped = "<div class=\"wk-chart-tooltip\" ng-style=\"position\">#{_customTempl}</div>"
           _templ = "<div class=\"wk-chart-tooltip\" ng-style=\"position\">#{_customTempl}</div>"

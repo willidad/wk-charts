@@ -24,7 +24,7 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       ###*
         @ngdoc attr
         @name brush#brushExtent
-        @param brushExtent {array} Contains the start and end index into the data array for the brushed axis. Is undefined if brush is empty, axis is an ordinal type scale, or is xy (layout) brushes
+        @param brushExtent {array} Contains the start and end index into the data array for the brushed axis. Is undefined if brush is empty or is a xy (layout) brush
       ###
       brushExtent: '='
 
@@ -96,7 +96,7 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
 
       brush.events().on 'brushStart', () ->
         scope.brushStart()
-        scope.apply()
+        scope.$apply()
 
       brush.events().on 'brush', (idxRange, valueRange, domain) ->
         if attrs.brushExtent
@@ -110,7 +110,7 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
 
       brush.events().on 'brushEnd', (idxRange, valueRange, domain) ->
         scope.brushEnd({domain:domain})
-        scope.apply()
+        scope.$apply()
 
       layout.lifeCycle().on 'drawChart.brush', (data) ->
         brush.data(data)
