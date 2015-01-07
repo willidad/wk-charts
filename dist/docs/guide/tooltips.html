@@ -4,10 +4,10 @@
 <div class="content-description">
     <h1 id="tooltips">Tooltips</h1>
 <h2 id="custom-tooltips">Custom Tooltips</h2>
-<p>A custom tooltip is defined by providing a HTML template url as value to the <code>tooltips</code> behavior directive. this template will be compiled by Angular and be used instead of the standard template.
+<p>A custom tooltip is implemented by providing a HTML template url as value to the <code>tooltips</code> behavior directive. This template will be compiled by Angular and be used instead of the standard template.
 The custom template will be positioned as usual, in case value markers are displayed for na axis these will be created and positioned automatically, like with the standard template.</p>
 <blockquote>
-<p>The tooltips function creates an isolated scope, which is a child of the charts scope. Thus, chart scope variables and scope variables of the charts container hierarchy are accessible from the template.</p>
+<p>The tooltips function creates an isolated scope, which is a child of the charts parent scope. Thus, scope variables of the charts container hierarchy are accessible from the template through $parent.</p>
 <p>For more sophisticated formatting a controller can be attached to the template using the ng-controller directive.</p>
 </blockquote>
 <p>To support tooltip formatting the $scope for this template exposes a number of attributes:</p>
@@ -65,7 +65,7 @@ The custom template will be positioned as usual, in case value markers are displ
 </tr>
 <tr>
 <td style="text-align:left"></td>
-<td style="text-align:left"><code>scale.x(1234)</code> returns the x-axis pixel offset representing <code>1234</code></td>
+<td style="text-align:left"><code>scale.x(ttData.abc)</code> returns the x-axis pixel offset representing the value in <code>ttData.abc</code></td>
 </tr>
 <tr>
 <td style="text-align:left"></td>

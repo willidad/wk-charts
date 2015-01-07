@@ -7,10 +7,10 @@
 
 ## Custom Tooltips
 
-A custom tooltip is defined by providing a HTML template url as value to the `tooltips` behavior directive. this template will be compiled by Angular and be used instead of the standard template.
+A custom tooltip is implemented by providing a HTML template url as value to the `tooltips` behavior directive. This template will be compiled by Angular and be used instead of the standard template.
 The custom template will be positioned as usual, in case value markers are displayed for na axis these will be created and positioned automatically, like with the standard template.
 
-> The tooltips function creates an isolated scope, which is a child of the charts scope. Thus, chart scope variables and scope variables of the charts container hierarchy are accessible from the template.
+> The tooltips function creates an isolated scope, which is a child of the charts parent scope. Thus, scope variables of the charts container hierarchy are accessible from the template through $parent.
 
 > For more sophisticated formatting a controller can be attached to the template using the ng-controller directive.
 
@@ -33,7 +33,7 @@ Usage | `scale.<dimension name>(value)`
 :--- |:---
 Returns | the translated value
 Examples | `scale.color('abc')` returns the color value used to represent `'abc'` in the chart
-         | `scale.x(1234)` returns the x-axis pixel offset representing `1234`
+         | `scale.x(ttData.abc)` returns the x-axis pixel offset representing the value in `ttData.abc`
          | `scale.shape('xyz')` returns the name of the svg shape used to repesent `'xyz'`
 
 ### map
@@ -60,13 +60,13 @@ Examples | `value.color()` returns the value of the color property.
 ### properties
 
 Usage | `properties.<dimension name>`
-:--- |:---
+:------ |:---
 Returns | an array of property names for the dimension.
 
 ### label
 
 Usage | `label.<dimension name>`
-:--- |:---
+:------ |:---
 Returns | the label text defined for the dimension. If no label is defined it returns the property name.
   |In case the property attribute of the dimension is not defined it returns an empty string.
 
