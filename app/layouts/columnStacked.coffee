@@ -40,8 +40,7 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig) -
 
       initial = true
 
-      config = {}
-      _.merge(config,barConfig)
+      config = _.clone(barConfig, true)
 
       ttEnter = (data) ->
         ttLayers = data.layers.map((l) -> {name:l.layerKey, value:_scaleList.y.formatValue(l.value), color: {'background-color': l.color}})

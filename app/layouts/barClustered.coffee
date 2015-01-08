@@ -35,7 +35,7 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig)->
 
       barPaddingOld = 0
       barOuterPaddingOld = 0
-      config = barConfig
+      config = _.clone(barConfig, true)
 
       initial = true
 

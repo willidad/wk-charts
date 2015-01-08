@@ -35,7 +35,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, wkChartMar
 
     initial = true
 
-    config = barConfig
+    config = _.clone(barConfig, true)
 
     #--- Tooltip Event Handlers --------------------------------------------------------------------------------------
 

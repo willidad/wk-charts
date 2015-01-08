@@ -33,8 +33,7 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig)
       barPaddingOld = 0
       barOuterPaddingOld = 0
 
-      config = {}
-      _.merge(config, barConfig)
+      config = _.clone(barConfig, true)
       drawBrush = undefined
       clusterX = undefined
 
