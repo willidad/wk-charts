@@ -170,7 +170,7 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig) ->
           config.padding = 0
           config.outerPadding = 0
         else if val is 'true'
-          _.merge(config, barConfig)
+          config = _.clone(barConfig, true)
         else
           values = utils.parseList(val)
           if values
