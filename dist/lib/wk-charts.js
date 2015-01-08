@@ -243,8 +243,6 @@ angular.module('wk.chart').constant('barConfig', {
         }
     }
 })()
-angular.module("wk.chart").run(["$templateCache", function($templateCache) {$templateCache.put("templates/legend.html","\n<div ng-style=\"position\" ng-show=\"showLegend\" class=\"wk-chart-legend\">\n  <div ng-show=\"title\" class=\"legend-title\">{{title}}</div>\n  <ul class=\"list-unstyled\">\n    <li ng-repeat=\"legendRow in legendRows track by legendRow.value\" class=\"wk-chart-legend-item\"><span ng-if=\"legendRow.color\" ng-style=\"legendRow.color\">&nbsp;&nbsp;&nbsp;</span>\n      <svg-icon ng-if=\"legendRow.path\" path=\"legendRow.path\" width=\"20\"></svg-icon><span> &nbsp;{{legendRow.value}}</span>\n    </li>\n  </ul>\n</div>");
-$templateCache.put("templates/toolTip.html","\n<div ng-style=\"position\" class=\"wk-chart-tooltip\">\n  <table class=\"table table-condensed table-bordered\">\n    <thead ng-show=\"headerValue\">\n      <tr>\n        <th colspan=\"2\">{{headerName}}</th>\n        <th>{{headerValue}}</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr ng-repeat=\"ttRow in layers track by ttRow.name\">\n        <td ng-style=\"ttRow.color\" ng-class=\"ttRow.class\">\n          <svg-icon ng-if=\"ttRow.path\" path=\"ttRow.path\" width=\"15\"></svg-icon>\n        </td>\n        <td>{{ttRow.name}}</td>\n        <td>{{ttRow.value}}</td>\n      </tr>\n    </tbody>\n  </table>\n</div>");}]);
 
 /**
   @ngdoc behavior
@@ -386,6 +384,8 @@ angular.module('wk.chart').directive('brush', function($log, selectionSharing, b
   };
 });
 
+angular.module("wk.chart").run(["$templateCache", function($templateCache) {$templateCache.put("templates/legend.html","\n<div ng-style=\"position\" ng-show=\"showLegend\" class=\"wk-chart-legend\">\n  <div ng-show=\"title\" class=\"legend-title\">{{title}}</div>\n  <ul class=\"list-unstyled\">\n    <li ng-repeat=\"legendRow in legendRows track by legendRow.value\" class=\"wk-chart-legend-item\"><span ng-if=\"legendRow.color\" ng-style=\"legendRow.color\">&nbsp;&nbsp;&nbsp;</span>\n      <svg-icon ng-if=\"legendRow.path\" path=\"legendRow.path\" width=\"20\"></svg-icon><span> &nbsp;{{legendRow.value}}</span>\n    </li>\n  </ul>\n</div>");
+$templateCache.put("templates/toolTip.html","\n<div ng-style=\"position\" class=\"wk-chart-tooltip\">\n  <table class=\"table table-condensed table-bordered\">\n    <thead ng-show=\"headerValue\">\n      <tr>\n        <th colspan=\"2\">{{headerName}}</th>\n        <th>{{headerValue}}</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr ng-repeat=\"ttRow in layers track by ttRow.name\">\n        <td ng-style=\"ttRow.color\" ng-class=\"ttRow.class\">\n          <svg-icon ng-if=\"ttRow.path\" path=\"ttRow.path\" width=\"15\"></svg-icon>\n        </td>\n        <td>{{ttRow.name}}</td>\n        <td>{{ttRow.value}}</td>\n      </tr>\n    </tbody>\n  </table>\n</div>");}]);
 // Copyright (c) 2013, Jason Davies, http://www.jasondavies.com
 // See LICENSE.txt for details.
 (function() {
@@ -512,6 +512,71 @@ function cross(a, b) {
 
 })();
 
+
+/**
+  @ngdoc behavior
+  @name brushed
+  @module wk.chart
+  @restrict A
+  @description
+
+  enables an axis to be scaled by a named brush in a different layout
+ */
+angular.module('wk.chart').directive('brushed', function($log, selectionSharing, timing) {
+  var sBrushCnt;
+  sBrushCnt = 0;
+  return {
+    restrict: 'A',
+    require: ['^chart', '?^layout', '?x', '?y', '?rangeX', '?rangeY'],
+    link: function(scope, element, attrs, controllers) {
+      var axis, brusher, chart, layout, rangeX, rangeY, x, y, _brushGroup, _ref, _ref1, _ref2, _ref3, _ref4;
+      chart = controllers[0].me;
+      layout = (_ref = controllers[1]) != null ? _ref.me : void 0;
+      x = (_ref1 = controllers[2]) != null ? _ref1.me : void 0;
+      y = (_ref2 = controllers[3]) != null ? _ref2.me : void 0;
+      rangeX = (_ref3 = controllers[4]) != null ? _ref3.me : void 0;
+      rangeY = (_ref4 = controllers[5]) != null ? _ref4.me : void 0;
+      axis = x || y || rangeX || rangeY;
+      _brushGroup = void 0;
+      brusher = function(extent, idxRange) {
+        var l, _i, _len, _ref5, _results;
+        if (!axis) {
+          return;
+        }
+        if (extent.length > 0) {
+          axis.domain(extent).scale().domain(extent);
+        } else {
+          axis.domain(void 0);
+          axis.scale().domain(axis.getDomain(chart.getData()));
+          if (axis.isOrdinal()) {
+            idxRange = [0, axis.scale().domain().length - 1];
+          }
+        }
+        _ref5 = chart.layouts();
+        _results = [];
+        for (_i = 0, _len = _ref5.length; _i < _len; _i++) {
+          l = _ref5[_i];
+          if (l.scales().hasScale(axis)) {
+            _results.push(l.lifeCycle().brush(axis, true, idxRange));
+          }
+        }
+        return _results;
+      };
+      attrs.$observe('brushed', function(val) {
+        if (_.isString(val) && val.length > 0) {
+          _brushGroup = val;
+          return selectionSharing.register(_brushGroup, brusher);
+        } else {
+          return _brushGroup = void 0;
+        }
+      });
+      return scope.$on('$destroy', function() {
+        return selectionSharing.unregister(_brushGroup, brusher);
+      });
+    }
+  };
+});
+
 (function() {
     var out$ = typeof exports != 'undefined' && exports || this;
 
@@ -632,71 +697,6 @@ function cross(a, b) {
 })();
 
 /**
-  @ngdoc behavior
-  @name brushed
-  @module wk.chart
-  @restrict A
-  @description
-
-  enables an axis to be scaled by a named brush in a different layout
- */
-angular.module('wk.chart').directive('brushed', function($log, selectionSharing, timing) {
-  var sBrushCnt;
-  sBrushCnt = 0;
-  return {
-    restrict: 'A',
-    require: ['^chart', '?^layout', '?x', '?y', '?rangeX', '?rangeY'],
-    link: function(scope, element, attrs, controllers) {
-      var axis, brusher, chart, layout, rangeX, rangeY, x, y, _brushGroup, _ref, _ref1, _ref2, _ref3, _ref4;
-      chart = controllers[0].me;
-      layout = (_ref = controllers[1]) != null ? _ref.me : void 0;
-      x = (_ref1 = controllers[2]) != null ? _ref1.me : void 0;
-      y = (_ref2 = controllers[3]) != null ? _ref2.me : void 0;
-      rangeX = (_ref3 = controllers[4]) != null ? _ref3.me : void 0;
-      rangeY = (_ref4 = controllers[5]) != null ? _ref4.me : void 0;
-      axis = x || y || rangeX || rangeY;
-      _brushGroup = void 0;
-      brusher = function(extent, idxRange) {
-        var l, _i, _len, _ref5, _results;
-        if (!axis) {
-          return;
-        }
-        if (extent.length > 0) {
-          axis.domain(extent).scale().domain(extent);
-        } else {
-          axis.domain(void 0);
-          axis.scale().domain(axis.getDomain(chart.getData()));
-          if (axis.isOrdinal()) {
-            idxRange = [0, axis.scale().domain().length - 1];
-          }
-        }
-        _ref5 = chart.layouts();
-        _results = [];
-        for (_i = 0, _len = _ref5.length; _i < _len; _i++) {
-          l = _ref5[_i];
-          if (l.scales().hasScale(axis)) {
-            _results.push(l.lifeCycle().brush(axis, true, idxRange));
-          }
-        }
-        return _results;
-      };
-      attrs.$observe('brushed', function(val) {
-        if (_.isString(val) && val.length > 0) {
-          _brushGroup = val;
-          return selectionSharing.register(_brushGroup, brusher);
-        } else {
-          return _brushGroup = void 0;
-        }
-      });
-      return scope.$on('$destroy', function() {
-        return selectionSharing.unregister(_brushGroup, brusher);
-      });
-    }
-  };
-});
-
-
-/**
   @ngdoc container
   @name chart
   @module wk.chart
@@ -799,7 +799,8 @@ angular.module('wk.chart').directive('chart', function($log, chart, $filter) {
         if (watcherRemoveFn) {
           watcherRemoveFn();
         }
-        return $log.log('Destroying chart');
+        $log.log('Destroying chart');
+        return me.lifeCycle().destroy();
       });
     }
   };
@@ -937,11 +938,9 @@ angular.module('wk.chart').directive('selection', function($log) {
   enables the display of tooltips. See  the {@link guide/tooltips tooltips section} in the guide for more details
  */
 angular.module('wk.chart').directive('tooltips', function($log, behavior) {
-  var TooltipsController;
   return {
     restrict: 'A',
     require: 'chart',
-    controller: TooltipsController,
     link: function(scope, element, attrs, chartCtrl) {
       var chart;
       chart = chartCtrl.me;
@@ -966,14 +965,6 @@ angular.module('wk.chart').directive('tooltips', function($log, behavior) {
       });
     }
   };
-  return TooltipsController = (function() {
-    function TooltipsController($scope) {
-      this.$scope = $scope;
-    }
-
-    return TooltipsController;
-
-  })();
 });
 
 
@@ -4642,6 +4633,215 @@ angular.module('wk.chart').directive('spider', function($log, utils) {
   };
 });
 
+
+/**
+  @ngdoc provider
+  @module wk.chart
+  @name wkChartLocaleProvider
+  @description
+  registers a den locale
+ */
+angular.module('wk.chart').provider('wkChartLocale', function() {
+  var locale, locales;
+  locale = 'en_US';
+  locales = {
+    de_DE: d3.locale({
+      decimal: ",",
+      thousands: ".",
+      grouping: [3],
+      currency: ["", " €"],
+      dateTime: "%A, der %e. %B %Y, %X",
+      date: "%e.%m.%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
+      shortDays: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+      months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
+      shortMonths: ["Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
+    }),
+    'en_US': d3.locale({
+      "decimal": ".",
+      "thousands": ",",
+      "grouping": [3],
+      "currency": ["$", ""],
+      "dateTime": "%a %b %e %X %Y",
+      "date": "%m/%d/%Y",
+      "time": "%H:%M:%S",
+      "periods": ["AM", "PM"],
+      "days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      "shortDays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      "shortMonths": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    })
+  };
+
+  /**
+    @ngdoc method
+    @name wkChartLocaleProvider#setLocale
+    @param name {string} name of the locale. If locale is unknown it reports an error and sets locale to en_US
+   */
+  this.setLocale = function(l) {
+    if (_.has(locales, l)) {
+      return locale = l;
+    } else {
+      throw "unknowm locale '" + l + "' using 'en-US' instead";
+    }
+  };
+
+  /**
+    @ngdoc method
+    @name wkChartLocaleProvider#addLocaleDefinition
+    @param name {string} name of the locale.
+    @param localeDefinition {object} A d3.js locale definition object. See [d3 documentation](https://github.com/mbostock/d3/wiki/Localization#d3_locale) for details of the format.
+   */
+  this.addLocaleDefinition = function(name, l) {
+    return locales[name] = d3.locale(l);
+  };
+
+  /**
+    @ngdoc service
+    @module wk.chart
+    @name wkChartLocale
+    @description
+    @returns d3.ls locale definition
+   */
+  this.$get = [
+    '$log', function($log) {
+      return locales[locale];
+    }
+  ];
+  return this;
+});
+
+angular.module('wk.chart').provider('wkChartScales', function() {
+  var categoryColors, categoryColorsHashed, hashed, _customColors;
+  _customColors = ['red', 'green', 'blue', 'yellow', 'orange'];
+  hashed = function() {
+    var d3Scale, me, _hashFn;
+    d3Scale = d3.scale.ordinal();
+    _hashFn = function(value) {
+      var hash, i, m, _i, _ref, _results;
+      hash = 0;
+      m = d3Scale.range().length - 1;
+      _results = [];
+      for (i = _i = 0, _ref = value.length; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        _results.push(hash = (31 * hash + value.charAt(i)) % m);
+      }
+      return _results;
+    };
+    me = function(value) {
+      if (!arguments) {
+        return me;
+      }
+      return d3Scale(_hashFn(value));
+    };
+    me.range = function(range) {
+      if (!arguments) {
+        return d3Scale.range();
+      }
+      d3Scale.domain(d3.range(range.length));
+      return d3Scale.range(range);
+    };
+    me.rangePoint = d3Scale.rangePoints;
+    me.rangeBands = d3Scale.rangeBands;
+    me.rangeRoundBands = d3Scale.rangeRoundBands;
+    me.rangeBand = d3Scale.rangeBand;
+    me.rangeExtent = d3Scale.rangeExtent;
+    me.hash = function(fn) {
+      if (!arguments) {
+        return _hashFn;
+      }
+      _hashFn = fn;
+      return me;
+    };
+    return me;
+  };
+  categoryColors = function() {
+    return d3.scale.ordinal().range(_customColors);
+  };
+  categoryColorsHashed = function() {
+    return hashed().range(_customColors);
+  };
+  this.colors = function(colors) {
+    return _customColors = colors;
+  };
+  this.$get = [
+    '$log', function($log) {
+      return {
+        hashed: hashed,
+        colors: categoryColors,
+        colorsHashed: categoryColorsHashed
+      };
+    }
+  ];
+  return this;
+});
+
+
+/**
+  @ngdoc provider
+  @module wk.chart
+  @name wkChartTemplatesProvider
+  @description
+  used to register a custom tooltip or legend default template and overwrite the default system templates.
+ */
+angular.module('wk.chart').provider('wkChartTemplates', function() {
+  var legendTemplateUrl, tooltipTemplateUrl;
+  tooltipTemplateUrl = 'templates/toolTip.html';
+  legendTemplateUrl = 'templates/legend.html';
+
+  /**
+    @ngdoc method
+    @name wkChartTemplatesProvider#setTooltipTemplate
+    @param url {string} the url of the template file
+   */
+  this.setTooltipTemplate = function(url) {
+    return tooltipTemplateUrl = url;
+  };
+
+  /**
+      @ngdoc method
+      @name wkChartTemplatesProvider#setLegendTemplate
+      @param url {string} the url of the template file
+   */
+  this.setLegendTemplate = function(url) {
+    return legendTemplateUrl = url;
+  };
+
+  /**
+    @ngdoc service
+    @module wk.chart
+    @name wkChartTemplates
+    @description
+    provides the default tooltip and legend template.
+   */
+  this.$get = [
+    '$log', '$templateCache', function($log, $templateCache) {
+      return {
+
+        /**
+          @ngdoc method
+          @name wkChartTemplates#tooltipTemplate
+          @returns {string} the tooltips template
+         */
+        tooltipTemplate: function() {
+          return $templateCache.get(tooltipTemplateUrl);
+        },
+
+        /**
+          @ngdoc method
+          @name wkChartTemplates#legendTemplate
+          @returns {string} the legends template
+         */
+        legendTemplate: function() {
+          return $templateCache.get(legendTemplateUrl);
+        }
+      };
+    }
+  ];
+  return this;
+});
+
 angular.module('wk.chart').factory('behaviorBrush', function($log, $window, selectionSharing, timing) {
   var behaviorBrush;
   behaviorBrush = function() {
@@ -5505,6 +5705,7 @@ angular.module('wk.chart').factory('behaviorTooltip', function($log, $document, 
         return me;
       } else {
         compileTemplate(_templ);
+        me.chart().lifeCycle().on('destroy.tooltip', tooltipLeave);
         s.on('mouseenter.tooltip', tooltipEnter).on('mousemove.tooltip', tooltipMove).on('mouseleave.tooltip', tooltipLeave);
         if (!s.empty() && !s.classed('wk-chart-overlay')) {
           return s.on('mousedown.tooltip', forwardToBrush);
@@ -5568,7 +5769,7 @@ angular.module('wk.chart').factory('chart', function($log, scaleList, container,
     _subTitle = void 0;
     _behavior = behavior();
     _animationDuration = d3Animation.duration;
-    _lifeCycle = d3.dispatch('configure', 'resize', 'prepareData', 'scaleDomains', 'rescaleDomains', 'sizeContainer', 'drawAxis', 'drawChart', 'newData', 'update', 'updateAttrs', 'scopeApply');
+    _lifeCycle = d3.dispatch('configure', 'resize', 'prepareData', 'scaleDomains', 'rescaleDomains', 'sizeContainer', 'drawAxis', 'drawChart', 'newData', 'update', 'updateAttrs', 'scopeApply', 'destroy');
     _brush = d3.dispatch('draw', 'change');
     me.id = function(id) {
       return _id;
@@ -7240,215 +7441,6 @@ angular.module('wk.chart').factory('scaleList', function($log) {
     };
     return me;
   };
-});
-
-
-/**
-  @ngdoc provider
-  @module wk.chart
-  @name wkChartLocaleProvider
-  @description
-  registers a den locale
- */
-angular.module('wk.chart').provider('wkChartLocale', function() {
-  var locale, locales;
-  locale = 'en_US';
-  locales = {
-    de_DE: d3.locale({
-      decimal: ",",
-      thousands: ".",
-      grouping: [3],
-      currency: ["", " €"],
-      dateTime: "%A, der %e. %B %Y, %X",
-      date: "%e.%m.%Y",
-      time: "%H:%M:%S",
-      periods: ["AM", "PM"],
-      days: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
-      shortDays: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
-      months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
-      shortMonths: ["Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
-    }),
-    'en_US': d3.locale({
-      "decimal": ".",
-      "thousands": ",",
-      "grouping": [3],
-      "currency": ["$", ""],
-      "dateTime": "%a %b %e %X %Y",
-      "date": "%m/%d/%Y",
-      "time": "%H:%M:%S",
-      "periods": ["AM", "PM"],
-      "days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-      "shortDays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-      "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-      "shortMonths": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    })
-  };
-
-  /**
-    @ngdoc method
-    @name wkChartLocaleProvider#setLocale
-    @param name {string} name of the locale. If locale is unknown it reports an error and sets locale to en_US
-   */
-  this.setLocale = function(l) {
-    if (_.has(locales, l)) {
-      return locale = l;
-    } else {
-      throw "unknowm locale '" + l + "' using 'en-US' instead";
-    }
-  };
-
-  /**
-    @ngdoc method
-    @name wkChartLocaleProvider#addLocaleDefinition
-    @param name {string} name of the locale.
-    @param localeDefinition {object} A d3.js locale definition object. See [d3 documentation](https://github.com/mbostock/d3/wiki/Localization#d3_locale) for details of the format.
-   */
-  this.addLocaleDefinition = function(name, l) {
-    return locales[name] = d3.locale(l);
-  };
-
-  /**
-    @ngdoc service
-    @module wk.chart
-    @name wkChartLocale
-    @description
-    @returns d3.ls locale definition
-   */
-  this.$get = [
-    '$log', function($log) {
-      return locales[locale];
-    }
-  ];
-  return this;
-});
-
-angular.module('wk.chart').provider('wkChartScales', function() {
-  var categoryColors, categoryColorsHashed, hashed, _customColors;
-  _customColors = ['red', 'green', 'blue', 'yellow', 'orange'];
-  hashed = function() {
-    var d3Scale, me, _hashFn;
-    d3Scale = d3.scale.ordinal();
-    _hashFn = function(value) {
-      var hash, i, m, _i, _ref, _results;
-      hash = 0;
-      m = d3Scale.range().length - 1;
-      _results = [];
-      for (i = _i = 0, _ref = value.length; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-        _results.push(hash = (31 * hash + value.charAt(i)) % m);
-      }
-      return _results;
-    };
-    me = function(value) {
-      if (!arguments) {
-        return me;
-      }
-      return d3Scale(_hashFn(value));
-    };
-    me.range = function(range) {
-      if (!arguments) {
-        return d3Scale.range();
-      }
-      d3Scale.domain(d3.range(range.length));
-      return d3Scale.range(range);
-    };
-    me.rangePoint = d3Scale.rangePoints;
-    me.rangeBands = d3Scale.rangeBands;
-    me.rangeRoundBands = d3Scale.rangeRoundBands;
-    me.rangeBand = d3Scale.rangeBand;
-    me.rangeExtent = d3Scale.rangeExtent;
-    me.hash = function(fn) {
-      if (!arguments) {
-        return _hashFn;
-      }
-      _hashFn = fn;
-      return me;
-    };
-    return me;
-  };
-  categoryColors = function() {
-    return d3.scale.ordinal().range(_customColors);
-  };
-  categoryColorsHashed = function() {
-    return hashed().range(_customColors);
-  };
-  this.colors = function(colors) {
-    return _customColors = colors;
-  };
-  this.$get = [
-    '$log', function($log) {
-      return {
-        hashed: hashed,
-        colors: categoryColors,
-        colorsHashed: categoryColorsHashed
-      };
-    }
-  ];
-  return this;
-});
-
-
-/**
-  @ngdoc provider
-  @module wk.chart
-  @name wkChartTemplatesProvider
-  @description
-  used to register a custom tooltip or legend default template and overwrite the default system templates.
- */
-angular.module('wk.chart').provider('wkChartTemplates', function() {
-  var legendTemplateUrl, tooltipTemplateUrl;
-  tooltipTemplateUrl = 'templates/toolTip.html';
-  legendTemplateUrl = 'templates/legend.html';
-
-  /**
-    @ngdoc method
-    @name wkChartTemplatesProvider#setTooltipTemplate
-    @param url {string} the url of the template file
-   */
-  this.setTooltipTemplate = function(url) {
-    return tooltipTemplateUrl = url;
-  };
-
-  /**
-      @ngdoc method
-      @name wkChartTemplatesProvider#setLegendTemplate
-      @param url {string} the url of the template file
-   */
-  this.setLegendTemplate = function(url) {
-    return legendTemplateUrl = url;
-  };
-
-  /**
-    @ngdoc service
-    @module wk.chart
-    @name wkChartTemplates
-    @description
-    provides the default tooltip and legend template.
-   */
-  this.$get = [
-    '$log', '$templateCache', function($log, $templateCache) {
-      return {
-
-        /**
-          @ngdoc method
-          @name wkChartTemplates#tooltipTemplate
-          @returns {string} the tooltips template
-         */
-        tooltipTemplate: function() {
-          return $templateCache.get(tooltipTemplateUrl);
-        },
-
-        /**
-          @ngdoc method
-          @name wkChartTemplates#legendTemplate
-          @returns {string} the legends template
-         */
-        legendTemplate: function() {
-          return $templateCache.get(legendTemplateUrl);
-        }
-      };
-    }
-  ];
-  return this;
 });
 
 

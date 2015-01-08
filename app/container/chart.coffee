@@ -94,4 +94,5 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
         if watcherRemoveFn
           watcherRemoveFn()
         $log.log 'Destroying chart'
+        me.lifeCycle().destroy()
   }

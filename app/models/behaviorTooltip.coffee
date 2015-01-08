@@ -226,14 +226,13 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       if not _compiledTempl
         _compiledTempl = $compile(_templ)(_templScope) # and bind it to the tooltip template
 
-
-
     #--- Tooltip -------------------------------------------------------------------------------------------------------
 
     me.tooltip = (s) -> # register the tooltip events with the selection
       if arguments.length is 0 then return me
       else  # set tooltip for an objects selection
         compileTemplate _templ # set up tooltip template
+        me.chart().lifeCycle().on 'destroy.tooltip', tooltipLeave
 
         s.on 'mouseenter.tooltip', tooltipEnter
           .on 'mousemove.tooltip', tooltipMove
