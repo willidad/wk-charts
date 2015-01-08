@@ -188,9 +188,9 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
         layers.select('.wk-chart-line').attr('transform', "translate(#{offset})")
           .attr('d', (d) -> lineOld(d.value))
           .transition().duration(options.duration)
-          .attr('d', (d) -> lineNew(d.value))
-          .style('stroke', (d) -> d.color)
-          .style('opacity', 1).style('pointer-events', 'none')
+            .attr('d', (d) -> lineNew(d.value))
+            .style('stroke', (d) -> d.color)
+            .style('opacity', 1).style('pointer-events', 'none')
 
         layers.exit().transition().duration(options.duration)
           .style('opacity', 0)

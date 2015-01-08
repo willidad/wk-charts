@@ -400,6 +400,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
         else
           interval = range[1] - range[0]
           idx = Math.floor(mappedValue / interval)
+          if idx >= range.length then idx = range.length - 1
         return idx
 
     me.invertOrdinal = (mappedValue) ->
