@@ -512,6 +512,71 @@ function cross(a, b) {
 
 })();
 
+
+/**
+  @ngdoc behavior
+  @name brushed
+  @module wk.chart
+  @restrict A
+  @description
+
+  enables an axis to be scaled by a named brush in a different layout
+ */
+angular.module('wk.chart').directive('brushed', function($log, selectionSharing, timing) {
+  var sBrushCnt;
+  sBrushCnt = 0;
+  return {
+    restrict: 'A',
+    require: ['^chart', '?^layout', '?x', '?y', '?rangeX', '?rangeY'],
+    link: function(scope, element, attrs, controllers) {
+      var axis, brusher, chart, layout, rangeX, rangeY, x, y, _brushGroup, _ref, _ref1, _ref2, _ref3, _ref4;
+      chart = controllers[0].me;
+      layout = (_ref = controllers[1]) != null ? _ref.me : void 0;
+      x = (_ref1 = controllers[2]) != null ? _ref1.me : void 0;
+      y = (_ref2 = controllers[3]) != null ? _ref2.me : void 0;
+      rangeX = (_ref3 = controllers[4]) != null ? _ref3.me : void 0;
+      rangeY = (_ref4 = controllers[5]) != null ? _ref4.me : void 0;
+      axis = x || y || rangeX || rangeY;
+      _brushGroup = void 0;
+      brusher = function(extent, idxRange) {
+        var l, _i, _len, _ref5, _results;
+        if (!axis) {
+          return;
+        }
+        if (extent.length > 0) {
+          axis.domain(extent).scale().domain(extent);
+        } else {
+          axis.domain(void 0);
+          axis.scale().domain(axis.getDomain(chart.getData()));
+          if (axis.isOrdinal()) {
+            idxRange = [0, axis.scale().domain().length - 1];
+          }
+        }
+        _ref5 = chart.layouts();
+        _results = [];
+        for (_i = 0, _len = _ref5.length; _i < _len; _i++) {
+          l = _ref5[_i];
+          if (l.scales().hasScale(axis)) {
+            _results.push(l.lifeCycle().brush(axis, true, idxRange));
+          }
+        }
+        return _results;
+      };
+      attrs.$observe('brushed', function(val) {
+        if (_.isString(val) && val.length > 0) {
+          _brushGroup = val;
+          return selectionSharing.register(_brushGroup, brusher);
+        } else {
+          return _brushGroup = void 0;
+        }
+      });
+      return scope.$on('$destroy', function() {
+        return selectionSharing.unregister(_brushGroup, brusher);
+      });
+    }
+  };
+});
+
 (function() {
     var out$ = typeof exports != 'undefined' && exports || this;
 
@@ -630,71 +695,6 @@ function cross(a, b) {
         });
     }
 })();
-
-/**
-  @ngdoc behavior
-  @name brushed
-  @module wk.chart
-  @restrict A
-  @description
-
-  enables an axis to be scaled by a named brush in a different layout
- */
-angular.module('wk.chart').directive('brushed', function($log, selectionSharing, timing) {
-  var sBrushCnt;
-  sBrushCnt = 0;
-  return {
-    restrict: 'A',
-    require: ['^chart', '?^layout', '?x', '?y', '?rangeX', '?rangeY'],
-    link: function(scope, element, attrs, controllers) {
-      var axis, brusher, chart, layout, rangeX, rangeY, x, y, _brushGroup, _ref, _ref1, _ref2, _ref3, _ref4;
-      chart = controllers[0].me;
-      layout = (_ref = controllers[1]) != null ? _ref.me : void 0;
-      x = (_ref1 = controllers[2]) != null ? _ref1.me : void 0;
-      y = (_ref2 = controllers[3]) != null ? _ref2.me : void 0;
-      rangeX = (_ref3 = controllers[4]) != null ? _ref3.me : void 0;
-      rangeY = (_ref4 = controllers[5]) != null ? _ref4.me : void 0;
-      axis = x || y || rangeX || rangeY;
-      _brushGroup = void 0;
-      brusher = function(extent, idxRange) {
-        var l, _i, _len, _ref5, _results;
-        if (!axis) {
-          return;
-        }
-        if (extent.length > 0) {
-          axis.domain(extent).scale().domain(extent);
-        } else {
-          axis.domain(void 0);
-          axis.scale().domain(axis.getDomain(chart.getData()));
-          if (axis.isOrdinal()) {
-            idxRange = [0, axis.scale().domain().length - 1];
-          }
-        }
-        _ref5 = chart.layouts();
-        _results = [];
-        for (_i = 0, _len = _ref5.length; _i < _len; _i++) {
-          l = _ref5[_i];
-          if (l.scales().hasScale(axis)) {
-            _results.push(l.lifeCycle().brush(axis, true, idxRange));
-          }
-        }
-        return _results;
-      };
-      attrs.$observe('brushed', function(val) {
-        if (_.isString(val) && val.length > 0) {
-          _brushGroup = val;
-          return selectionSharing.register(_brushGroup, brusher);
-        } else {
-          return _brushGroup = void 0;
-        }
-      });
-      return scope.$on('$destroy', function() {
-        return selectionSharing.unregister(_brushGroup, brusher);
-      });
-    }
-  };
-});
-
 
 /**
   @ngdoc container
@@ -3497,7 +3497,7 @@ angular.module('wk.chart').directive('columnHistogram', function($log, barConfig
       config = {};
       _tooltip = void 0;
       _selected = void 0;
-      _.merge(config, barConfig);
+      config = _.clone(barConfig, true);
       _merge = utils.mergeData().key(function(d) {
         return d.xVal;
       });
@@ -4626,6 +4626,793 @@ angular.module('wk.chart').directive('spider', function($log, utils) {
         return _tooltip.on("enter." + _id, ttEnter);
       });
       return layout.lifeCycle().on('drawChart', draw);
+    }
+  };
+});
+
+
+/**
+  @ngdoc dimension
+  @name color
+  @module wk.chart
+  @restrict E
+  @description
+
+  describes how the chart data is translated into colors for chart objects
+ */
+angular.module('wk.chart').directive('color', function($log, scale, legend, scaleUtils) {
+  var scaleCnt;
+  scaleCnt = 0;
+  return {
+    restrict: 'E',
+    require: ['color', '^chart', '?^layout'],
+    controller: function($element) {
+      return this.me = scale();
+    },
+    scope: {
+      mapFunction: '='
+    },
+    link: function(scope, element, attrs, controllers) {
+      var chart, l, layout, me, name, _ref;
+      me = controllers[0].me;
+      chart = controllers[1].me;
+      layout = (_ref = controllers[2]) != null ? _ref.me : void 0;
+      l = void 0;
+      if (!(chart || layout)) {
+        $log.error('scale needs to be contained in a chart or layout directive ');
+        return;
+      }
+      name = 'color';
+      me.kind(name);
+      me.parent(layout || chart);
+      me.chart(chart);
+      me.scaleType('category20');
+      element.addClass(me.id());
+      chart.addScale(me, layout);
+      me.register();
+      scaleUtils.observeSharedAttributes(attrs, me);
+      scaleUtils.observeLegendAttributes(attrs, me, layout);
+      return scope.$watch('mapFunction', function(fn) {
+        if (fn && _.isFunction(fn)) {
+          return me.scaleMapFn(fn);
+        }
+      });
+    }
+  };
+});
+
+angular.module('wk.chart').service('scaleUtils', function($log, wkChartScales, utils) {
+  var parseList;
+  parseList = function(val) {
+    var l;
+    if (val) {
+      l = val.trim().replace(/^\[|\]$/g, '').split(',').map(function(d) {
+        return d.replace(/^[\"|']|[\"|']$/g, '');
+      });
+      l = l.map(function(d) {
+        if (isNaN(d)) {
+          return d;
+        } else {
+          return +d;
+        }
+      });
+      if (l.length === 1) {
+        return l[0];
+      } else {
+        return l;
+      }
+    }
+  };
+  return {
+    observeSharedAttributes: function(attrs, me) {
+
+      /**
+        @ngdoc attr
+        @name type
+        @usedBy dimension
+        @param [type=layout specific - see layout docs] {scale}
+        Defines the d3 scale applied to transform the input data to a dimensions display value. All d3 scales are supported, as well as wk-chart specific extensions described here. #TODO insert correct links
+       */
+      attrs.$observe('type', function(val) {
+        if (val !== void 0) {
+          if (d3.scale.hasOwnProperty(val) || val === 'time' || wkChartScales.hasOwnProperty(val)) {
+            me.scaleType(val);
+          } else {
+            if (val !== '') {
+              $log.error("Error: illegal scale value: " + val + ". Using 'linear' scale instead");
+            }
+          }
+          return me.update();
+        }
+      });
+
+      /**
+        @ngdoc attr
+        @name exponent
+        @usedBy dimension
+        @param [exponent] {number}
+        This attribute is only evaluated with pow and log scale types - defines the exponent for the d3 pow and log scale #TODO insert correct links
+       */
+      attrs.$observe('exponent', function(val) {
+        if (me.scaleType() === 'pow' && _.isNumber(+val)) {
+          return me.exponent(+val).update();
+        }
+      });
+
+      /**
+        @ngdoc attr
+        @name property
+        @usedBy dimension
+        @param property{expression}
+          the input data property (properties) used to compute this dimension. In case the charts supports a the data layer dimension this attribute can be a list of data properties.
+          In this case the property field can be omitted, for non-layer dimension it is required.
+       */
+      attrs.$observe('property', function(val) {
+        return me.property(parseList(val)).update();
+      });
+
+      /**
+        @ngdoc attr
+        @name layerProperty
+        @usedBy dimension
+        @param [layerProperty] {expression}
+        defines the container object for property in case the data is a hierachical structure. See (#todo define link)
+         for more detail
+       */
+      attrs.$observe('layerProperty', function(val) {
+        if (val && val.length > 0) {
+          return me.layerProperty(val).update();
+        }
+      });
+
+      /**
+        @ngdoc attr
+        @name range
+        @usedBy dimension
+        @param [range] {expression}
+        The scale types range attribute. For x and y scales the range is set to the pixel width and height of the drawing container, for category... scales the range is set to the scales color range
+       */
+      attrs.$observe('range', function(val) {
+        var range;
+        range = parseList(val);
+        if (Array.isArray(range)) {
+          return me.range(range).update();
+        }
+      });
+
+      /**
+        @ngdoc attr
+        @name dateFormat
+        @usedBy dimension
+        @param [dateFormat] {expression}
+        applies to Time scale type only. Describes the date display format of the property field content. can be omitted if the field is already a javascript Date object, otherwise the format is used to transform
+        the property values into a Javascript Date object.Date Format is described using d3's [Time Format](https://github.com/mbostock/d3/wiki/Time-Formatting#format)
+       */
+      attrs.$observe('dateFormat', function(val) {
+        if (val) {
+          if (me.scaleType() === 'time') {
+            return me.dataFormat(val).update();
+          }
+        }
+      });
+
+      /**
+        @ngdoc attr
+        @name domain
+        @usedBy dimension
+        @param [domain] {expression}
+        the scale types domain property. Meaning and acceptable values for domain depend on teh scale type, thus please see (TODO: define link)
+        for further explanation
+       */
+      attrs.$observe('domain', function(val) {
+        var parsedList;
+        if (val) {
+          $log.info('domain', val);
+          parsedList = parseList(val);
+          if (Array.isArray(parsedList)) {
+            return me.domain(parsedList).update();
+          } else {
+            return $log.error("domain: must be array, or comma-separated list, got", val);
+          }
+        } else {
+          return me.domain(void 0).update();
+        }
+      });
+
+      /**
+        @ngdoc attr
+        @name domainRange
+        @usedBy dimension
+        @param [domainRange] {expression}
+        Certain scale type and dimensions require a calculation of the data range to perform the correct mapping onto the scale output.domainRange defined the rule to be used to calculate this. Possible values are:
+        min: [0 .. minimum data value]
+        max: [0 .. maximum data value]
+        extent: [minimum data value .. maximum data value]
+        total: applies only layer dimensions, calculates as 0 ..  maximum of the layer value totals]
+       */
+      attrs.$observe('domainRange', function(val) {
+        if (val) {
+          return me.domainCalc(val).update();
+        }
+      });
+
+      /**
+        @ngdoc attr
+        @name label
+        @usedBy dimension
+        @param [label] {expression}
+        defined the dimensions label text. If not specified, the value of teh 'property' attribute is used
+       */
+      attrs.$observe('label', function(val) {
+        if (val !== void 0) {
+          return me.axisLabel(val).updateAttrs();
+        }
+      });
+
+      /**
+        @ngdoc attr
+        @name format
+        @usedBy dimension
+        @param [format] {expression}
+         a formatting string used to display tooltip and legend values for the dimension. if omitted, a default format will be applied
+        please note tha this is different from the 'tickFormat' attribute
+       */
+      attrs.$observe('format', function(val) {
+        if (val !== void 0) {
+          return me.format(val);
+        }
+      });
+
+      /**
+        @ngdoc attr
+        @name reset
+        @usedBy dimension
+        @param [reset] {expression}
+         If sepcified or set to true, the domain values are reset every time the carts data changes.
+       */
+      return attrs.$observe('reset', function(val) {
+        return me.resetOnNewData(utils.parseTrueFalse(val));
+      });
+    },
+    observeAxisAttributes: function(attrs, me, scope) {
+
+      /**
+          @ngdoc attr
+          @name tickFormat
+          @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
+          @param [tickFormat] {expression}
+       */
+      attrs.$observe('tickFormat', function(val) {
+        if (val !== void 0) {
+          return me.tickFormat(d3.format(val)).update();
+        }
+      });
+
+      /**
+        @ngdoc attr
+        @name ticks
+        @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
+        @param [ticks] {expression}
+       */
+      attrs.$observe('ticks', function(val) {
+        if (val !== void 0) {
+          me.ticks(+val);
+          if (me.axis()) {
+            return me.updateAttrs();
+          }
+        }
+      });
+
+      /**
+        @ngdoc attr
+        @name grid
+        @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
+        @param [grid] {expression}
+       */
+      attrs.$observe('grid', function(val) {
+        if (val !== void 0) {
+          return me.showGrid(val === '' || val === 'true').updateAttrs();
+        }
+      });
+
+      /**
+        @ngdoc attr
+        @name showLabel
+        @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
+        @param [showLabel] {expression}
+       */
+      attrs.$observe('showLabel', function(val) {
+        if (val !== void 0) {
+          return me.showLabel(val === '' || val === 'true').update(true);
+        }
+      });
+
+      /**
+        @ngdoc attr
+        @name axisFormatters
+        @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
+        @param [axisFormatters] {expression}
+       */
+      return scope.$watch(attrs.axisFormatters, function(val) {
+        if (_.isObject(val)) {
+          if (_.has(val, 'tickFormat') && _.isFunction(val.tickFormat)) {
+            me.tickFormat(val.tickFormat);
+          } else if (_.isString(val.tickFormat)) {
+            me.tickFormat(d3.format(val));
+          }
+          if (_.has(val, 'tickValues') && _.isArray(val.tickValues)) {
+            me.tickValues(val.tickValues);
+          }
+          return me.update();
+        }
+      });
+    },
+    observeLegendAttributes: function(attrs, me, layout) {
+
+      /**
+        @ngdoc attr
+        @name legend
+        @usedBy dimension
+        @values true, false, top-right, top-left, bottom-left, bottom-right, #divName
+        @param [legend=true] {expression}
+       */
+      attrs.$observe('legend', function(val) {
+        var l, legendDiv;
+        if (val !== void 0) {
+          l = me.legend();
+          l.showValues(false);
+          switch (val) {
+            case 'false':
+              l.show(false);
+              break;
+            case 'top-left':
+            case 'top-right':
+            case 'bottom-left':
+            case 'bottom-right':
+              l.position(val).div(void 0).show(true);
+              break;
+            case 'true':
+            case '':
+              l.position('top-right').show(true).div(void 0);
+              break;
+            default:
+              legendDiv = d3.select(val);
+              if (legendDiv.empty()) {
+                $log.warn('legend reference does not exist:', val);
+                l.div(void 0).show(false);
+              } else {
+                l.div(legendDiv).position('top-left').show(true);
+              }
+          }
+          l.scale(me).layout(layout);
+          if (me.parent()) {
+            l.register(me.parent());
+          }
+          return l.redraw();
+        }
+      });
+
+      /**
+        @ngdoc attr
+        @name valuesLegend
+        @usedBy dimension
+        @param [valuesLegend] {expression}
+       */
+      attrs.$observe('valuesLegend', function(val) {
+        var l, legendDiv;
+        if (val !== void 0) {
+          l = me.legend();
+          l.showValues(true);
+          switch (val) {
+            case 'false':
+              l.show(false);
+              break;
+            case 'top-left':
+            case 'top-right':
+            case 'bottom-left':
+            case 'bottom-right':
+              l.position(val).div(void 0).show(true);
+              break;
+            case 'true':
+            case '':
+              l.position('top-right').show(true).div(void 0);
+              break;
+            default:
+              legendDiv = d3.select(val);
+              if (legendDiv.empty()) {
+                $log.warn('legend reference does not exist:', val);
+                l.div(void 0).show(false);
+              } else {
+                l.div(legendDiv).position('top-left').show(true);
+              }
+          }
+          l.scale(me).layout(layout);
+          if (me.parent()) {
+            l.register(me.parent());
+          }
+          return l.redraw();
+        }
+      });
+
+      /**
+        @ngdoc attr
+        @name legendTitle
+        @usedBy dimension
+        @param [legendTitle] {expression}
+       */
+      return attrs.$observe('legendTitle', function(val) {
+        if (val !== void 0) {
+          return me.legend().title(val).redraw();
+        }
+      });
+    },
+    observerRangeAttributes: function(attrs, me) {
+
+      /**
+        @ngdoc attr
+        @name lowerProperty
+        @usedBy dimension.rangeX, dimension.rangeY
+        @param [lowerProperty] {expression}
+       */
+      attrs.$observe('lowerProperty', function(val) {
+        return me.lowerProperty(parseList(val)).update();
+      });
+
+      /**
+        @ngdoc attr
+        @name upperProperty
+        @usedBy dimension.rangeX, dimension.rangeY
+        @param [upperProperty] {expression}
+       */
+      return attrs.$observe('upperProperty', function(val) {
+        return me.upperProperty(parseList(val)).update();
+      });
+    }
+  };
+});
+
+
+/**
+  @ngdoc dimension
+  @name shape
+  @module wk.chart
+  @restrict E
+  @description
+
+  describes how the chart data is translated into shape objects in teh chart
+ */
+angular.module('wk.chart').directive('shape', function($log, scale, d3Shapes, scaleUtils) {
+  var scaleCnt;
+  scaleCnt = 0;
+  return {
+    restrict: 'E',
+    require: ['shape', '^chart', '?^layout'],
+    controller: function($element) {
+      return this.me = scale();
+    },
+    link: function(scope, element, attrs, controllers) {
+      var chart, layout, me, name, _ref;
+      me = controllers[0].me;
+      chart = controllers[1].me;
+      layout = (_ref = controllers[2]) != null ? _ref.me : void 0;
+      if (!(chart || layout)) {
+        $log.error('scale needs to be contained in a chart or layout directive ');
+        return;
+      }
+      name = 'shape';
+      me.kind(name);
+      me.parent(layout || chart);
+      me.chart(chart);
+      me.scaleType('ordinal');
+      me.scale().range(d3Shapes);
+      element.addClass(me.id());
+      chart.addScale(me, layout);
+      me.register();
+      scaleUtils.observeSharedAttributes(attrs, me);
+      return scaleUtils.observeLegendAttributes(attrs, me, layout);
+    }
+  };
+});
+
+
+/**
+  @ngdoc dimension
+  @name size
+  @module wk.chart
+  @restrict E
+  @description
+
+  describes how the chart data is translated into the size of chart objects
+ */
+angular.module('wk.chart').directive('size', function($log, scale, scaleUtils) {
+  var scaleCnt;
+  scaleCnt = 0;
+  return {
+    restrict: 'E',
+    require: ['size', '^chart', '?^layout'],
+    controller: function($element) {
+      return this.me = scale();
+    },
+    link: function(scope, element, attrs, controllers) {
+      var chart, layout, me, name, _ref;
+      me = controllers[0].me;
+      chart = controllers[1].me;
+      layout = (_ref = controllers[2]) != null ? _ref.me : void 0;
+      if (!(chart || layout)) {
+        $log.error('scale needs to be contained in a chart or layout directive ');
+        return;
+      }
+      name = 'size';
+      me.kind(name);
+      me.parent(layout || chart);
+      me.chart(chart);
+      me.scaleType('linear');
+      me.resetOnNewData(true);
+      element.addClass(me.id());
+      chart.addScale(me, layout);
+      me.register();
+      scaleUtils.observeSharedAttributes(attrs, me);
+      return scaleUtils.observeLegendAttributes(attrs, me, layout);
+    }
+  };
+});
+
+
+/**
+  @ngdoc dimension
+  @name x
+  @module wk.chart
+  @restrict E
+  @description
+
+  This dimension defined the horizontal axis of the chart
+
+  @param {string} axis
+  Define if a horizontal axis should be displayed Possible values:
+ */
+angular.module('wk.chart').directive('x', function($log, scale, scaleUtils) {
+  var scaleCnt;
+  scaleCnt = 0;
+  return {
+    restrict: 'E',
+    require: ['x', '^chart', '?^layout'],
+    controller: function($element) {
+      return this.me = scale();
+    },
+    link: function(scope, element, attrs, controllers) {
+      var chart, layout, me, name, _ref;
+      me = controllers[0].me;
+      chart = controllers[1].me;
+      layout = (_ref = controllers[2]) != null ? _ref.me : void 0;
+      if (!(chart || layout)) {
+        $log.error('scale needs to be contained in a chart or layout directive ');
+        return;
+      }
+      name = 'x';
+      me.kind(name);
+      me.parent(layout || chart);
+      me.chart(chart);
+      me.scaleType('linear');
+      me.resetOnNewData(true);
+      me.isHorizontal(true);
+      me.register();
+      element.addClass(me.id());
+      chart.addScale(me, layout);
+      scaleUtils.observeSharedAttributes(attrs, me);
+      attrs.$observe('axis', function(val) {
+        if (val !== void 0) {
+          if (val !== 'false') {
+            if (val === 'top' || val === 'bottom') {
+              me.axisOrient(val).showAxis(true);
+            } else {
+              me.axisOrient('bottom').showAxis(true);
+            }
+          } else {
+            me.showAxis(false).axisOrient(void 0);
+          }
+          return me.update(true);
+        }
+      });
+      scaleUtils.observeAxisAttributes(attrs, me, scope);
+      scaleUtils.observeLegendAttributes(attrs, me, layout);
+      return attrs.$observe('rotateTickLabels', function(val) {
+        if (val && _.isNumber(+val)) {
+          me.rotateTickLabels(+val);
+        } else {
+          me.rotateTickLabels(void 0);
+        }
+        return me.update(true);
+      });
+    }
+  };
+});
+
+
+/**
+  @ngdoc dimension
+  @name rangeX
+  @module wk.chart
+  @restrict E
+  @description
+
+  describes how the chart data is translated into horizontal ranges for the chart objects
+ */
+angular.module('wk.chart').directive('rangeX', function($log, scale, scaleUtils) {
+  var scaleCnt;
+  scaleCnt = 0;
+  return {
+    restrict: 'E',
+    require: ['rangeX', '^chart', '?^layout'],
+    controller: function($element) {
+      return this.me = scale();
+    },
+    link: function(scope, element, attrs, controllers) {
+      var chart, layout, me, name, _ref;
+      me = controllers[0].me;
+      chart = controllers[1].me;
+      layout = (_ref = controllers[2]) != null ? _ref.me : void 0;
+      if (!(chart || layout)) {
+        $log.error('scale needs to be contained in a chart or layout directive ');
+        return;
+      }
+      name = 'rangeX';
+      me.kind(name);
+      me.parent(layout || chart);
+      me.chart(chart);
+      me.scaleType('linear');
+      me.resetOnNewData(true);
+      me.isHorizontal(true);
+      me.register();
+      element.addClass(me.id());
+      chart.addScale(me, layout);
+      scaleUtils.observeSharedAttributes(attrs, me);
+      attrs.$observe('axis', function(val) {
+        if (val !== void 0) {
+          if (val !== 'false') {
+            if (val === 'top' || val === 'bottom') {
+              me.axisOrient(val).showAxis(true);
+            } else {
+              me.axisOrient('bottom').showAxis(true);
+            }
+          } else {
+            me.showAxis(false).axisOrient(void 0);
+          }
+          return me.update(true);
+        }
+      });
+      scaleUtils.observeAxisAttributes(attrs, me, scope);
+      scaleUtils.observeLegendAttributes(attrs, me, layout);
+      scaleUtils.observerRangeAttributes(attrs, me);
+      return attrs.$observe('rotateTickLabels', function(val) {
+        if (val && _.isNumber(+val)) {
+          me.rotateTickLabels(+val);
+        } else {
+          me.rotateTickLabels(void 0);
+        }
+        return me.update(true);
+      });
+    }
+  };
+});
+
+
+/**
+  @ngdoc dimension
+  @name y
+  @module wk.chart
+  @restrict E
+  @description
+
+  This dimension defined the vertical axis of the chart
+
+  @param {string} axis
+  Define if a vertical axis should be displayed Possible values:
+ */
+angular.module('wk.chart').directive('y', function($log, scale, legend, scaleUtils) {
+  var scaleCnt;
+  scaleCnt = 0;
+  return {
+    restrict: 'E',
+    require: ['y', '^chart', '?^layout'],
+    controller: function($element) {
+      return this.me = scale();
+    },
+    link: function(scope, element, attrs, controllers) {
+      var chart, layout, me, name, _ref;
+      me = controllers[0].me;
+      chart = controllers[1].me;
+      layout = (_ref = controllers[2]) != null ? _ref.me : void 0;
+      if (!(chart || layout)) {
+        $log.error('scale needs to be contained in a chart or layout directive ');
+        return;
+      }
+      name = 'y';
+      me.kind(name);
+      me.parent(layout || chart);
+      me.chart(chart);
+      me.scaleType('linear');
+      me.isVertical(true);
+      me.resetOnNewData(true);
+      element.addClass(me.id());
+      chart.addScale(me, layout);
+      me.register();
+      scaleUtils.observeSharedAttributes(attrs, me);
+      attrs.$observe('axis', function(val) {
+        if (val !== void 0) {
+          if (val !== 'false') {
+            if (val === 'left' || val === 'right') {
+              me.axisOrient(val).showAxis(true);
+            } else {
+              me.axisOrient('left').showAxis(true);
+            }
+          } else {
+            me.showAxis(false).axisOrient(void 0);
+          }
+          return me.update(true);
+        }
+      });
+      scaleUtils.observeAxisAttributes(attrs, me, scope);
+      return scaleUtils.observeLegendAttributes(attrs, me, layout);
+    }
+  };
+});
+
+
+/**
+  @ngdoc dimension
+  @name rangeY
+  @module wk.chart
+  @restrict E
+  @description
+
+  describes how the chart data is translated into vertical ranges for the chart objects
+ */
+angular.module('wk.chart').directive('rangeY', function($log, scale, legend, scaleUtils) {
+  var scaleCnt;
+  scaleCnt = 0;
+  return {
+    restrict: 'E',
+    require: ['rangeY', '^chart', '?^layout'],
+    controller: function($element) {
+      return this.me = scale();
+    },
+    link: function(scope, element, attrs, controllers) {
+      var chart, layout, me, name, _ref;
+      me = controllers[0].me;
+      chart = controllers[1].me;
+      layout = (_ref = controllers[2]) != null ? _ref.me : void 0;
+      if (!(chart || layout)) {
+        $log.error('scale needs to be contained in a chart or layout directive ');
+        return;
+      }
+      name = 'rangeY';
+      me.kind(name);
+      me.parent(layout || chart);
+      me.chart(chart);
+      me.scaleType('linear');
+      me.isVertical(true);
+      me.resetOnNewData(true);
+      element.addClass(me.id());
+      chart.addScale(me, layout);
+      me.register();
+      scaleUtils.observeSharedAttributes(attrs, me);
+      attrs.$observe('axis', function(val) {
+        if (val !== void 0) {
+          if (val !== 'false') {
+            if (val === 'left' || val === 'right') {
+              me.axisOrient(val).showAxis(true);
+            } else {
+              me.axisOrient('left').showAxis(true);
+            }
+          } else {
+            me.showAxis(false).axisOrient(void 0);
+          }
+          return me.update(true);
+        }
+      });
+      scaleUtils.observeAxisAttributes(attrs, me, scope);
+      scaleUtils.observeLegendAttributes(attrs, me, layout);
+      return scaleUtils.observerRangeAttributes(attrs, me);
     }
   };
 });
@@ -6645,7 +7432,7 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
         } else {
           $log.error('Error: illegal scale type:', type);
         }
-        _isOrdinal = _scaleType === 'ordinal' || _scaleType === 'category10' || _scaleType === 'category20' || _scaleType === 'category20b' || _scaleType === 'category20c';
+        _isOrdinal = _.has(_scale, 'rangeBand');
         if (_range) {
           me.range(_range);
         }
@@ -6665,6 +7452,19 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
         _exponent = value;
         if (_scaleType === 'pow') {
           _scale.exponent(_exponent);
+        }
+        return me;
+      }
+    };
+    me.scaleMapFn = function(fn) {
+      if (arguments.length === 0) {
+        if (_scale.mapFn) {
+          return _scale.mapFn();
+        }
+        return void 0;
+      } else {
+        if (_.isFunction(fn) && _scale.mapFn) {
+          _scale.mapFn(fn);
         }
         return me;
       }
@@ -6725,9 +7525,11 @@ angular.module('wk.chart').factory('scale', function($log, legend, formatDefault
         return _scale.range();
       } else {
         _range = range;
-        if (_scaleType === 'ordinal' && ((_ref = me.kind()) === 'x' || _ref === 'y')) {
-          _scale.rangeBands(range, _rangePadding, _rangeOuterPadding);
-        } else if (!(_scaleType === 'category10' || _scaleType === 'category20' || _scaleType === 'category20b' || _scaleType === 'category20c')) {
+        if (_isOrdinal) {
+          if ((_ref = me.kind()) === 'x' || _ref === 'y' || _ref === 'rangeX' || _ref === 'rangeY') {
+            _scale.rangeBands(range, _rangePadding, _rangeOuterPadding);
+          }
+        } else {
           _scale.range(range);
         }
         return me;
@@ -7231,994 +8033,6 @@ angular.module('wk.chart').factory('scaleList', function($log) {
   };
 });
 
-
-/**
-  @ngdoc provider
-  @module wk.chart
-  @name wkChartLocaleProvider
-  @description
-  registers a den locale
- */
-angular.module('wk.chart').provider('wkChartLocale', function() {
-  var locale, locales;
-  locale = 'en_US';
-  locales = {
-    de_DE: d3.locale({
-      decimal: ",",
-      thousands: ".",
-      grouping: [3],
-      currency: ["", " €"],
-      dateTime: "%A, der %e. %B %Y, %X",
-      date: "%e.%m.%Y",
-      time: "%H:%M:%S",
-      periods: ["AM", "PM"],
-      days: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
-      shortDays: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
-      months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
-      shortMonths: ["Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
-    }),
-    'en_US': d3.locale({
-      "decimal": ".",
-      "thousands": ",",
-      "grouping": [3],
-      "currency": ["$", ""],
-      "dateTime": "%a %b %e %X %Y",
-      "date": "%m/%d/%Y",
-      "time": "%H:%M:%S",
-      "periods": ["AM", "PM"],
-      "days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-      "shortDays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-      "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-      "shortMonths": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    })
-  };
-
-  /**
-    @ngdoc method
-    @name wkChartLocaleProvider#setLocale
-    @param name {string} name of the locale. If locale is unknown it reports an error and sets locale to en_US
-   */
-  this.setLocale = function(l) {
-    if (_.has(locales, l)) {
-      return locale = l;
-    } else {
-      throw "unknowm locale '" + l + "' using 'en-US' instead";
-    }
-  };
-
-  /**
-    @ngdoc method
-    @name wkChartLocaleProvider#addLocaleDefinition
-    @param name {string} name of the locale.
-    @param localeDefinition {object} A d3.js locale definition object. See [d3 documentation](https://github.com/mbostock/d3/wiki/Localization#d3_locale) for details of the format.
-   */
-  this.addLocaleDefinition = function(name, l) {
-    return locales[name] = d3.locale(l);
-  };
-
-  /**
-    @ngdoc service
-    @module wk.chart
-    @name wkChartLocale
-    @description
-    @returns d3.ls locale definition
-   */
-  this.$get = [
-    '$log', function($log) {
-      return locales[locale];
-    }
-  ];
-  return this;
-});
-
-angular.module('wk.chart').provider('wkChartScales', function() {
-  var categoryColors, categoryColorsHashed, hashed, _customColors;
-  _customColors = ['red', 'green', 'blue', 'yellow', 'orange'];
-  hashed = function() {
-    var d3Scale, me, _hashFn;
-    d3Scale = d3.scale.ordinal();
-    _hashFn = function(value) {
-      var hash, i, m, _i, _ref, _results;
-      hash = 0;
-      m = d3Scale.range().length - 1;
-      _results = [];
-      for (i = _i = 0, _ref = value.length; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-        _results.push(hash = (31 * hash + value.charAt(i)) % m);
-      }
-      return _results;
-    };
-    me = function(value) {
-      if (!arguments) {
-        return me;
-      }
-      return d3Scale(_hashFn(value));
-    };
-    me.range = function(range) {
-      if (!arguments) {
-        return d3Scale.range();
-      }
-      d3Scale.domain(d3.range(range.length));
-      return d3Scale.range(range);
-    };
-    me.rangePoint = d3Scale.rangePoints;
-    me.rangeBands = d3Scale.rangeBands;
-    me.rangeRoundBands = d3Scale.rangeRoundBands;
-    me.rangeBand = d3Scale.rangeBand;
-    me.rangeExtent = d3Scale.rangeExtent;
-    me.hash = function(fn) {
-      if (!arguments) {
-        return _hashFn;
-      }
-      _hashFn = fn;
-      return me;
-    };
-    return me;
-  };
-  categoryColors = function() {
-    return d3.scale.ordinal().range(_customColors);
-  };
-  categoryColorsHashed = function() {
-    return hashed().range(_customColors);
-  };
-  this.colors = function(colors) {
-    return _customColors = colors;
-  };
-  this.$get = [
-    '$log', function($log) {
-      return {
-        hashed: hashed,
-        colors: categoryColors,
-        colorsHashed: categoryColorsHashed
-      };
-    }
-  ];
-  return this;
-});
-
-
-/**
-  @ngdoc provider
-  @module wk.chart
-  @name wkChartTemplatesProvider
-  @description
-  used to register a custom tooltip or legend default template and overwrite the default system templates.
- */
-angular.module('wk.chart').provider('wkChartTemplates', function() {
-  var legendTemplateUrl, tooltipTemplateUrl;
-  tooltipTemplateUrl = 'templates/toolTip.html';
-  legendTemplateUrl = 'templates/legend.html';
-
-  /**
-    @ngdoc method
-    @name wkChartTemplatesProvider#setTooltipTemplate
-    @param url {string} the url of the template file
-   */
-  this.setTooltipTemplate = function(url) {
-    return tooltipTemplateUrl = url;
-  };
-
-  /**
-      @ngdoc method
-      @name wkChartTemplatesProvider#setLegendTemplate
-      @param url {string} the url of the template file
-   */
-  this.setLegendTemplate = function(url) {
-    return legendTemplateUrl = url;
-  };
-
-  /**
-    @ngdoc service
-    @module wk.chart
-    @name wkChartTemplates
-    @description
-    provides the default tooltip and legend template.
-   */
-  this.$get = [
-    '$log', '$templateCache', function($log, $templateCache) {
-      return {
-
-        /**
-          @ngdoc method
-          @name wkChartTemplates#tooltipTemplate
-          @returns {string} the tooltips template
-         */
-        tooltipTemplate: function() {
-          return $templateCache.get(tooltipTemplateUrl);
-        },
-
-        /**
-          @ngdoc method
-          @name wkChartTemplates#legendTemplate
-          @returns {string} the legends template
-         */
-        legendTemplate: function() {
-          return $templateCache.get(legendTemplateUrl);
-        }
-      };
-    }
-  ];
-  return this;
-});
-
-
-/**
-  @ngdoc dimension
-  @name color
-  @module wk.chart
-  @restrict E
-  @description
-
-  describes how the chart data is translated into colors for chart objects
- */
-angular.module('wk.chart').directive('color', function($log, scale, legend, scaleUtils) {
-  var scaleCnt;
-  scaleCnt = 0;
-  return {
-    restrict: 'E',
-    require: ['color', '^chart', '?^layout'],
-    controller: function($element) {
-      return this.me = scale();
-    },
-    link: function(scope, element, attrs, controllers) {
-      var chart, l, layout, me, name, _ref;
-      me = controllers[0].me;
-      chart = controllers[1].me;
-      layout = (_ref = controllers[2]) != null ? _ref.me : void 0;
-      l = void 0;
-      if (!(chart || layout)) {
-        $log.error('scale needs to be contained in a chart or layout directive ');
-        return;
-      }
-      name = 'color';
-      me.kind(name);
-      me.parent(layout || chart);
-      me.chart(chart);
-      me.scaleType('category20');
-      element.addClass(me.id());
-      chart.addScale(me, layout);
-      me.register();
-      scaleUtils.observeSharedAttributes(attrs, me);
-      return scaleUtils.observeLegendAttributes(attrs, me, layout);
-    }
-  };
-});
-
-angular.module('wk.chart').service('scaleUtils', function($log, wkChartScales, utils) {
-  var parseList;
-  parseList = function(val) {
-    var l;
-    if (val) {
-      l = val.trim().replace(/^\[|\]$/g, '').split(',').map(function(d) {
-        return d.replace(/^[\"|']|[\"|']$/g, '');
-      });
-      l = l.map(function(d) {
-        if (isNaN(d)) {
-          return d;
-        } else {
-          return +d;
-        }
-      });
-      if (l.length === 1) {
-        return l[0];
-      } else {
-        return l;
-      }
-    }
-  };
-  return {
-    observeSharedAttributes: function(attrs, me) {
-
-      /**
-        @ngdoc attr
-        @name type
-        @usedBy dimension
-        @param [type=layout specific - see layout docs] {scale}
-        Defines the d3 scale applied to transform the input data to a dimensions display value. All d3 scales are supported, as well as wk-chart specific extensions described here. #TODO insert correct links
-       */
-      attrs.$observe('type', function(val) {
-        if (val !== void 0) {
-          if (d3.scale.hasOwnProperty(val) || val === 'time' || wkChartScales.hasOwnProperty(val)) {
-            me.scaleType(val);
-          } else {
-            if (val !== '') {
-              $log.error("Error: illegal scale value: " + val + ". Using 'linear' scale instead");
-            }
-          }
-          return me.update();
-        }
-      });
-
-      /**
-        @ngdoc attr
-        @name exponent
-        @usedBy dimension
-        @param [exponent] {number}
-        This attribute is only evaluated with pow and log scale types - defines the exponent for the d3 pow and log scale #TODO insert correct links
-       */
-      attrs.$observe('exponent', function(val) {
-        if (me.scaleType() === 'pow' && _.isNumber(+val)) {
-          return me.exponent(+val).update();
-        }
-      });
-
-      /**
-        @ngdoc attr
-        @name property
-        @usedBy dimension
-        @param property{expression}
-          the input data property (properties) used to compute this dimension. In case the charts supports a the data layer dimension this attribute can be a list of data properties.
-          In this case the property field can be omitted, for non-layer dimension it is required.
-       */
-      attrs.$observe('property', function(val) {
-        return me.property(parseList(val)).update();
-      });
-
-      /**
-        @ngdoc attr
-        @name layerProperty
-        @usedBy dimension
-        @param [layerProperty] {expression}
-        defines the container object for property in case the data is a hierachical structure. See (#todo define link)
-         for more detail
-       */
-      attrs.$observe('layerProperty', function(val) {
-        if (val && val.length > 0) {
-          return me.layerProperty(val).update();
-        }
-      });
-
-      /**
-        @ngdoc attr
-        @name range
-        @usedBy dimension
-        @param [range] {expression}
-        The scale types range attribute. For x and y scales the range is set to the pixel width and height of the drawing container, for category... scales the range is set to the scales color range
-       */
-      attrs.$observe('range', function(val) {
-        var range;
-        range = parseList(val);
-        if (Array.isArray(range)) {
-          return me.range(range).update();
-        }
-      });
-
-      /**
-        @ngdoc attr
-        @name dateFormat
-        @usedBy dimension
-        @param [dateFormat] {expression}
-        applies to Time scale type only. Describes the date display format of the property field content. can be omitted if the field is already a javascript Date object, otherwise the format is used to transform
-        the property values into a Javascript Date object.Date Format is described using d3's [Time Format](https://github.com/mbostock/d3/wiki/Time-Formatting#format)
-       */
-      attrs.$observe('dateFormat', function(val) {
-        if (val) {
-          if (me.scaleType() === 'time') {
-            return me.dataFormat(val).update();
-          }
-        }
-      });
-
-      /**
-        @ngdoc attr
-        @name domain
-        @usedBy dimension
-        @param [domain] {expression}
-        the scale types domain property. Meaning and acceptable values for domain depend on teh scale type, thus please see (TODO: define link)
-        for further explanation
-       */
-      attrs.$observe('domain', function(val) {
-        var parsedList;
-        if (val) {
-          $log.info('domain', val);
-          parsedList = parseList(val);
-          if (Array.isArray(parsedList)) {
-            return me.domain(parsedList).update();
-          } else {
-            return $log.error("domain: must be array, or comma-separated list, got", val);
-          }
-        } else {
-          return me.domain(void 0).update();
-        }
-      });
-
-      /**
-        @ngdoc attr
-        @name domainRange
-        @usedBy dimension
-        @param [domainRange] {expression}
-        Certain scale type and dimensions require a calculation of the data range to perform the correct mapping onto the scale output.domainRange defined the rule to be used to calculate this. Possible values are:
-        min: [0 .. minimum data value]
-        max: [0 .. maximum data value]
-        extent: [minimum data value .. maximum data value]
-        total: applies only layer dimensions, calculates as 0 ..  maximum of the layer value totals]
-       */
-      attrs.$observe('domainRange', function(val) {
-        if (val) {
-          return me.domainCalc(val).update();
-        }
-      });
-
-      /**
-        @ngdoc attr
-        @name label
-        @usedBy dimension
-        @param [label] {expression}
-        defined the dimensions label text. If not specified, the value of teh 'property' attribute is used
-       */
-      attrs.$observe('label', function(val) {
-        if (val !== void 0) {
-          return me.axisLabel(val).updateAttrs();
-        }
-      });
-
-      /**
-        @ngdoc attr
-        @name format
-        @usedBy dimension
-        @param [format] {expression}
-         a formatting string used to display tooltip and legend values for the dimension. if omitted, a default format will be applied
-        please note tha this is different from the 'tickFormat' attribute
-       */
-      attrs.$observe('format', function(val) {
-        if (val !== void 0) {
-          return me.format(val);
-        }
-      });
-
-      /**
-        @ngdoc attr
-        @name reset
-        @usedBy dimension
-        @param [reset] {expression}
-         If sepcified or set to true, the domain values are reset every time the carts data changes.
-       */
-      return attrs.$observe('reset', function(val) {
-        return me.resetOnNewData(utils.parseTrueFalse(val));
-      });
-    },
-    observeAxisAttributes: function(attrs, me, scope) {
-
-      /**
-          @ngdoc attr
-          @name tickFormat
-          @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
-          @param [tickFormat] {expression}
-       */
-      attrs.$observe('tickFormat', function(val) {
-        if (val !== void 0) {
-          return me.tickFormat(d3.format(val)).update();
-        }
-      });
-
-      /**
-        @ngdoc attr
-        @name ticks
-        @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
-        @param [ticks] {expression}
-       */
-      attrs.$observe('ticks', function(val) {
-        if (val !== void 0) {
-          me.ticks(+val);
-          if (me.axis()) {
-            return me.updateAttrs();
-          }
-        }
-      });
-
-      /**
-        @ngdoc attr
-        @name grid
-        @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
-        @param [grid] {expression}
-       */
-      attrs.$observe('grid', function(val) {
-        if (val !== void 0) {
-          return me.showGrid(val === '' || val === 'true').updateAttrs();
-        }
-      });
-
-      /**
-        @ngdoc attr
-        @name showLabel
-        @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
-        @param [showLabel] {expression}
-       */
-      attrs.$observe('showLabel', function(val) {
-        if (val !== void 0) {
-          return me.showLabel(val === '' || val === 'true').update(true);
-        }
-      });
-
-      /**
-        @ngdoc attr
-        @name axisFormatters
-        @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
-        @param [axisFormatters] {expression}
-       */
-      return scope.$watch(attrs.axisFormatters, function(val) {
-        if (_.isObject(val)) {
-          if (_.has(val, 'tickFormat') && _.isFunction(val.tickFormat)) {
-            me.tickFormat(val.tickFormat);
-          } else if (_.isString(val.tickFormat)) {
-            me.tickFormat(d3.format(val));
-          }
-          if (_.has(val, 'tickValues') && _.isArray(val.tickValues)) {
-            me.tickValues(val.tickValues);
-          }
-          return me.update();
-        }
-      });
-    },
-    observeLegendAttributes: function(attrs, me, layout) {
-
-      /**
-        @ngdoc attr
-        @name legend
-        @usedBy dimension
-        @values true, false, top-right, top-left, bottom-left, bottom-right, #divName
-        @param [legend=true] {expression}
-       */
-      attrs.$observe('legend', function(val) {
-        var l, legendDiv;
-        if (val !== void 0) {
-          l = me.legend();
-          l.showValues(false);
-          switch (val) {
-            case 'false':
-              l.show(false);
-              break;
-            case 'top-left':
-            case 'top-right':
-            case 'bottom-left':
-            case 'bottom-right':
-              l.position(val).div(void 0).show(true);
-              break;
-            case 'true':
-            case '':
-              l.position('top-right').show(true).div(void 0);
-              break;
-            default:
-              legendDiv = d3.select(val);
-              if (legendDiv.empty()) {
-                $log.warn('legend reference does not exist:', val);
-                l.div(void 0).show(false);
-              } else {
-                l.div(legendDiv).position('top-left').show(true);
-              }
-          }
-          l.scale(me).layout(layout);
-          if (me.parent()) {
-            l.register(me.parent());
-          }
-          return l.redraw();
-        }
-      });
-
-      /**
-        @ngdoc attr
-        @name valuesLegend
-        @usedBy dimension
-        @param [valuesLegend] {expression}
-       */
-      attrs.$observe('valuesLegend', function(val) {
-        var l, legendDiv;
-        if (val !== void 0) {
-          l = me.legend();
-          l.showValues(true);
-          switch (val) {
-            case 'false':
-              l.show(false);
-              break;
-            case 'top-left':
-            case 'top-right':
-            case 'bottom-left':
-            case 'bottom-right':
-              l.position(val).div(void 0).show(true);
-              break;
-            case 'true':
-            case '':
-              l.position('top-right').show(true).div(void 0);
-              break;
-            default:
-              legendDiv = d3.select(val);
-              if (legendDiv.empty()) {
-                $log.warn('legend reference does not exist:', val);
-                l.div(void 0).show(false);
-              } else {
-                l.div(legendDiv).position('top-left').show(true);
-              }
-          }
-          l.scale(me).layout(layout);
-          if (me.parent()) {
-            l.register(me.parent());
-          }
-          return l.redraw();
-        }
-      });
-
-      /**
-        @ngdoc attr
-        @name legendTitle
-        @usedBy dimension
-        @param [legendTitle] {expression}
-       */
-      return attrs.$observe('legendTitle', function(val) {
-        if (val !== void 0) {
-          return me.legend().title(val).redraw();
-        }
-      });
-    },
-    observerRangeAttributes: function(attrs, me) {
-
-      /**
-        @ngdoc attr
-        @name lowerProperty
-        @usedBy dimension.rangeX, dimension.rangeY
-        @param [lowerProperty] {expression}
-       */
-      attrs.$observe('lowerProperty', function(val) {
-        return me.lowerProperty(parseList(val)).update();
-      });
-
-      /**
-        @ngdoc attr
-        @name upperProperty
-        @usedBy dimension.rangeX, dimension.rangeY
-        @param [upperProperty] {expression}
-       */
-      return attrs.$observe('upperProperty', function(val) {
-        return me.upperProperty(parseList(val)).update();
-      });
-    }
-  };
-});
-
-
-/**
-  @ngdoc dimension
-  @name shape
-  @module wk.chart
-  @restrict E
-  @description
-
-  describes how the chart data is translated into shape objects in teh chart
- */
-angular.module('wk.chart').directive('shape', function($log, scale, d3Shapes, scaleUtils) {
-  var scaleCnt;
-  scaleCnt = 0;
-  return {
-    restrict: 'E',
-    require: ['shape', '^chart', '?^layout'],
-    controller: function($element) {
-      return this.me = scale();
-    },
-    link: function(scope, element, attrs, controllers) {
-      var chart, layout, me, name, _ref;
-      me = controllers[0].me;
-      chart = controllers[1].me;
-      layout = (_ref = controllers[2]) != null ? _ref.me : void 0;
-      if (!(chart || layout)) {
-        $log.error('scale needs to be contained in a chart or layout directive ');
-        return;
-      }
-      name = 'shape';
-      me.kind(name);
-      me.parent(layout || chart);
-      me.chart(chart);
-      me.scaleType('ordinal');
-      me.scale().range(d3Shapes);
-      element.addClass(me.id());
-      chart.addScale(me, layout);
-      me.register();
-      scaleUtils.observeSharedAttributes(attrs, me);
-      return scaleUtils.observeLegendAttributes(attrs, me, layout);
-    }
-  };
-});
-
-
-/**
-  @ngdoc dimension
-  @name size
-  @module wk.chart
-  @restrict E
-  @description
-
-  describes how the chart data is translated into the size of chart objects
- */
-angular.module('wk.chart').directive('size', function($log, scale, scaleUtils) {
-  var scaleCnt;
-  scaleCnt = 0;
-  return {
-    restrict: 'E',
-    require: ['size', '^chart', '?^layout'],
-    controller: function($element) {
-      return this.me = scale();
-    },
-    link: function(scope, element, attrs, controllers) {
-      var chart, layout, me, name, _ref;
-      me = controllers[0].me;
-      chart = controllers[1].me;
-      layout = (_ref = controllers[2]) != null ? _ref.me : void 0;
-      if (!(chart || layout)) {
-        $log.error('scale needs to be contained in a chart or layout directive ');
-        return;
-      }
-      name = 'size';
-      me.kind(name);
-      me.parent(layout || chart);
-      me.chart(chart);
-      me.scaleType('linear');
-      me.resetOnNewData(true);
-      element.addClass(me.id());
-      chart.addScale(me, layout);
-      me.register();
-      scaleUtils.observeSharedAttributes(attrs, me);
-      return scaleUtils.observeLegendAttributes(attrs, me, layout);
-    }
-  };
-});
-
-
-/**
-  @ngdoc dimension
-  @name x
-  @module wk.chart
-  @restrict E
-  @description
-
-  This dimension defined the horizontal axis of the chart
-
-  @param {string} axis
-  Define if a horizontal axis should be displayed Possible values:
- */
-angular.module('wk.chart').directive('x', function($log, scale, scaleUtils) {
-  var scaleCnt;
-  scaleCnt = 0;
-  return {
-    restrict: 'E',
-    require: ['x', '^chart', '?^layout'],
-    controller: function($element) {
-      return this.me = scale();
-    },
-    link: function(scope, element, attrs, controllers) {
-      var chart, layout, me, name, _ref;
-      me = controllers[0].me;
-      chart = controllers[1].me;
-      layout = (_ref = controllers[2]) != null ? _ref.me : void 0;
-      if (!(chart || layout)) {
-        $log.error('scale needs to be contained in a chart or layout directive ');
-        return;
-      }
-      name = 'x';
-      me.kind(name);
-      me.parent(layout || chart);
-      me.chart(chart);
-      me.scaleType('linear');
-      me.resetOnNewData(true);
-      me.isHorizontal(true);
-      me.register();
-      element.addClass(me.id());
-      chart.addScale(me, layout);
-      scaleUtils.observeSharedAttributes(attrs, me);
-      attrs.$observe('axis', function(val) {
-        if (val !== void 0) {
-          if (val !== 'false') {
-            if (val === 'top' || val === 'bottom') {
-              me.axisOrient(val).showAxis(true);
-            } else {
-              me.axisOrient('bottom').showAxis(true);
-            }
-          } else {
-            me.showAxis(false).axisOrient(void 0);
-          }
-          return me.update(true);
-        }
-      });
-      scaleUtils.observeAxisAttributes(attrs, me, scope);
-      scaleUtils.observeLegendAttributes(attrs, me, layout);
-      return attrs.$observe('rotateTickLabels', function(val) {
-        if (val && _.isNumber(+val)) {
-          me.rotateTickLabels(+val);
-        } else {
-          me.rotateTickLabels(void 0);
-        }
-        return me.update(true);
-      });
-    }
-  };
-});
-
-
-/**
-  @ngdoc dimension
-  @name rangeX
-  @module wk.chart
-  @restrict E
-  @description
-
-  describes how the chart data is translated into horizontal ranges for the chart objects
- */
-angular.module('wk.chart').directive('rangeX', function($log, scale, scaleUtils) {
-  var scaleCnt;
-  scaleCnt = 0;
-  return {
-    restrict: 'E',
-    require: ['rangeX', '^chart', '?^layout'],
-    controller: function($element) {
-      return this.me = scale();
-    },
-    link: function(scope, element, attrs, controllers) {
-      var chart, layout, me, name, _ref;
-      me = controllers[0].me;
-      chart = controllers[1].me;
-      layout = (_ref = controllers[2]) != null ? _ref.me : void 0;
-      if (!(chart || layout)) {
-        $log.error('scale needs to be contained in a chart or layout directive ');
-        return;
-      }
-      name = 'rangeX';
-      me.kind(name);
-      me.parent(layout || chart);
-      me.chart(chart);
-      me.scaleType('linear');
-      me.resetOnNewData(true);
-      me.isHorizontal(true);
-      me.register();
-      element.addClass(me.id());
-      chart.addScale(me, layout);
-      scaleUtils.observeSharedAttributes(attrs, me);
-      attrs.$observe('axis', function(val) {
-        if (val !== void 0) {
-          if (val !== 'false') {
-            if (val === 'top' || val === 'bottom') {
-              me.axisOrient(val).showAxis(true);
-            } else {
-              me.axisOrient('bottom').showAxis(true);
-            }
-          } else {
-            me.showAxis(false).axisOrient(void 0);
-          }
-          return me.update(true);
-        }
-      });
-      scaleUtils.observeAxisAttributes(attrs, me, scope);
-      scaleUtils.observeLegendAttributes(attrs, me, layout);
-      scaleUtils.observerRangeAttributes(attrs, me);
-      return attrs.$observe('rotateTickLabels', function(val) {
-        if (val && _.isNumber(+val)) {
-          me.rotateTickLabels(+val);
-        } else {
-          me.rotateTickLabels(void 0);
-        }
-        return me.update(true);
-      });
-    }
-  };
-});
-
-
-/**
-  @ngdoc dimension
-  @name y
-  @module wk.chart
-  @restrict E
-  @description
-
-  This dimension defined the vertical axis of the chart
-
-  @param {string} axis
-  Define if a vertical axis should be displayed Possible values:
- */
-angular.module('wk.chart').directive('y', function($log, scale, legend, scaleUtils) {
-  var scaleCnt;
-  scaleCnt = 0;
-  return {
-    restrict: 'E',
-    require: ['y', '^chart', '?^layout'],
-    controller: function($element) {
-      return this.me = scale();
-    },
-    link: function(scope, element, attrs, controllers) {
-      var chart, layout, me, name, _ref;
-      me = controllers[0].me;
-      chart = controllers[1].me;
-      layout = (_ref = controllers[2]) != null ? _ref.me : void 0;
-      if (!(chart || layout)) {
-        $log.error('scale needs to be contained in a chart or layout directive ');
-        return;
-      }
-      name = 'y';
-      me.kind(name);
-      me.parent(layout || chart);
-      me.chart(chart);
-      me.scaleType('linear');
-      me.isVertical(true);
-      me.resetOnNewData(true);
-      element.addClass(me.id());
-      chart.addScale(me, layout);
-      me.register();
-      scaleUtils.observeSharedAttributes(attrs, me);
-      attrs.$observe('axis', function(val) {
-        if (val !== void 0) {
-          if (val !== 'false') {
-            if (val === 'left' || val === 'right') {
-              me.axisOrient(val).showAxis(true);
-            } else {
-              me.axisOrient('left').showAxis(true);
-            }
-          } else {
-            me.showAxis(false).axisOrient(void 0);
-          }
-          return me.update(true);
-        }
-      });
-      scaleUtils.observeAxisAttributes(attrs, me, scope);
-      return scaleUtils.observeLegendAttributes(attrs, me, layout);
-    }
-  };
-});
-
-
-/**
-  @ngdoc dimension
-  @name rangeY
-  @module wk.chart
-  @restrict E
-  @description
-
-  describes how the chart data is translated into vertical ranges for the chart objects
- */
-angular.module('wk.chart').directive('rangeY', function($log, scale, legend, scaleUtils) {
-  var scaleCnt;
-  scaleCnt = 0;
-  return {
-    restrict: 'E',
-    require: ['rangeY', '^chart', '?^layout'],
-    controller: function($element) {
-      return this.me = scale();
-    },
-    link: function(scope, element, attrs, controllers) {
-      var chart, layout, me, name, _ref;
-      me = controllers[0].me;
-      chart = controllers[1].me;
-      layout = (_ref = controllers[2]) != null ? _ref.me : void 0;
-      if (!(chart || layout)) {
-        $log.error('scale needs to be contained in a chart or layout directive ');
-        return;
-      }
-      name = 'rangeY';
-      me.kind(name);
-      me.parent(layout || chart);
-      me.chart(chart);
-      me.scaleType('linear');
-      me.isVertical(true);
-      me.resetOnNewData(true);
-      element.addClass(me.id());
-      chart.addScale(me, layout);
-      me.register();
-      scaleUtils.observeSharedAttributes(attrs, me);
-      attrs.$observe('axis', function(val) {
-        if (val !== void 0) {
-          if (val !== 'false') {
-            if (val === 'left' || val === 'right') {
-              me.axisOrient(val).showAxis(true);
-            } else {
-              me.axisOrient('left').showAxis(true);
-            }
-          } else {
-            me.showAxis(false).axisOrient(void 0);
-          }
-          return me.update(true);
-        }
-      });
-      scaleUtils.observeAxisAttributes(attrs, me, scope);
-      scaleUtils.observeLegendAttributes(attrs, me, layout);
-      return scaleUtils.observerRangeAttributes(attrs, me);
-    }
-  };
-});
-
 angular.module('wk.chart').service('selectionSharing', function($log) {
   var callbacks, _selection, _selectionIdxRange;
   _selection = {};
@@ -8313,6 +8127,252 @@ angular.module('wk.chart').service('timing', function($log) {
   this.clear = function() {
     return timers = {};
   };
+  return this;
+});
+
+
+/**
+  @ngdoc provider
+  @module wk.chart
+  @name wkChartLocaleProvider
+  @description
+  registers a den locale
+ */
+angular.module('wk.chart').provider('wkChartLocale', function() {
+  var locale, locales;
+  locale = 'en_US';
+  locales = {
+    de_DE: d3.locale({
+      decimal: ",",
+      thousands: ".",
+      grouping: [3],
+      currency: ["", " €"],
+      dateTime: "%A, der %e. %B %Y, %X",
+      date: "%e.%m.%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
+      shortDays: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+      months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
+      shortMonths: ["Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
+    }),
+    'en_US': d3.locale({
+      "decimal": ".",
+      "thousands": ",",
+      "grouping": [3],
+      "currency": ["$", ""],
+      "dateTime": "%a %b %e %X %Y",
+      "date": "%m/%d/%Y",
+      "time": "%H:%M:%S",
+      "periods": ["AM", "PM"],
+      "days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      "shortDays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      "shortMonths": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    })
+  };
+
+  /**
+    @ngdoc method
+    @name wkChartLocaleProvider#setLocale
+    @param name {string} name of the locale. If locale is unknown it reports an error and sets locale to en_US
+   */
+  this.setLocale = function(l) {
+    if (_.has(locales, l)) {
+      return locale = l;
+    } else {
+      throw "unknowm locale '" + l + "' using 'en-US' instead";
+    }
+  };
+
+  /**
+    @ngdoc method
+    @name wkChartLocaleProvider#addLocaleDefinition
+    @param name {string} name of the locale.
+    @param localeDefinition {object} A d3.js locale definition object. See [d3 documentation](https://github.com/mbostock/d3/wiki/Localization#d3_locale) for details of the format.
+   */
+  this.addLocaleDefinition = function(name, l) {
+    return locales[name] = d3.locale(l);
+  };
+
+  /**
+    @ngdoc service
+    @module wk.chart
+    @name wkChartLocale
+    @description
+    @returns d3.ls locale definition
+   */
+  this.$get = [
+    '$log', function($log) {
+      return locales[locale];
+    }
+  ];
+  return this;
+});
+
+angular.module('wk.chart').provider('wkChartScales', function() {
+  var categoryColors, categoryColorsHashed, customScale, hashed, _customColors, _customMapFn;
+  _customColors = ['red', 'orange', 'yellow', 'green', 'blue'];
+  _customMapFn = void 0;
+  hashed = function() {
+    var d3Scale, me, _hashFn;
+    d3Scale = d3.scale.ordinal();
+    _hashFn = function(value) {
+      var hash, i, m, _i, _ref, _results;
+      hash = 0;
+      m = d3Scale.range().length - 1;
+      _results = [];
+      for (i = _i = 0, _ref = value.length; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        _results.push(hash = (31 * hash + value.charAt(i)) % m);
+      }
+      return _results;
+    };
+    me = function(value) {
+      if (!arguments) {
+        return me;
+      }
+      return d3Scale(_hashFn(value));
+    };
+    me.range = function(range) {
+      if (!arguments) {
+        return d3Scale.range();
+      }
+      d3Scale.domain(d3.range(range.length));
+      return d3Scale.range(range);
+    };
+    me.domain = d3Scale.domain;
+    me.rangePoint = d3Scale.rangePoints;
+    me.rangeBands = d3Scale.rangeBands;
+    me.rangeRoundBands = d3Scale.rangeRoundBands;
+    me.rangeBand = d3Scale.rangeBand;
+    me.rangeExtent = d3Scale.rangeExtent;
+    me.hash = function(fn) {
+      if (!arguments) {
+        return _hashFn;
+      }
+      _hashFn = fn;
+      return me;
+    };
+    return me;
+  };
+  customScale = function() {
+    var d3Scale, mapFn, me;
+    d3Scale = d3.scale.ordinal();
+    mapFn = _customMapFn || d3Scale;
+    me = function(value) {
+      if (!arguments) {
+        return me;
+      }
+      return mapFn.apply(me, [value]);
+    };
+    me.mapFn = function(fn) {
+      if (!arguments) {
+        return mapFn;
+      }
+      if (_.isFunction(fn)) {
+        mapFn = fn;
+      }
+      return me;
+    };
+    me.domain = d3Scale.domain;
+    me.range = d3Scale.range;
+    me.rangePoint = d3Scale.rangePoints;
+    me.rangeBands = d3Scale.rangeBands;
+    me.rangeRoundBands = d3Scale.rangeRoundBands;
+    me.rangeBand = d3Scale.rangeBand;
+    me.rangeExtent = d3Scale.rangeExtent;
+    return me;
+  };
+  categoryColors = function() {
+    return d3.scale.ordinal().range(_customColors);
+  };
+  categoryColorsHashed = function() {
+    return hashed().range(_customColors);
+  };
+  this.colors = function(colors) {
+    return _customColors = colors;
+  };
+  this.customMapFn = function(fn) {
+    var mapFn;
+    if (_.isFunction(fn)) {
+      return mapFn = fn;
+    }
+  };
+  this.$get = [
+    '$log', function($log) {
+      return {
+        hashed: hashed,
+        customCategory: categoryColors,
+        customCategoryHashed: categoryColorsHashed,
+        customScale: customScale
+      };
+    }
+  ];
+  return this;
+});
+
+
+/**
+  @ngdoc provider
+  @module wk.chart
+  @name wkChartTemplatesProvider
+  @description
+  used to register a custom tooltip or legend default template and overwrite the default system templates.
+ */
+angular.module('wk.chart').provider('wkChartTemplates', function() {
+  var legendTemplateUrl, tooltipTemplateUrl;
+  tooltipTemplateUrl = 'templates/toolTip.html';
+  legendTemplateUrl = 'templates/legend.html';
+
+  /**
+    @ngdoc method
+    @name wkChartTemplatesProvider#setTooltipTemplate
+    @param url {string} the url of the template file
+   */
+  this.setTooltipTemplate = function(url) {
+    return tooltipTemplateUrl = url;
+  };
+
+  /**
+      @ngdoc method
+      @name wkChartTemplatesProvider#setLegendTemplate
+      @param url {string} the url of the template file
+   */
+  this.setLegendTemplate = function(url) {
+    return legendTemplateUrl = url;
+  };
+
+  /**
+    @ngdoc service
+    @module wk.chart
+    @name wkChartTemplates
+    @description
+    provides the default tooltip and legend template.
+   */
+  this.$get = [
+    '$log', '$templateCache', function($log, $templateCache) {
+      return {
+
+        /**
+          @ngdoc method
+          @name wkChartTemplates#tooltipTemplate
+          @returns {string} the tooltips template
+         */
+        tooltipTemplate: function() {
+          return $templateCache.get(tooltipTemplateUrl);
+        },
+
+        /**
+          @ngdoc method
+          @name wkChartTemplates#legendTemplate
+          @returns {string} the legends template
+         */
+        legendTemplate: function() {
+          return $templateCache.get(legendTemplateUrl);
+        }
+      };
+    }
+  ];
   return this;
 });
 

@@ -33,7 +33,7 @@ angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils,
 
       _tooltip = undefined
       _selected = undefined
-      _.merge(config, barConfig)
+      config = _.clone(barConfig, true)
 
       _merge = utils.mergeData().key((d)-> d.xVal)
 

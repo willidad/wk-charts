@@ -17,6 +17,8 @@ angular.module('wk.chart').directive 'color', ($log, scale, legend, scaleUtils) 
     controller: ($element) ->
       this.me = scale()
       #$log.log 'creating controller scaleColor'
+    scope:
+      mapFunction: '='
 
     link: (scope, element, attrs, controllers) ->
       me = controllers[0].me
@@ -44,5 +46,9 @@ angular.module('wk.chart').directive 'color', ($log, scale, legend, scaleUtils) 
 
       scaleUtils.observeSharedAttributes(attrs, me)
       scaleUtils.observeLegendAttributes(attrs, me, layout)
+
+      scope.$watch 'mapFunction', (fn) ->
+        if fn and _.isFunction(fn)
+          me.scaleMapFn(fn)
 
   }

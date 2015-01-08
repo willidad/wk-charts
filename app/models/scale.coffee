@@ -195,7 +195,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
         else
           $log.error 'Error: illegal scale type:', type
 
-        _isOrdinal = _scaleType in ['ordinal', 'category10', 'category20', 'category20b', 'category20c']
+        _isOrdinal = _.has(_scale,'rangeBand') #_scaleType in ['ordinal', 'category10', 'category20', 'category20b', 'category20c']
         if _range
           me.range(_range)
 
@@ -212,6 +212,16 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
         _exponent = value
         if _scaleType is 'pow'
           _scale.exponent(_exponent)
+        return me
+
+    me.scaleMapFn = (fn) ->
+      if arguments.length is 0
+        if _scale.mapFn
+          return _scale.mapFn()
+        return undefined
+      else
+        if _.isFunction(fn) and _scale.mapFn
+          _scale.mapFn(fn)
         return me
 
     #--- Domain functions ----------------------------------------------------------------------------------------------
@@ -257,10 +267,11 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
       if arguments.length is 0 then return _scale.range()
       else
         _range = range
-        if _scaleType is 'ordinal' and me.kind() in ['x','y']
-            _scale.rangeBands(range, _rangePadding, _rangeOuterPadding)
-        else if not (_scaleType in ['category10', 'category20', 'category20b', 'category20c'])
-          _scale.range(range) # ignore range for color category scales
+        if _isOrdinal
+          if me.kind() in ['x','y', 'rangeX', 'rangeY']
+            _scale.rangeBands(range, _rangePadding, _rangeOuterPadding)  # if ordinal, set range only for horizontal and vertical dimensions
+        else
+          _scale.range(range)
 
         return me
 
