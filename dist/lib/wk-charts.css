@@ -130,9 +130,18 @@ li.wk-chart-legend-shapeItem span {
     pointer-events: none;
 }
 
-.wk-chart-selected {
-    stroke:red;
-    stroke-width:3px;
+.wk-chart-selectable {
+    stroke-width: 0;
+}
+
+.wk-chart-has-selected-items  .wk-chart-selectable.wk-chart-selected {
+    opacity:1!important;
+    stroke-width:10px;
+    stroke-opacity:0.5;
+}
+
+.wk-chart-has-selected-items  .wk-chart-selectable:not(.wk-chart-selected) {
+    opacity: 0.3!important;
 }
 
 .wk-chart-grid {

@@ -16,6 +16,8 @@ angular.module('wk.chart').factory 'behaviorSelect', ($log) ->
         isSelected = obj.classed('wk-chart-selected')
         obj.classed('wk-chart-selected', not isSelected)
         allSelected = _container.selectAll('.wk-chart-selected').data().map((d) -> if d.data then d.data else d)
+        _container.classed('wk-chart-has-selected-items', allSelected.length > 0)
+
         # ensure that only the original values are reported back
 
         _selectionEvents.selected(allSelected)
@@ -40,6 +42,7 @@ angular.module('wk.chart').factory 'behaviorSelect', ($log) ->
     me.clearSelection = () ->
       $log.log 'selection Cleared'
       _container.selectAll('.wk-chart-selected').classed('wk-chart-selected', false)
+      _container.classed('wk-chart-has-selected-items', false)
       _.delay(
         () ->
           _selectionEvents.selected([])

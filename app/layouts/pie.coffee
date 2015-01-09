@@ -93,6 +93,7 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
         .each((d) -> this._current = if initialShow then d else {startAngle:_merge.addedPred(d).endAngle, endAngle:_merge.addedPred(d).endAngle})
         .attr('class','wk-chart-innerArc wk-chart-selectable')
         .style('fill', (d) ->  color.map(d.data))
+        .style('stroke', (d) -> color.map(d.data))
         .style('opacity', if initialShow then 0 else 1)
         .call(_tooltip.tooltip)
         .call(_selected)

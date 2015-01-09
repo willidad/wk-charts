@@ -47,7 +47,7 @@ angular.module('wk.chart').directive 'selection', ($log) ->
 
         _selection.active(true)
         _selection.on 'selected', (selectedObjects) ->
-          scope.selectedDomain = selectedObjects
+          if scope.selectedDomain then scope.selectedDomain = selectedObjects
           scope.selectedDomainChange({domain:selectedObjects})
           scope.$apply()
 

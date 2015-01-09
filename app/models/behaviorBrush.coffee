@@ -75,7 +75,9 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
           yHit = er.top < cr.bottom - cr.height / 3 and cr.top + cr.height / 3 < er.bottom
           d3.select(this).classed('wk-chart-selected', yHit and xHit)
         )
-      return _container.selectAll('.wk-chart-selected').data()
+      allSelected = _container.selectAll('.wk-chart-selected').data()
+      _container.classed('wk-chart-has-selected-items', allSelected.length > 0)
+      return allSelected
 
     #-------------------------------------------------------------------------------------------------------------------
 
@@ -132,6 +134,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       _boundsValues = []
       _boundsDomain = []
       _selectables.classed('wk-chart-selected', false)
+      _container.classed('wk-chart-has-selected-items', false)
       selectionSharing.setSelection _boundsValues, _boundsIdx, _brushGroup
       _.delay(   # ensure digest cycle from button pressed is completed
           () ->

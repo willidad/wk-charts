@@ -34,13 +34,13 @@ gulp.task('clean', function(done) {
 });
 
 gulp.task('rebuild', function () {
-    runSequence('wkChartsJs','wkChartsDoc')
+    runSequence('wkChartsJs', 'wkChartsCss','wkChartsDoc')
 })
 
 gulp.task('watch', function() {
     gulp.watch(['docs/**/*.ngdoc'], ['wkChartsDoc', 'wkChartsDocCss']);
     gulp.watch(['app/**/*.js','app/**/*.coffee','app/**/*.jade'], ['rebuild']);
-    gulp.watch(['app/**/*.css'], ['wkChartCss']);
+    gulp.watch(['app/**/*.css'], ['wkChartsCss']);
 });
 
 gulp.task('wkChartsDocCss', function() {
