@@ -99,7 +99,6 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
         .call(_selected)
 
       inner
-        #.attr('transform', "translate(#{options.width / 2},#{options.height / 2})")
         .transition().duration(options.duration)
           .style('opacity', 1)
           .attrTween('d',arcTween)

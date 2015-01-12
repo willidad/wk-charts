@@ -29,6 +29,6 @@ angular.module('wk.chart').directive 'tooltips', ($log, behavior) ->
         else if val.length > 0 and val isnt 'false'
           chart.toolTipTemplate(val)
           chart.showTooltip(true)
-        else chart.showToolTip(false)
+        else chart.showTooltip(false)
   }
 
