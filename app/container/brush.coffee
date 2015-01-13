@@ -98,7 +98,8 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       brush.active(true)
 
       scope.$watch 'clearBrush' , (val) ->
-        scope.clearBrush = brush.clearBrush
+        if scope.clearBrush
+          scope.clearBrush = brush.clearBrush
 
       attrs.$observe 'brush', (val) ->
         if _.isString(val) and val.length > 0
