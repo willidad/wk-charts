@@ -27,6 +27,7 @@
     "gulp-coffee": "^2.1.2",
     "gulp-concat": "^2.4.1",
     "gulp-gzip": "0.0.8",
+    "gulp-if": "^1.2.5",
     "gulp-jade": "~0.9.0",
     "gulp-minify-css": "^0.3.11",
     "gulp-minify-html": "^0.1.8",
