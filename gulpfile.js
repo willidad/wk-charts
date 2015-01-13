@@ -74,8 +74,8 @@ gulp.task('wkChartsJs', function() {
   //merge things together
   return es.merge(csJs, js, templ)
       .pipe(concat('wk-charts.js'))
-      .pipe(gulpif(prod, annotate()))
-      .pipe(gulpif(prod, uglify()))
+      //.pipe(annotate())
+      //.pipe(uglify())
       .pipe(sourcemaps.write('./maps'))
       .pipe(gulp.dest(buildDir + '/lib'))
 });
@@ -86,7 +86,7 @@ gulp.task('wkChartsCss', function() {
         .pipe(plumber({errorHandler: errorAlert}))
         .pipe(sourcemaps.init())
         .pipe(concat('wk-charts.css'))
-        .pipe(gulpif(prod, minifycss()))
+        .pipe(minifycss())
         .pipe(sourcemaps.write('./maps'))
         .pipe(gulp.dest(buildDir + '/lib'))
 });
