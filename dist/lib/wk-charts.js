@@ -4510,13 +4510,18 @@ angular.module('wk.chart').directive('line', function($log, behavior, utils, tim
         return this.layers = this.layers.concat(ttLayers);
       };
       ttMoveMarker = function(idx) {
+        var _enter_group;
         _circles = this.selectAll(".wk-chart-marker-" + _id).data(_pathArray, function(d) {
           return d[idx].key;
         });
-        _circles.enter().append('circle').attr('class', "wk-chart-marker-" + _id).attr('r', _showMarkers ? 8 : 5).style('fill', function(d) {
+        _enter_group = _circles.enter().append('g').attr('class', "wk-chart-marker-" + _id);
+        _enter_group.append('circle').attr('r', 9).style('fill', function(d) {
           return d[idx].color;
-        }).style('fill-opacity', 0.6).style('stroke', 'black').style('pointer-events', 'none');
-        _circles.attr('cy', function(d) {
+        }).style('fill-opacity', 0.3).style('pointer-events', 'none');
+        _enter_group.append('circle').attr('r', 4).style('fill', function(d) {
+          return d[idx].color;
+        }).style('fill-opacity', 0.6).style('stroke', 'white').style('pointer-events', 'none');
+        _circles.selectAll('circle').attr('cy', function(d) {
           return d[idx].y;
         });
         _circles.exit().remove();
@@ -5421,349 +5426,6 @@ angular.module('wk.chart').directive('spider', function($log, utils) {
       return layout.lifeCycle().on('drawChart', draw);
     }
   };
-});
-
-
-/**
-  @ngdoc provider
-  @module wk.chart
-  @name wkChartLocaleProvider
-  @description
-  registers a den locale
- */
-angular.module('wk.chart').provider('wkChartLocale', function() {
-  var locale, locales;
-  locale = 'en_US';
-  locales = {
-    de_DE: d3.locale({
-      decimal: ",",
-      thousands: ".",
-      grouping: [3],
-      currency: ["", " €"],
-      dateTime: "%A, der %e. %B %Y, %X",
-      date: "%e.%m.%Y",
-      time: "%H:%M:%S",
-      periods: ["AM", "PM"],
-      days: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
-      shortDays: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
-      months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
-      shortMonths: ["Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
-    }),
-    'en_US': d3.locale({
-      "decimal": ".",
-      "thousands": ",",
-      "grouping": [3],
-      "currency": ["$", ""],
-      "dateTime": "%a %b %e %X %Y",
-      "date": "%m/%d/%Y",
-      "time": "%H:%M:%S",
-      "periods": ["AM", "PM"],
-      "days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-      "shortDays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-      "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-      "shortMonths": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    })
-  };
-
-  /**
-    @ngdoc method
-    @name wkChartLocaleProvider#setLocale
-    @param name {string} name of the locale. If locale is unknown it reports an error and sets locale to en_US
-   */
-  this.setLocale = function(l) {
-    if (_.has(locales, l)) {
-      return locale = l;
-    } else {
-      throw "unknowm locale '" + l + "' using 'en-US' instead";
-    }
-  };
-
-  /**
-    @ngdoc method
-    @name wkChartLocaleProvider#addLocaleDefinition
-    @param name {string} name of the locale.
-    @param localeDefinition {object} A d3.js locale definition object. See [d3 documentation](https://github.com/mbostock/d3/wiki/Localization#d3_locale) for details of the format.
-   */
-  this.addLocaleDefinition = function(name, l) {
-    return locales[name] = d3.locale(l);
-  };
-
-  /**
-    @ngdoc service
-    @module wk.chart
-    @name wkChartLocale
-    @description
-    @returns d3.ls locale definition
-   */
-  this.$get = [
-    '$log', function($log) {
-      return locales[locale];
-    }
-  ];
-  return this;
-});
-
-angular.module('wk.chart').provider('wkChartScales', function() {
-  var categoryColors, categoryColorsHashed, customScale, hashed, _customColors, _customMapFn;
-  _customColors = ['red', 'orange', 'yellow', 'green', 'blue'];
-  _customMapFn = void 0;
-  hashed = function() {
-    var d3Scale, me, _hashFn;
-    d3Scale = d3.scale.ordinal();
-    _hashFn = function(value) {
-      var hash, i, m, _i, _ref, _results;
-      hash = 0;
-      m = d3Scale.range().length - 1;
-      _results = [];
-      for (i = _i = 0, _ref = value.length; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-        _results.push(hash = (31 * hash + value.charAt(i)) % m);
-      }
-      return _results;
-    };
-    me = function(value) {
-      if (!arguments) {
-        return me;
-      }
-      return d3Scale(_hashFn(value));
-    };
-    me.range = function(range) {
-      if (!arguments) {
-        return d3Scale.range();
-      }
-      d3Scale.domain(d3.range(range.length));
-      return d3Scale.range(range);
-    };
-    me.domain = d3Scale.domain;
-    me.rangePoint = d3Scale.rangePoints;
-    me.rangeBands = d3Scale.rangeBands;
-    me.rangeRoundBands = d3Scale.rangeRoundBands;
-    me.rangeBand = d3Scale.rangeBand;
-    me.rangeExtent = d3Scale.rangeExtent;
-    me.hash = function(fn) {
-      if (!arguments) {
-        return _hashFn;
-      }
-      _hashFn = fn;
-      return me;
-    };
-    return me;
-  };
-  customScale = function() {
-    var d3Scale, mapFn, me;
-    d3Scale = d3.scale.ordinal();
-    mapFn = _customMapFn || d3Scale;
-    me = function(value) {
-      if (!arguments) {
-        return me;
-      }
-      return mapFn.apply(me, [value]);
-    };
-    me.mapFn = function(fn) {
-      if (!arguments) {
-        return mapFn;
-      }
-      if (_.isFunction(fn)) {
-        mapFn = fn;
-      }
-      return me;
-    };
-    me.domain = d3Scale.domain;
-    me.range = d3Scale.range;
-    me.rangePoint = d3Scale.rangePoints;
-    me.rangeBands = d3Scale.rangeBands;
-    me.rangeRoundBands = d3Scale.rangeRoundBands;
-    me.rangeBand = d3Scale.rangeBand;
-    me.rangeExtent = d3Scale.rangeExtent;
-    return me;
-  };
-  categoryColors = function() {
-    return d3.scale.ordinal().range(_customColors);
-  };
-  categoryColorsHashed = function() {
-    return hashed().range(_customColors);
-  };
-  this.colors = function(colors) {
-    return _customColors = colors;
-  };
-  this.customMapFn = function(fn) {
-    var mapFn;
-    if (_.isFunction(fn)) {
-      return mapFn = fn;
-    }
-  };
-  this.$get = [
-    '$log', function($log) {
-      return {
-        hashed: hashed,
-        customCategory: categoryColors,
-        customCategoryHashed: categoryColorsHashed,
-        customScale: customScale
-      };
-    }
-  ];
-  return this;
-});
-
-
-/**
-  @ngdoc provider
-  @module wk.chart
-  @name wkChartTemplatesProvider
-  @description
-  used to register a custom tooltip or legend default template and overwrite the default system templates.
- */
-angular.module('wk.chart').provider('wkChartTemplates', function() {
-  var legendTemplateUrl, tooltipTemplateUrl;
-  tooltipTemplateUrl = 'templates/toolTip.html';
-  legendTemplateUrl = 'templates/legend.html';
-
-  /**
-    @ngdoc method
-    @name wkChartTemplatesProvider#setTooltipTemplate
-    @param url {string} the url of the template file
-   */
-  this.setTooltipTemplate = function(url) {
-    return tooltipTemplateUrl = url;
-  };
-
-  /**
-      @ngdoc method
-      @name wkChartTemplatesProvider#setLegendTemplate
-      @param url {string} the url of the template file
-   */
-  this.setLegendTemplate = function(url) {
-    return legendTemplateUrl = url;
-  };
-
-  /**
-    @ngdoc service
-    @module wk.chart
-    @name wkChartTemplates
-    @description
-    provides the default tooltip and legend template.
-   */
-  this.$get = [
-    '$log', '$templateCache', function($log, $templateCache) {
-      return {
-
-        /**
-          @ngdoc method
-          @name wkChartTemplates#tooltipTemplate
-          @returns {string} the tooltips template
-         */
-        tooltipTemplate: function() {
-          return $templateCache.get(tooltipTemplateUrl);
-        },
-
-        /**
-          @ngdoc method
-          @name wkChartTemplates#legendTemplate
-          @returns {string} the legends template
-         */
-        legendTemplate: function() {
-          return $templateCache.get(legendTemplateUrl);
-        }
-      };
-    }
-  ];
-  return this;
-});
-
-angular.module('wk.chart').service('selectionSharing', function($log) {
-  var callbacks, _selection, _selectionIdxRange;
-  _selection = {};
-  _selectionIdxRange = {};
-  callbacks = {};
-  this.createGroup = function(group) {};
-  this.setSelection = function(selection, selectionIdxRange, group) {
-    var cb, _i, _len, _ref, _results;
-    if (group) {
-      _selection[group] = selection;
-      _selectionIdxRange[group] = selectionIdxRange;
-      if (callbacks[group]) {
-        _ref = callbacks[group];
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          cb = _ref[_i];
-          _results.push(cb(selection, selectionIdxRange));
-        }
-        return _results;
-      }
-    }
-  };
-  this.getSelection = function(group) {
-    var grp;
-    grp = group || 'default';
-    return selection[grp];
-  };
-  this.register = function(group, callback) {
-    if (group) {
-      if (!callbacks[group]) {
-        callbacks[group] = [];
-      }
-      if (!_.contains(callbacks[group], callback)) {
-        return callbacks[group].push(callback);
-      }
-    }
-  };
-  this.unregister = function(group, callback) {
-    var idx;
-    if (callbacks[group]) {
-      idx = callbacks[group].indexOf(callback);
-      if (idx >= 0) {
-        return callbacks[group].splice(idx, 1);
-      }
-    }
-  };
-  return this;
-});
-
-angular.module('wk.chart').service('timing', function($log) {
-  var elapsed, elapsedStart, timers;
-  timers = {};
-  elapsedStart = 0;
-  elapsed = 0;
-  this.init = function() {
-    return elapsedStart = Date.now();
-  };
-  this.start = function(topic) {
-    var top;
-    top = timers[topic];
-    if (!top) {
-      top = timers[topic] = {
-        name: topic,
-        start: 0,
-        total: 0,
-        callCnt: 0,
-        active: false
-      };
-    }
-    top.start = Date.now();
-    return top.active = true;
-  };
-  this.stop = function(topic) {
-    var top;
-    if (top = timers[topic]) {
-      top.active = false;
-      top.total += Date.now() - top.start;
-      top.callCnt += 1;
-    }
-    return elapsed = Date.now() - elapsedStart;
-  };
-  this.report = function() {
-    var topic, val;
-    for (topic in timers) {
-      val = timers[topic];
-      val.avg = val.total / val.callCnt;
-    }
-    $log.info(timers);
-    $log.info('Elapsed Time (ms)', elapsed);
-    return timers;
-  };
-  this.clear = function() {
-    return timers = {};
-  };
-  return this;
 });
 
 angular.module('wk.chart').factory('behaviorBrush', function($log, $window, selectionSharing, timing) {
@@ -6867,7 +6529,7 @@ angular.module('wk.chart').factory('container', function($log, $window, wkChartM
   var container, containerCnt;
   containerCnt = 0;
   container = function() {
-    var drawAndPositionText, drawAxis, drawGrid, drawTitleArea, getAxisRect, me, measureText, _behavior, _chart, _chartArea, _container, _containerId, _data, _duration, _element, _elementSelection, _genChartFrame, _innerHeight, _innerWidth, _layouts, _legends, _margin, _overlay, _removeAxis, _removeLabel, _spacedContainer, _svg, _titleHeight;
+    var drawAndPositionText, drawAxis, drawGrid, drawTitleArea, getAxisRect, me, measureText, _behavior, _chart, _chartArea, _container, _containerId, _data, _duration, _element, _elementSelection, _genChartFrame, _gridArea, _innerHeight, _innerWidth, _layouts, _legends, _margin, _overlay, _removeAxis, _removeLabel, _spacedContainer, _svg, _titleHeight;
     me = function() {};
     _containerId = 'cntnr' + containerCnt++;
     _chart = void 0;
@@ -6879,7 +6541,7 @@ angular.module('wk.chart').factory('container', function($log, $window, wkChartM
     _container = void 0;
     _spacedContainer = void 0;
     _chartArea = void 0;
-    _chartArea = void 0;
+    _gridArea = void 0;
     _margin = angular.copy(wkChartMargins["default"]);
     _innerWidth = 0;
     _innerHeight = 0;
@@ -7024,7 +6686,7 @@ angular.module('wk.chart').factory('container', function($log, $window, wkChartM
       kind = s.kind();
       ticks = s.isOrdinal() ? s.scale().range() : s.scale().ticks();
       offset = s.isOrdinal() ? s.scale().rangeBand() / 2 : 0;
-      gridLines = _container.selectAll(".wk-chart-grid.wk-chart-" + kind).data(ticks, function(d) {
+      gridLines = _gridArea.selectAll(".wk-chart-grid.wk-chart-" + kind).data(ticks, function(d) {
         return d;
       });
       gridLines.enter().append('line').attr('class', "wk-chart-grid wk-chart-" + kind).style('pointer-events', 'none').style('opacity', 0);
@@ -7077,6 +6739,7 @@ angular.module('wk.chart').factory('container', function($log, $window, wkChartM
       _overlay.append('rect').style('visibility', 'hidden').attr('class', 'wk-chart-background').datum({
         name: 'background'
       });
+      _gridArea = _container.append('g').attr('class', 'wk-chart-grid-lines');
       return _chartArea = _container.append('g').attr('class', 'wk-chart-area');
     };
     me.drawChartFrame = function(data, notAnimated) {
@@ -8383,6 +8046,349 @@ angular.module('wk.chart').factory('scaleList', function($log) {
     };
     return me;
   };
+});
+
+
+/**
+  @ngdoc provider
+  @module wk.chart
+  @name wkChartLocaleProvider
+  @description
+  registers a den locale
+ */
+angular.module('wk.chart').provider('wkChartLocale', function() {
+  var locale, locales;
+  locale = 'en_US';
+  locales = {
+    de_DE: d3.locale({
+      decimal: ",",
+      thousands: ".",
+      grouping: [3],
+      currency: ["", " €"],
+      dateTime: "%A, der %e. %B %Y, %X",
+      date: "%e.%m.%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
+      shortDays: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+      months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
+      shortMonths: ["Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
+    }),
+    'en_US': d3.locale({
+      "decimal": ".",
+      "thousands": ",",
+      "grouping": [3],
+      "currency": ["$", ""],
+      "dateTime": "%a %b %e %X %Y",
+      "date": "%m/%d/%Y",
+      "time": "%H:%M:%S",
+      "periods": ["AM", "PM"],
+      "days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      "shortDays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      "shortMonths": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    })
+  };
+
+  /**
+    @ngdoc method
+    @name wkChartLocaleProvider#setLocale
+    @param name {string} name of the locale. If locale is unknown it reports an error and sets locale to en_US
+   */
+  this.setLocale = function(l) {
+    if (_.has(locales, l)) {
+      return locale = l;
+    } else {
+      throw "unknowm locale '" + l + "' using 'en-US' instead";
+    }
+  };
+
+  /**
+    @ngdoc method
+    @name wkChartLocaleProvider#addLocaleDefinition
+    @param name {string} name of the locale.
+    @param localeDefinition {object} A d3.js locale definition object. See [d3 documentation](https://github.com/mbostock/d3/wiki/Localization#d3_locale) for details of the format.
+   */
+  this.addLocaleDefinition = function(name, l) {
+    return locales[name] = d3.locale(l);
+  };
+
+  /**
+    @ngdoc service
+    @module wk.chart
+    @name wkChartLocale
+    @description
+    @returns d3.ls locale definition
+   */
+  this.$get = [
+    '$log', function($log) {
+      return locales[locale];
+    }
+  ];
+  return this;
+});
+
+angular.module('wk.chart').provider('wkChartScales', function() {
+  var categoryColors, categoryColorsHashed, customScale, hashed, _customColors, _customMapFn;
+  _customColors = ['red', 'orange', 'yellow', 'green', 'blue'];
+  _customMapFn = void 0;
+  hashed = function() {
+    var d3Scale, me, _hashFn;
+    d3Scale = d3.scale.ordinal();
+    _hashFn = function(value) {
+      var hash, i, m, _i, _ref, _results;
+      hash = 0;
+      m = d3Scale.range().length - 1;
+      _results = [];
+      for (i = _i = 0, _ref = value.length; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        _results.push(hash = (31 * hash + value.charAt(i)) % m);
+      }
+      return _results;
+    };
+    me = function(value) {
+      if (!arguments) {
+        return me;
+      }
+      return d3Scale(_hashFn(value));
+    };
+    me.range = function(range) {
+      if (!arguments) {
+        return d3Scale.range();
+      }
+      d3Scale.domain(d3.range(range.length));
+      return d3Scale.range(range);
+    };
+    me.domain = d3Scale.domain;
+    me.rangePoint = d3Scale.rangePoints;
+    me.rangeBands = d3Scale.rangeBands;
+    me.rangeRoundBands = d3Scale.rangeRoundBands;
+    me.rangeBand = d3Scale.rangeBand;
+    me.rangeExtent = d3Scale.rangeExtent;
+    me.hash = function(fn) {
+      if (!arguments) {
+        return _hashFn;
+      }
+      _hashFn = fn;
+      return me;
+    };
+    return me;
+  };
+  customScale = function() {
+    var d3Scale, mapFn, me;
+    d3Scale = d3.scale.ordinal();
+    mapFn = _customMapFn || d3Scale;
+    me = function(value) {
+      if (!arguments) {
+        return me;
+      }
+      return mapFn.apply(me, [value]);
+    };
+    me.mapFn = function(fn) {
+      if (!arguments) {
+        return mapFn;
+      }
+      if (_.isFunction(fn)) {
+        mapFn = fn;
+      }
+      return me;
+    };
+    me.domain = d3Scale.domain;
+    me.range = d3Scale.range;
+    me.rangePoint = d3Scale.rangePoints;
+    me.rangeBands = d3Scale.rangeBands;
+    me.rangeRoundBands = d3Scale.rangeRoundBands;
+    me.rangeBand = d3Scale.rangeBand;
+    me.rangeExtent = d3Scale.rangeExtent;
+    return me;
+  };
+  categoryColors = function() {
+    return d3.scale.ordinal().range(_customColors);
+  };
+  categoryColorsHashed = function() {
+    return hashed().range(_customColors);
+  };
+  this.colors = function(colors) {
+    return _customColors = colors;
+  };
+  this.customMapFn = function(fn) {
+    var mapFn;
+    if (_.isFunction(fn)) {
+      return mapFn = fn;
+    }
+  };
+  this.$get = [
+    '$log', function($log) {
+      return {
+        hashed: hashed,
+        customCategory: categoryColors,
+        customCategoryHashed: categoryColorsHashed,
+        customScale: customScale
+      };
+    }
+  ];
+  return this;
+});
+
+
+/**
+  @ngdoc provider
+  @module wk.chart
+  @name wkChartTemplatesProvider
+  @description
+  used to register a custom tooltip or legend default template and overwrite the default system templates.
+ */
+angular.module('wk.chart').provider('wkChartTemplates', function() {
+  var legendTemplateUrl, tooltipTemplateUrl;
+  tooltipTemplateUrl = 'templates/toolTip.html';
+  legendTemplateUrl = 'templates/legend.html';
+
+  /**
+    @ngdoc method
+    @name wkChartTemplatesProvider#setTooltipTemplate
+    @param url {string} the url of the template file
+   */
+  this.setTooltipTemplate = function(url) {
+    return tooltipTemplateUrl = url;
+  };
+
+  /**
+      @ngdoc method
+      @name wkChartTemplatesProvider#setLegendTemplate
+      @param url {string} the url of the template file
+   */
+  this.setLegendTemplate = function(url) {
+    return legendTemplateUrl = url;
+  };
+
+  /**
+    @ngdoc service
+    @module wk.chart
+    @name wkChartTemplates
+    @description
+    provides the default tooltip and legend template.
+   */
+  this.$get = [
+    '$log', '$templateCache', function($log, $templateCache) {
+      return {
+
+        /**
+          @ngdoc method
+          @name wkChartTemplates#tooltipTemplate
+          @returns {string} the tooltips template
+         */
+        tooltipTemplate: function() {
+          return $templateCache.get(tooltipTemplateUrl);
+        },
+
+        /**
+          @ngdoc method
+          @name wkChartTemplates#legendTemplate
+          @returns {string} the legends template
+         */
+        legendTemplate: function() {
+          return $templateCache.get(legendTemplateUrl);
+        }
+      };
+    }
+  ];
+  return this;
+});
+
+angular.module('wk.chart').service('selectionSharing', function($log) {
+  var callbacks, _selection, _selectionIdxRange;
+  _selection = {};
+  _selectionIdxRange = {};
+  callbacks = {};
+  this.createGroup = function(group) {};
+  this.setSelection = function(selection, selectionIdxRange, group) {
+    var cb, _i, _len, _ref, _results;
+    if (group) {
+      _selection[group] = selection;
+      _selectionIdxRange[group] = selectionIdxRange;
+      if (callbacks[group]) {
+        _ref = callbacks[group];
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          cb = _ref[_i];
+          _results.push(cb(selection, selectionIdxRange));
+        }
+        return _results;
+      }
+    }
+  };
+  this.getSelection = function(group) {
+    var grp;
+    grp = group || 'default';
+    return selection[grp];
+  };
+  this.register = function(group, callback) {
+    if (group) {
+      if (!callbacks[group]) {
+        callbacks[group] = [];
+      }
+      if (!_.contains(callbacks[group], callback)) {
+        return callbacks[group].push(callback);
+      }
+    }
+  };
+  this.unregister = function(group, callback) {
+    var idx;
+    if (callbacks[group]) {
+      idx = callbacks[group].indexOf(callback);
+      if (idx >= 0) {
+        return callbacks[group].splice(idx, 1);
+      }
+    }
+  };
+  return this;
+});
+
+angular.module('wk.chart').service('timing', function($log) {
+  var elapsed, elapsedStart, timers;
+  timers = {};
+  elapsedStart = 0;
+  elapsed = 0;
+  this.init = function() {
+    return elapsedStart = Date.now();
+  };
+  this.start = function(topic) {
+    var top;
+    top = timers[topic];
+    if (!top) {
+      top = timers[topic] = {
+        name: topic,
+        start: 0,
+        total: 0,
+        callCnt: 0,
+        active: false
+      };
+    }
+    top.start = Date.now();
+    return top.active = true;
+  };
+  this.stop = function(topic) {
+    var top;
+    if (top = timers[topic]) {
+      top.active = false;
+      top.total += Date.now() - top.start;
+      top.callCnt += 1;
+    }
+    return elapsed = Date.now() - elapsedStart;
+  };
+  this.report = function() {
+    var topic, val;
+    for (topic in timers) {
+      val = timers[topic];
+      val.avg = val.total / val.callCnt;
+    }
+    $log.info(timers);
+    $log.info('Elapsed Time (ms)', elapsed);
+    return timers;
+  };
+  this.clear = function() {
+    return timers = {};
+  };
+  return this;
 });
 
 angular.module('wk.chart').factory('layeredData', function($log) {

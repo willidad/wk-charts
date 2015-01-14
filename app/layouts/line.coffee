@@ -68,7 +68,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
           .style('pointer-events', 'none')
 
         _enter_group.append('circle')
-          .attr('r', 5)
+          .attr('r', 4)
           .style('fill', (d)-> d[idx].color)
           .style('fill-opacity', 0.6)
           .style('stroke', 'white')
