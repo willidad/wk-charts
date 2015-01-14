@@ -18,7 +18,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
     _container = undefined
     _spacedContainer = undefined
     _chartArea = undefined
-    _chartArea = undefined
+    _gridArea = undefined
     _margin = angular.copy(wkChartMargins.default)
     _innerWidth = 0
     _innerHeight = 0
@@ -155,7 +155,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       kind = s.kind()
       ticks = if s.isOrdinal() then s.scale().range() else s.scale().ticks()
       offset = if s.isOrdinal() then s.scale().rangeBand() / 2 else 0
-      gridLines = _container.selectAll(".wk-chart-grid.wk-chart-#{kind}").data(ticks, (d) -> d)
+      gridLines = _gridArea.selectAll(".wk-chart-grid.wk-chart-#{kind}").data(ticks, (d) -> d)
       gridLines.enter().append('line').attr('class', "wk-chart-grid wk-chart-#{kind}")
         .style('pointer-events', 'none')
         .style('opacity',0)
@@ -188,7 +188,9 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       _container= _svg.append('g').attr('class','wk-chart-container')
       _overlay = _container.append('g').attr('class', 'wk-chart-overlay').style('pointer-events', 'all')
       _overlay.append('rect').style('visibility', 'hidden').attr('class', 'wk-chart-background').datum({name:'background'})
+      _gridArea = _container.append('g').attr('class', 'wk-chart-grid-lines')
       _chartArea = _container.append('g').attr('class', 'wk-chart-area')
+
 
     # start to build and size the elements from top to bottom
 

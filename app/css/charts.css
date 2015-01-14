@@ -13,14 +13,17 @@
 
 .wk-chart-line {
     fill:none;
+}
+
+.wk-chart-bar {
     shape-rendering: crispEdges;
 }
 
 .wk-chart-polyline {
     fill:none;
     stroke:black;
-    shape-rendering: crispEdges;
 }
+
 
 .wk-chart-tooltip {
     background-color: rgba(255,255,255,0.8);
@@ -29,6 +32,7 @@
     z-index:5000;
     opacity:0.7;
 }
+
 .wk-chart-tooltip.ng-hide-add,
 .wk-chart-tooltip.ng-hide-remove {
     -webkit-transition: 0.2s linear opacity;
@@ -142,6 +146,7 @@ li.wk-chart-legend-shapeItem span {
 
 .wk-chart-grid {
     stroke: lightgrey;
+    shape-rendering: crispEdges;
 }
 
 .wk-chart-data-label {
