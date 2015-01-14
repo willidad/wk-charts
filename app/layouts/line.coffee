@@ -59,13 +59,22 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, timing) ->
 
       ttMoveMarker = (idx) ->
         _circles = this.selectAll(".wk-chart-marker-#{_id}").data(_pathArray, (d) -> d[idx].key)
-        _circles.enter().append('circle').attr('class',"wk-chart-marker-#{_id}")
-          .attr('r', if _showMarkers then 8 else 5)
+        _enter_group = _circles.enter().append('g').attr('class', "wk-chart-marker-#{_id}")
+
+        _enter_group.append('circle')
+          .attr('r', 9)
+          .style('fill', (d)-> d[idx].color)
+          .style('fill-opacity', 0.3)
+          .style('pointer-events', 'none')
+
+        _enter_group.append('circle')
+          .attr('r', 4)
           .style('fill', (d)-> d[idx].color)
           .style('fill-opacity', 0.6)
-          .style('stroke', 'black')
+          .style('stroke', 'white')
           .style('pointer-events','none')
-        _circles.attr('cy', (d) -> d[idx].y)
+
+        _circles.selectAll('circle').attr('cy', (d) -> d[idx].y)
         _circles.exit().remove()
         this.attr('transform', "translate(#{_scaleList.x.scale()(_pathArray[0][idx].xv) + offset})") # need to compute form scale because of brushing
 
