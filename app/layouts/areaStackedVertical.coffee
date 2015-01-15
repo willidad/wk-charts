@@ -14,7 +14,7 @@
   @usesDimension color [type=category20]
 
 ###
-angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils) ->
+angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, tooltipUtils) ->
   areaStackedVertCntr = 0
   return {
     restrict: 'A'
@@ -52,13 +52,8 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils) ->
 
       ttMoveMarker = (idx) ->
         _circles = this.selectAll(".wk-chart-marker-#{_id}").data(layerData, (d) -> d.key)
-        _circles.enter().append('circle').attr('class',"wk-chart-marker-#{_id}")
-          .attr('r', if _showMarkers then 8 else 5)
-          .style('fill', (d)-> d.color)
-          .style('fill-opacity', 0.6)
-          .style('stroke', 'black')
-          .style('pointer-events','none')
-        _circles.attr('cx', (d) -> scaleX(d.layer[idx].y + d.layer[idx].y0))  # weird!!! however, the data is for a horizontal chart which gets transformed
+        _circles.enter().append('g').attr('class',"wk-chart-marker-#{_id}").call(tooltipUtils.styleTooltipMarker)
+        _circles.selectAll('circle').attr('cx', (d) -> scaleX(d.layer[idx].y + d.layer[idx].y0))  # weird!!! however, the data is for a horizontal chart which gets transformed
         _circles.exit().remove()
 
         this.attr('transform', "translate(0,#{_scaleList.y.scale()(layerData[0].layer[idx].yy)+offs})")

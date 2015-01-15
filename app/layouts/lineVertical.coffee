@@ -15,7 +15,7 @@
 
 
 ###
-angular.module('wk.chart').directive 'lineVertical', ($log, utils) ->
+angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipUtils) ->
   lineCntr = 0
   return {
     restrict: 'A'
@@ -56,18 +56,15 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils) ->
         @layers = @layers.concat(ttLayers)
 
       ttMoveMarker = (idx) ->
+
         offs = idx + brushStartIdx
         _circles = this.selectAll(".wk-chart-marker-#{_id}").data(_pathArray, (d) -> d[offs].key)
-        _circles.enter().append('circle').attr('class',"wk-chart-marker-#{_id}")
-          .attr('r', if _showMarkers then 8 else 5)
-          .style('fill', (d)-> d[offs].color)
-          .style('fill-opacity', 0.6)
-          .style('stroke', 'black')
-          .style('pointer-events','none')
-        _circles.attr('cx', (d) -> d[offs].x)
+        _circles.enter().append('g').attr('class', "wk-chart-marker-#{_id}").call(tooltipUtils.styleTooltipMarker, offs)
+        _circles.selectAll('circle').attr('cx', (d) -> d[offs].x)
         _circles.exit().remove()
         o = if _scaleList.y.isOrdinal then _scaleList.y.scale().rangeBand() / 2 else 0
         this.attr('transform', "translate(0,#{_scaleList.y.scale()(_pathArray[0][offs].yv) + o})") # need to compute form scale because of brushing
+
 
       #-----------------------------------------------------------------------------------------------------------------
 
