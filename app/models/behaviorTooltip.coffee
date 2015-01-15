@@ -79,7 +79,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         #_area = this
         _areaBox = _areaSelection.select('.wk-chart-background').node().getBBox()
         _pos = d3.mouse(_area)
-        _markerG = _container.append('g')  # need to append marker to chart area to ensure it is on top of the chart elements Fix 10
+        _markerG = _areaSelection.append('g')  # need to append marker to chart area to ensure it is on top of the chart elements Fix 10
           .attr('class', 'wk-chart-tooltip-marker')
         _markerLine = _markerG.append('line')
         if _markerScale.isHorizontal()

@@ -14,7 +14,7 @@
   @usesDimension color [type=category20]
 ###
 
-angular.module('wk.chart').directive 'areaStacked', ($log, utils) ->
+angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipUtils) ->
   stackedAreaCntr = 0
   return {
     restrict: 'A'
@@ -52,13 +52,15 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils) ->
 
       ttMoveMarker = (idx) ->
         _circles = this.selectAll(".wk-chart-marker-#{_id}").data(layerData, (d) -> d.key)
-        _circles.enter().append('circle').attr('class',"wk-chart-marker-#{_id}")
+        _circles.enter().append('g').attr('class',"wk-chart-marker-#{_id}").call(tooltipUtils.styleTooltipMarker)
+        ###
           .attr('r', if _showMarkers then 8 else 5)
           .style('fill', (d)-> d.color)
           .style('fill-opacity', 0.6)
           .style('stroke', 'black')
           .style('pointer-events','none')
-        _circles.attr('cy', (d) -> scaleY(d.layer[idx].y + d.layer[idx].y0))
+  ###
+        _circles.selectAll('circle').attr('cy', (d) -> scaleY(d.layer[idx].y + d.layer[idx].y0))
         _circles.exit().remove()
 
         this.attr('transform', "translate(#{_scaleList.x.scale()(layerData[0].layer[idx].x)+offs})")
