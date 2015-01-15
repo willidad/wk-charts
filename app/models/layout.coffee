@@ -9,7 +9,7 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
     _chart = undefined
     _scaleList = scaleList()
     _showLabels = false
-    _layoutLifeCycle = d3.dispatch('configure', 'drawChart', 'prepareData', 'brush', 'redraw', 'drawAxis', 'update', 'updateAttrs', 'brushDraw', 'destroy')
+    _layoutLifeCycle = d3.dispatch('configure', 'drawChart', 'prepareData', 'brush', 'redraw', 'drawAxis', 'update', 'updateAttrs', 'brushDraw', 'destroy', 'objectsSelected')
 
     me = () ->
 

@@ -143,7 +143,7 @@ li.wk-chart-legend-shapeItem span {
     -webkit-user-select: none;
     pointer-events: none;
 }
-
+/*
 .wk-chart-has-selected-items  .wk-chart-selectable.wk-chart-selected {
     opacity:1!important;
     stroke-width: 1px;
@@ -152,6 +152,19 @@ li.wk-chart-legend-shapeItem span {
 .wk-chart-has-selected-items  .wk-chart-selectable:not(.wk-chart-selected) {
     opacity: 0.3!important;
     stroke-opacity: 0.3;
+}
+*/
+.wk-chart-pie-g > .wk-chart-selected + .wk-chart-highlightArc {
+    opacity: 0.8!important;
+    shape-rendering: crispEdges;
+}
+.wk-chart-pie-g > :not(.wk-chart-selected) + .wk-chart-highlightArc {
+    opacity: 0!important;
+    shape-rendering: crispEdges;
+}
+
+.wk-chart-pie-g > .wk-chart-selected {
+    shape-rendering: crispEdges;
 }
 
 .wk-chart-grid {
