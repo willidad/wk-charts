@@ -22,7 +22,7 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, wkChartM
   link: (scope, element, attrs, controller) ->
     host = controller.me
 
-    _id = "simpleColumn#{sBarCntr++}"
+    _id = "column#{sBarCntr++}"
 
     columns = null
     _scaleList = {}

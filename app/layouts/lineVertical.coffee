@@ -38,7 +38,7 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipUtils)
       _showMarkers = false
       _scaleList = {}
       offset = 0
-      _id = 'line' + lineCntr++
+      _id = 'lineVertical' + lineCntr++
 
       prepData = (x, y, color) ->
         #layerKeys = y.layerKeys(@)

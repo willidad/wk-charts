@@ -117,8 +117,12 @@ angular.module('wk.chart').factory 'legend', ($log, $compile, $rootScope, $templ
 
     _parsedTemplate = $compile(wkChartTemplates.legendTemplate())(_legendScope)
 
+    destroyme = () ->
+      _legendScope.$destroy()
+
     me.register = (layout) ->
       layout.lifeCycle().on "drawChart.#{_id}", me.draw
+      layout.lifeCycle().on "destroy.#{_id}", destroyme
       return me
 
     me.redraw = () ->

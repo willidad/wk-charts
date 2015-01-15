@@ -37,7 +37,7 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipUtils)
       offset = 0
       areaBrush = undefined
       brushStartIdx = 0
-      _id = 'area' + lineCntr++
+      _id = 'areaVertical' + lineCntr++
 
       #--- Tooltip handlers --------------------------------------------------------------------------------------------
 

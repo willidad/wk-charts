@@ -35,7 +35,7 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipUtils) ->
       _scaleList = {}
       _showMarkers = false
       offset = 0
-      _id = 'line' + lineCntr++
+      _id = 'area' + lineCntr++
       area = undefined
       areaBrush = undefined
 

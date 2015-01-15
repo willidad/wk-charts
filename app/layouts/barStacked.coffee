@@ -24,7 +24,7 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig) ->
       host = controller.me
       #$log.log 'linking Stacked bar'
 
-      _id = "stackedColumn#{stackedBarCntr++}"
+      _id = "stackedBar#{stackedBarCntr++}"
 
       layers = null
 
