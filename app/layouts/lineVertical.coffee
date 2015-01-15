@@ -59,7 +59,7 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipUtils)
 
         offs = idx + brushStartIdx
         _circles = this.selectAll(".wk-chart-marker-#{_id}").data(_pathArray, (d) -> d[offs].key)
-        _circles.enter().append('g').attr('class', "wk-chart-marker-#{_id}").call(tooltipUtils.styleTooltipMarker, offs)
+        _circles.enter().append('g').attr('class', "wk-chart-marker-#{_id}").call(tooltipUtils.createTooltipMarkers, offs)
         _circles.selectAll('circle').attr('cx', (d) -> d[offs].x)
         _circles.exit().remove()
         o = if _scaleList.y.isOrdinal then _scaleList.y.scale().rangeBand() / 2 else 0

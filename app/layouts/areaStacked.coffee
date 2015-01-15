@@ -52,7 +52,7 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipUtils) 
 
       ttMoveMarker = (idx) ->
         _circles = this.selectAll(".wk-chart-marker-#{_id}").data(layerData, (d) -> d.key)
-        _circles.enter().append('g').attr('class',"wk-chart-marker-#{_id}").call(tooltipUtils.styleTooltipMarker)
+        _circles.enter().append('g').attr('class',"wk-chart-marker-#{_id}").call(tooltipUtils.createTooltipMarkers)
         ###
           .attr('r', if _showMarkers then 8 else 5)
           .style('fill', (d)-> d.color)

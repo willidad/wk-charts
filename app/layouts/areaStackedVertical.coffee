@@ -52,7 +52,7 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
 
       ttMoveMarker = (idx) ->
         _circles = this.selectAll(".wk-chart-marker-#{_id}").data(layerData, (d) -> d.key)
-        _circles.enter().append('g').attr('class',"wk-chart-marker-#{_id}").call(tooltipUtils.styleTooltipMarker)
+        _circles.enter().append('g').attr('class',"wk-chart-marker-#{_id}").call(tooltipUtils.createTooltipMarkers)
         _circles.selectAll('circle').attr('cx', (d) -> scaleX(d.layer[idx].y + d.layer[idx].y0))  # weird!!! however, the data is for a horizontal chart which gets transformed
         _circles.exit().remove()
 

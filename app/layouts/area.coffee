@@ -53,7 +53,7 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipUtils) ->
 
       ttMoveMarker = (idx) ->
         _circles = this.selectAll(".wk-chart-marker-#{_id}").data(_pathArray, (d) -> d[idx].key)
-        _circles.enter().append('g').attr('class', "wk-chart-marker-#{_id}").call(tooltipUtils.styleTooltipMarker, idx)
+        _circles.enter().append('g').attr('class', "wk-chart-marker-#{_id}").call(tooltipUtils.createTooltipMarkers, idx)
         _circles.selectAll('circle').attr('cy', (d) -> d[idx].y)
         _circles.exit().remove()
         this.attr('transform', "translate(#{_scaleList.x.scale()(_pathArray[0][idx].xv) + offset})")

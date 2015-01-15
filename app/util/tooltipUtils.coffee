@@ -1,6 +1,6 @@
 angular.module('wk.chart').service 'tooltipUtils', ($log) ->
 
-  this.styleTooltipMarker = (selection, idx) ->
+  this.createTooltipMarkers = (selection, idx) ->
     selection.append('circle')
     .attr('r', 9)
     .style('fill', (d)-> if idx then d[idx].color else d.color)

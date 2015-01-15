@@ -10,15 +10,16 @@ module.exports = new Package('dgeniDocsPackage', [
 
     .config(function(log, readFilesProcessor, writeFilesProcessor, templateFinder, debugDumpProcessor) {
 
-        log.level = 'info';
+        log.level = 'error';
+        var buildDir = './../wk-charts-build';
 
         readFilesProcessor.basePath = path.resolve(__dirname, '..');
 
         readFilesProcessor.sourceFiles = [
-            { include: 'dist/lib/**/*.js', basePath:'/'},
+            { include: buildDir + '/lib/**/*.js', basePath:'/'},
             { include: 'docs/guide/**/*.ngdoc', basePath:'/'}
         ];
-        writeFilesProcessor.outputFolder = 'dist/docs';
+        writeFilesProcessor.outputFolder = buildDir + '/docs';
 
         templateFinder.templateFolders.unshift(path.resolve(__dirname, 'templates'));
         //templateFinder.templatePatterns.unshift('common.template.html');
