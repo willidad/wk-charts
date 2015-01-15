@@ -280,7 +280,6 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       _svg.select("#wk-chart-clip-#{_containerId} rect").attr('width', _innerWidth).attr('height', _innerHeight)
       _spacedContainer.select('.wk-chart-overlay>.wk-chart-background').attr('width', _innerWidth).attr('height', _innerHeight)
       _spacedContainer.select('.wk-chart-area').style('clip-path', "url(#wk-chart-clip-#{_containerId})")
-      #_spacedContainer.select('.wk-chart-overlay').style('clip-path', "url(#wk-chart-clip-#{_containerId})")
 
       _container.selectAll('.wk-chart-axis.wk-chart-right').attr('transform', "translate(#{_innerWidth}, 0)")
       _container.selectAll('.wk-chart-axis.wk-chart-bottom').attr('transform', "translate(0, #{_innerHeight})")

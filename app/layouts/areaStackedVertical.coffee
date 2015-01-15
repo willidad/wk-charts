@@ -115,25 +115,21 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
         layers = layers
           .data(layoutNew, (d) -> d.key)
 
-        if layoutOld.length is 0
-          layers.enter()
-            .append('path').attr('class', 'wk-chart-area')
-            .style('fill', (d, i) -> color.scale()(d.key)).style('opacity', 0)
-            .style('pointer-events', 'none')
-            .style('opacity', 0.7)
-        else
-          layers.enter()
-            .append('path').attr('class', 'wk-chart-area')
-            .attr('d', (d) -> if addedPred[d.key] then getLayerByKey(addedPred[d.key], layoutOld).path else area(d.layer.map((p) ->  {yy: p.yy, y: 0, y0: 0})))
-            .style('fill', (d, i) -> color.scale()(d.key))
-            .style('pointer-events', 'none')
-            .style('opacity', 0.7)
+        enter = layers.enter()
+          .append('path').attr('class', 'wk-chart-area-path')
+          .style('pointer-events', 'none')
+          .style('opacity', 0)
+        if layoutOld.length > 0
+          enter.attr('d', (d) -> if addedPred[d.key] then getLayerByKey(addedPred[d.key], layoutOld).path else area(d.layer.map((p) ->  {yy: p.yy, y: 0, y0: 0})))
 
         layers
+          .style('fill', (d, i) -> color.scale()(d.key))
+          .style('stroke', (d, i) -> color.scale()(d.key))
           .attr('transform', "rotate(90) scale(1,-1)")
           .transition().duration(options.duration)
             .attr('d', (d) -> area(d.layer))
-            .style('fill', (d, i) -> color.scale()(d.key))
+            .style('opacity', 1)
+
 
 
         layers.exit().transition().duration(options.duration)

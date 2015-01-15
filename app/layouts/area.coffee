@@ -142,13 +142,13 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipUtils) ->
           .data(_layout, (d) -> d.key)
         enter = layers.enter().append('g').attr('class', "wk-chart-layer")
         enter.append('path')
-          .attr('class','wk-chart-line')
+          .attr('class','wk-chart-area-path')
           .style('stroke', (d) -> d.color)
           .style('fill', (d) -> d.color)
           .style('opacity', 0)
           .style('pointer-events', 'none')
 
-        layers.select('.wk-chart-line').attr('transform', "translate(#{offset})")
+        layers.select('.wk-chart-area-path').attr('transform', "translate(#{offset})")
           .attr('d', (d) -> areaOld(d.value))
           .transition().duration(options.duration)
             .attr('d', (d) -> areaNew(d.value))
@@ -161,7 +161,7 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipUtils) ->
         _pathValuesOld = _pathValuesNew
 
       brush = (axis, idxRange) ->
-        layers = this.select('.wk-chart-line')
+        layers = this.select('.wk-chart-area-path')
         if axis.isOrdinal()
           layers.attr('d', (d) -> areaBrush(d.value.slice(idxRange[0],idxRange[1] + 1)))
         else

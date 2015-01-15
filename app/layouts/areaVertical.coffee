@@ -147,12 +147,12 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipUtils)
         layers.enter().append('g')
           .attr('class', "wk-chart-layer")
           .append('path')
-          .attr('class','wk-chart-line')
+          .attr('class','wk-chart-area-path')
           .style('stroke', (d) -> d.color)
           .style('fill', (d) -> d.color)
           .style('opacity', 0)
           .style('pointer-events', 'none')
-        layers.select('.wk-chart-line')
+        layers.select('.wk-chart-area-path')
           .attr('transform', "translate(0,#{options.width + offset})rotate(-90)") #rotate and position chart
             .attr('d', (d) -> areaOld(d.value))
             .transition().duration(options.duration)
@@ -166,7 +166,7 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipUtils)
         _pathValuesOld = _pathValuesNew
 
       brush = (axis, idxRange, width, height) ->
-        layers = this.selectAll(".wk-chart-line")
+        layers = this.selectAll(".wk-chart-area-path")
         if axis.isOrdinal()
           layers.attr('transform', "translate(0,#{width + axis.scale().rangeBand() / 2})rotate(-90)")
           layers.attr('d', (d) ->  areaBrush(d.value.slice(idxRange[0], idxRange[1] + 1)))
