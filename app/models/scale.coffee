@@ -32,6 +32,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
     _showLabel = false
     _axisLabel = undefined
     _showGrid = false
+    _reverse = false
     _isHorizontal = false
     _isVertical = false
     _kind = undefined
@@ -505,6 +506,12 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
       if arguments.length is 0 then return _showGrid
       else
         _showGrid = trueFalse
+        return me
+
+    me.reverse = (trueFalse) ->
+      if arguments.length is 0 then return _reverse
+      else
+        _reverse = trueFalse
         return me
 
     #-- Register for drawing lifecycle events --------------------------------------------------------------------------

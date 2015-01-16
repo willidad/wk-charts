@@ -260,14 +260,14 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
         for k, s of l.scales().allKinds()
           if k is 'x' or k is 'rangeX'
             if l.showDataLabels() is 'x'
-              s.range([0, _innerWidth - dataLabelWidth])
+              s.range(if s.reverse() then  [_innerWidth - dataLabelWidth, 0] else [0, _innerWidth - dataLabelWidth])
             else
-              s.range([0, _innerWidth])
+              s.range(if s.reverse() then  [_innerWidth, 0] else [0, _innerWidth])
           else if k is 'y' or k is 'rangeY'
             if l.showDataLabels() is 'y'
-              s.range([_innerHeight, dataLabelHeight])
+              s.range(if s.reverse() then  [0, _innerHeight - dataLabelHeight] else [_innerWidth - dataLabelHeight, 0])
             else
-              s.range([_innerHeight, 0])
+              s.range(if s.reverse() then  [0, _innerHeight] else [_innerHeight, 0])
           if s.showAxis()
             drawAxis(s)
 

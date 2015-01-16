@@ -213,6 +213,17 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
             me.tickValues(val.tickValues)
           me.update()
 
+      ###*
+        @ngdoc attr
+        @name reverse
+        @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
+        @param [reverse] {boolean}
+      ###
+      attrs.$observe 'reverse' , (val) ->
+        if val isnt undefined
+          me.reverse(val is '' or val is 'true').update()
+
+
 
     #-------------------------------------------------------------------------------------------------------------------
 
