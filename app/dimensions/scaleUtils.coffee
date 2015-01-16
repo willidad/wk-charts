@@ -218,6 +218,7 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
         @name reverse
         @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
         @param [reverse] {boolean}
+        reverses the direction of the axes if `true` , i.e. values are displayed in reverse order.
       ###
       attrs.$observe 'reverse' , (val) ->
         if val isnt undefined
