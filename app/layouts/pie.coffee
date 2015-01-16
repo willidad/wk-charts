@@ -34,6 +34,8 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
     _selected = undefined
     _tooltip = undefined
     _showLabels = false
+    selectionOffset = 0
+    animationDuration = 0
 
     _merge = utils.mergeData()
 
@@ -50,20 +52,18 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
 
     draw = (data, options, x, y, color, size) ->
       #$log.debug 'drawing pie chart v2'
+      animationDuration = options.duration
 
       r = Math.min(options.width, options.height) / 2
+      selectionOffset = r * 0.06
 
       if not pieBox
         pieBox= @append('g').attr('class','wk-chart-pieBox')
       pieBox.attr('transform', "translate(#{options.width / 2},#{options.height / 2})")
 
       innerArc = d3.svg.arc()
-        .outerRadius(r * if _showLabels then 0.8 else 0.95)
+        .outerRadius(r * if _showLabels then 0.8 else 0.9)
         .innerRadius(0)
-
-      highlArc = d3.svg.arc()
-        .outerRadius(r * if _showLabels then 0.85 else 1)
-        .innerRadius(r * if _showLabels then 0.8 else 0.95)
 
       outerArc = d3.svg.arc()
         .outerRadius(r * 0.9)
@@ -81,12 +81,6 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
         return (t) ->
           innerArc(i(t))
 
-      highlTween = (a) ->
-        i = d3.interpolate(this._current, a)
-        this._current = i(0)
-        return (t) ->
-          highlArc(i(t))
-
       segments = pie(data) # pie computes for each segment the start angle and the end angle
       _merge.key(key)
       _merge(segments).first({startAngle:0, endAngle:0}).last({startAngle:Math.PI * 2, endAngle: Math.PI * 2})
@@ -94,42 +88,29 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
       #--- Draw Pie segments -------------------------------------------------------------------------------------------
 
       if not inner
-        inner = pieBox.selectAll('.wk-chart-pie-g')
+        inner = pieBox.selectAll('.wk-chart-innerArc')
 
-      inner = inner.data(segments,key)
+      inner = inner
+        .data(segments,key)
 
-      enter = inner.enter().append('g').attr('class','wk-chart-pie-g')
-
-      enter.append('path').each((d) -> this._current = if initialShow then d else {startAngle:_merge.addedPred(d).endAngle, endAngle:_merge.addedPred(d).endAngle})
+      inner.enter().append('path')
+        .each((d) -> this._current = if initialShow then d else {startAngle:_merge.addedPred(d).endAngle, endAngle:_merge.addedPred(d).endAngle})
         .attr('class','wk-chart-innerArc wk-chart-selectable')
         .style('fill', (d) ->  color.map(d.data))
         .style('stroke', (d) -> color.map(d.data))
         .style('opacity', if initialShow then 0 else 1)
         .call(_tooltip.tooltip)
         .call(_selected)
-      enter.append('path').each((d) -> this._current = if initialShow then d else {startAngle:_merge.addedPred(d).endAngle, endAngle:_merge.addedPred(d).endAngle})
-        .attr('class','wk-chart-highlightArc')
-        .style('fill', (d) ->  color.map(d.data))
-        .style('stroke', (d) -> color.map(d.data))
-        .style('opacity', if initialShow then 0 else 1)
 
-      inner.select('.wk-chart-innerArc')
+      inner
+        #.attr('transform', "translate(#{options.width / 2},#{options.height / 2})")
         .transition().duration(options.duration)
           .style('opacity', 1)
           .attrTween('d',arcTween)
-      inner.select('.wk-chart-highlightArc')
-        .transition().duration(options.duration)
-          .style('opacity', 1)
-          .attrTween('d',highlTween)
 
-      exit = inner.exit()
-      exit.select('.wk-chart-innerArc').datum((d) ->  {startAngle:_merge.deletedSucc(d).startAngle, endAngle:_merge.deletedSucc(d).startAngle})
+      inner.exit().datum((d) ->  {startAngle:_merge.deletedSucc(d).startAngle, endAngle:_merge.deletedSucc(d).startAngle})
         .transition().duration(options.duration)
           .attrTween('d',arcTween)
-          .remove()
-      exit.select('.wk-chart-highlightArc').datum((d) ->  {startAngle:_merge.deletedSucc(d).startAngle, endAngle:_merge.deletedSucc(d).startAngle})
-        .transition().duration(options.duration)
-          .attrTween('d',highlTween)
           .remove()
 
       #--- Draw Segment Label Text -------------------------------------------------------------------------------------
@@ -176,7 +157,7 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
         polyline.enter()
         . append("polyline").attr('class','wk-chart-polyline')
           .style("opacity", 0)
-          .style('pointer-events', 'none')
+          .style('pointer-events','none')
           .each((d) ->  this._current = d)
 
         polyline.transition().duration(options.duration)
@@ -204,6 +185,21 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
 
       initialShow = false
 
+    highlightSelected = (s) ->
+      obj = d3.select(this)
+      if obj.classed('wk-chart-selected')
+        arc = (s.startAngle + s.endAngle) / 2
+        offsX = Math.sin(arc) * selectionOffset
+        offsY = -Math.cos(arc) * selectionOffset
+        obj.transition().duration(animationDuration)
+          .attr('transform',"translate(#{offsX},#{offsY})")
+      else
+        obj.transition().duration(animationDuration)
+          .attr('transform','translate(0,0)')
+
+    selectionHandler = (objects) ->
+      pieBox.selectAll('.wk-chart-innerArc').each(highlightSelected)
+
     #-------------------------------------------------------------------------------------------------------------------
 
     layout.lifeCycle().on 'configure', ->
@@ -214,6 +210,7 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
       _tooltip.on "enter.#{_id}", ttEnter
 
     layout.lifeCycle().on 'drawChart', draw
+    layout.lifeCycle().on 'objectsSelected', selectionHandler
 
     #-------------------------------------------------------------------------------------------------------------------
 

@@ -48,6 +48,7 @@ angular.module('wk.chart').factory 'behaviorSelect', ($log) ->
       _.delay(
         () ->
           _selectionEvents.selected([])
+          _layout.lifeCycle().objectsSelected(_container.selectAll('.wk-chart-selected'))
       ,
         20
       )
