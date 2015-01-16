@@ -44,7 +44,8 @@ angular.module('wk.chart').directive 'selection', ($log) ->
         _selection = layout.behavior().selected
         _selection.layout(layout)
         scope.$watch 'clearSelection' , (val) ->
-          scope.clearSelection = _selection.clearSelection
+          if attrs.clearSelection
+            scope.clearSelection = _selection.clearSelection
 
         _selection.active(true)
         _selection.on 'selected', (selectedObjects) ->

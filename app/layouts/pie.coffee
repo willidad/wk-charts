@@ -63,7 +63,8 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
 
       highlArc = d3.svg.arc()
         .outerRadius(r * if _showLabels then 0.85 else 1)
-        .innerRadius(r * if _showLabels then 0.8 else 0.95)
+        #.innerRadius(r * if _showLabels then 0.8 else 0.95)
+        .innerRadius(0)
 
       outerArc = d3.svg.arc()
         .outerRadius(r * 0.9)

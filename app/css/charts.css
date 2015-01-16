@@ -154,17 +154,25 @@ li.wk-chart-legend-shapeItem span {
     stroke-opacity: 0.3;
 }
 */
+.wk-chart-pie-g > .wk-chart-highlightArc {
+    transition-property: opacity;
+    transition-duration: 500ms;
+    stroke:white!important;
+    stroke-width:8!important;
+    shape-rendering: geometricPrecision;
+    pointer-events:none;
+}
+
 .wk-chart-pie-g > .wk-chart-selected + .wk-chart-highlightArc {
     opacity: 0.8!important;
-    shape-rendering: crispEdges;
+
 }
 .wk-chart-pie-g > :not(.wk-chart-selected) + .wk-chart-highlightArc {
     opacity: 0!important;
-    shape-rendering: crispEdges;
 }
 
 .wk-chart-pie-g > .wk-chart-selected {
-    shape-rendering: crispEdges;
+    shape-rendering: geometricPrecision;
 }
 
 .wk-chart-grid {
