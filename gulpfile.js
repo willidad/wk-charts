@@ -15,6 +15,7 @@ var annotate        = require('gulp-ng-annotate');
 var uglify          = require('gulp-uglify');
 var minifycss       = require('gulp-minify-css');
 var minifyhtml      = require('gulp-minify-html');
+var path         = require('path');
 
 var prod = true;
 
@@ -136,7 +137,7 @@ gulp.task('rebuild', function(cb) {
 });
 
 gulp.task('watch', function() {
-    gulp.watch(['docs/**/*.ngdoc', buildDir + '/lib/*.js'], ['buildDocs']);
+    gulp.watch(['docs/**/*.ngdoc', path.join(buildDir, '/lib/*.js')], ['buildDocs']);
     gulp.watch(['app/**/*.js','app/**/*.coffee','app/**/*.jade'], ['wkChartsJs']);
     gulp.watch(['app/**/*.css'], ['wkChartsCss']);
 });
