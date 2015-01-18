@@ -509,7 +509,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
         return me
 
     me.reverse = (trueFalse) ->
-      if arguments.length is 0 then return _reverse
+      if arguments.length is 0 then return _reverse 
       else
         _reverse = trueFalse
         return me

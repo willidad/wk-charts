@@ -2,14 +2,14 @@ angular.module('wk.chart').service 'tooltipUtils', ($log) ->
 
   this.createTooltipMarkers = (selection, idx) ->
     hasIdx = arguments.length is 2
-    selection.append('circle').attr('class', 'wk-charts-tt-marker')
+    selection.append('circle').attr('class', 'wk-chart-tt-marker')
     .attr('r', 9)
     .style('fill', (d)-> if hasIdx then d[idx].color else d.color)
     .style('fill-opacity', 0.3)
     .style('stroke', (d)-> if hasIdx then d[idx].color else d.color)
     .style('pointer-events', 'none')
 
-    selection.append('circle')
+    selection.append('circle').attr('class', 'wk-chart-tt-marker')
     .attr('r', 4)
     .style('fill', (d)-> if hasIdx then d[idx].color else d.color)
     .style('fill-opacity', 0.6)
