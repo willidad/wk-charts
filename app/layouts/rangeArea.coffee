@@ -46,7 +46,10 @@ angular.module('wk.chart').directive 'rangeArea', ($log, utils, tooltipUtils) ->
       _pathArray = _pathValuesNew
       ttMoveData.apply(this, [idx])
       _circles = undefined
-
+      m = [
+        {i:1, y:_pathArray[idx].y0, color:_pathArray[idx].color},
+        {i:2, y:_pathArray[idx].y1, color:_pathArray[idx].color}
+      ]
 
     ttMoveData = (idx) ->
       datum = _pathArray[idx].data
@@ -58,10 +61,8 @@ angular.module('wk.chart').directive 'rangeArea', ($log, utils, tooltipUtils) ->
       @layers = @layers.concat(ttLayers)
 
     ttMoveMarker = (idx) ->
-      m = [
-        {i:1, y:_pathArray[idx].y0, color:_pathArray[idx].color},
-        {i:2, y:_pathArray[idx].y1, color:_pathArray[idx].color}
-      ]
+      m[0].y = _pathArray[idx].y0
+      m[1].y = _pathArray[idx].y1
       if not _circles
         _circles = this.selectAll(".wk-chart-marker-#{_id}")
       _circles = _circles.data(m, (d) -> d.i)
