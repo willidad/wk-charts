@@ -70,7 +70,7 @@ angular.module('wk.chart').directive 'rangeColumn', ($log, utils, barConfig, wkC
       columns = columns.data(layout, (d) -> d.key)
 
       enter = columns.enter().append('g').attr('class','wk-chart-column')
-        .attr('transform', (d,i) -> "translate(#{if initial then d.x else _merge.addedPred(d).x  + _merge.addedPred(d).width + if i then barPaddingOld / 2 else barOuterPaddingOld},#{d.y}) scale(#{if initial then 1 else 0},1)")
+        .attr('transform', (d,i) -> "translate(#{if initial then d.x else _merge.addedPred(d).x  + _merge.addedPred(d).width + if i then barPaddingOld / 2 else barOuterPaddingOld},#{d.y - d.height}) scale(#{if initial then 1 else 0},1)")
       enter.append('rect')
         .attr('class', 'wk-chart-rect wk-chart-selectable')
         .attr('height', (d) -> d.height)
@@ -79,6 +79,7 @@ angular.module('wk.chart').directive 'rangeColumn', ($log, utils, barConfig, wkC
         .style('opacity', if initial then 0 else 1)
         .call(_tooltip.tooltip)
         .call(_selected)
+
       enter.append('text')
         .attr('class', 'wk-chart-data-label')
         .attr('x', (d) -> d.width / 2)
