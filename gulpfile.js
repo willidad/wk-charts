@@ -28,7 +28,7 @@ function errorAlert(error){
 }
 
 gulp.task('clean', function(done) {
-    del([buildDir],{force:true}, done);
+    del([path.join(buildDir, 'lib'),path.join(buildDir, 'docs') ],{force:true}, done);
 });
 
 gulp.task('wkChartsDoc', function() {
