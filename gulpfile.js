@@ -63,7 +63,7 @@ gulp.task('wkChartsJs', function() {
       .pipe(tplCache({module:'wk.chart'}));
 
   // Javascript components
-  var js = gulp.src('./app/**/*.js',{base:'/'})
+  var js = gulp.src(['app/**/*.js', '!app/**/tests/*.js'],{base:'/'})
       .pipe(plumber({errorHandler: errorAlert}))
       .pipe(sourcemaps.init());
 
@@ -90,7 +90,7 @@ gulp.task('wkChartsJsProduction', function() {
 
     // Javascript components
     var js = gulp.src('./app/**/*.js',{base:'/'})
-        .pipe(plumber({errorHandler: errorAlert}))
+        .pipe(plumber({errorHandler: errorAlert}));
 
     //merge things together
     return es.merge(csJs, js, templ)
@@ -137,7 +137,7 @@ gulp.task('rebuild', function(cb) {
 });
 
 gulp.task('watch', function() {
-    gulp.watch(['docs/**/*.ngdoc', path.join(buildDir, '/lib/*.js')], ['buildDocs']);
-    gulp.watch(['app/**/*.js','app/**/*.coffee','app/**/*.jade'], ['wkChartsJs']);
+    //gulp.watch(['docs/**/*.ngdoc', path.join(buildDir, '/lib/*.js')], ['buildDocs']);
+    gulp.watch(['app/**/*.js','!app/**/tests/*.js','app/**/*.coffee','app/**/*.jade'], ['wkChartsJs']);
     gulp.watch(['app/**/*.css'], ['wkChartsCss']);
 });
