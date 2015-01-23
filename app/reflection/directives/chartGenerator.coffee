@@ -7,7 +7,6 @@ angular.module('wk.chart').directive 'chartGenerator', ($log, chartFactory, mode
       properties:'='
       error:'&'
       warning:'&'
-
     link: (scope, iElement, iAttrs) ->
       if iAttrs.properties
         scope.properties = chartFactory.create()

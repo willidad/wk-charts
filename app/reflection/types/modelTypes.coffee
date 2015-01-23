@@ -58,7 +58,8 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
       when propertyType.string then return _.isString
       when propertyType.number then return _.isNumber
       when propertyType.bool then return _.isBoolean
-      when propertyType.list then return (val) -> true #//.test(val) #TODO define regex
+      when propertyType.list then return (val) ->
+        /^\[(.*)\]$|^[^\[](?=[^\]\[]*$)/.test(val) # string surrounded w. [] or not without any []
       else
         if _.isObject(type) and type.type is 'enum'
           return (val) -> val in this.enum
@@ -72,6 +73,8 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
   padding = {padding:propertyType.number}
   outerPadding = {outerPadding:propertyType.number}
   areaStyle = propertyType.enum(['zero', 'silhouette','expand','wiggle'])
+  geojson = {geojson:propertyType.object}
+  projection = {projection:propertyType.object}
 
   property = {
     property:propertyType.list
@@ -86,7 +89,6 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
     reset:propertyType.bool
     range:propertyType.list
     domainRange:propertyType.enum(['min', 'max', 'extent','total'])
-    series:propertyType.bool
     label:propertyType.string
     exponent:propertyType.number
     reverse:propertyType.bool
@@ -224,6 +226,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
     spider:             layout('spider','x,y,color', false, false,[],[selection])
     bubble:             layout('bubble','x,y,color,size', false, false,[],[selection, brush])
     scatter:            layout('scatter','x,y,color,size,shape', false, false,[],[selection, brush])
+    geoMap:             layout('geo-map','color',false,false,[geojson,projection],[selection])
   }
    
   #---------------------------------------------------------------------------------------------------------------------
