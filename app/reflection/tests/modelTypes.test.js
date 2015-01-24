@@ -27,6 +27,7 @@ describe('chartGen Test Suite', function() {
         m.data = 'abcde';
         m.title = 'efg';
         expect(m.data).toEqual('abcde')
+        expect(m.validate('data', 'anything')).toBeTruthy()
         expect(m.title).toEqual('efg')
     })
 
@@ -70,6 +71,42 @@ describe('chartGen Test Suite', function() {
         expect(x.validate('type', 'linear')).toBeTruthy()
         expect(x.validate('type', 'nonsense')).toBeFalsy()
         expect(x.acceptedValues('domainRange')).toEqual(['min', 'max', 'extent','total'])
+        expect(x.validate('domainRange','min')).toBeTruthy()
+        expect(x.validate('domainRange','nono')).toBeFalsy()
+        expect(x.validate('domain', '[sbx]')).toBeTruthy()
+        expect(x.validate('domain', 'sbx]')).toBeFalsy()
+    })
+
+    it('can add and remove a dimension for a layout', function() {
+        var m = chartFactory.create();
+        m.addLayout('line')
+        var l = m.layouts[0]
+        expect(l).toBeDefined()
+        expect(l.dimensions.x).toBeDefined()
+        l.addDimension('size')
+        expect(l.dimensions.size).toBeDefined()
+        l.removeDimension('size')
+        expect(l.dimensions.size).toBeUndefined()
+    })
+
+    it('can access layout properties', function() {
+        var m = chartFactory.create();
+        m.addLayout('bars')
+        var l = m.layouts[0]
+        expect(_.has(l,'padding')).toBeTruthy()
+        expect(l.validate('padding', 10)).toBeTruthy()
+        expect(l.validate('padding', 'abc')).toBeFalsy()
+    })
+
+    it('handles layout values (e.g. areaStacked="wiggle" correctly', function(){
+        var m = chartFactory.create();
+        m.addLayout('areaStacked')
+        var l = m.layouts[0]
+        expect(l).toBeDefined()
+        expect(_.has(l,'areaStacked')).toBeTruthy();
+        expect(l.validate('areaStacked', 'wiggle')).toBeTruthy()
+        expect(l.validate('areaStacked', 'totalKrumm')).toBeFalsy()
+
     })
 
     it('can access decorator attributes', function() {

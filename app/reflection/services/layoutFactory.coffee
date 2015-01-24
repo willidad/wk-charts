@@ -1,17 +1,5 @@
 angular.module('wk.chart').service 'layoutFactory', ($log, dimensionFactory, modelTypes, modelUtils) ->
 
-  addProperty = (obj, store, name) ->
-    return Object.defineProperty(obj, name, {
-      get: () -> store[name].value
-      set: (val) -> store[name].value = val
-    })
-
-  addGetter = (obj, store, name) ->
-    return Object.defineProperty(obj, name, {
-      get: () -> store[name]
-    })
-
-
   CreateObj = (model) ->
     ((model) ->
       _data = {}
@@ -44,21 +32,20 @@ angular.module('wk.chart').service 'layoutFactory', ($log, dimensionFactory, mod
     if _.has(modelTypes.layouts, type)
       return CreateObj(modelTypes.layouts[type])
 
-
+  ###
   this.getTypes = () ->
     return _.keys(layouts)
 
   this.verifyType = (type) ->
     return _.has(layouts, type)
-
+  ###
   this.generateMarkup = (layoutModel) ->
     markup = ''
     for layout in layoutModel
       dModel = layout.getDescriptor()
-      markup += "\n\t<layout #{dModel.name}"
-      if dModel.value
-        if layout[dModel.name]
-          markup += "=\"#{dModel.value}\""
+      markup += "\n\t<layout"
+      if not layout[modelUtils.dashToCamel(dModel.name)]
+        markup += " #{modelUtils.camelToDash(dModel.name)}"
 
       markup += modelUtils.generateProperties(dModel.properties, layout)
       markup += modelUtils.generateDecorators(dModel.decorators, layout)

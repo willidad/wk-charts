@@ -1,40 +1,11 @@
 angular.module('wk.chart').service 'modelUtils', ($log, $templateCache, modelTypes) ->
 
-  this.stringList = (list) ->
-    return /(\[(.*)\])|(.*)/g.test(list)
+  this.camelToDash = camelToDash = (str) ->
+    return str.replace(/\W+/g, '-').replace(/([a-z\d])([A-Z])/g, '$1-$2').toLowerCase();
 
-  this.string  = (value) ->
-    return _.isString(value)
 
-  this.number = (value) ->
-    return _.isNumber(value)
-
-  this.trueFalse = (value) ->
-    return _.isBoolean(value)
-
-  this.templateUrl = (value) ->
-    return not _.isEmpty($templateCache.get(value))
-
-  this.listVerifier = () ->
-    return (value) ->
-      return value in this.values
-
-  this.attributeGenerator = (name, value) ->
-    if value
-      return "#{name}=\"#{value}\""
-    else
-      return name
-
-  this.attributeListGenerator = (model) ->
-    val = ''
-    for name, value of model
-      if value.type isnt 'object'
-        if _.has(value, 'generator')
-          val += ' ' + value.generator(value)
-        else
-          if value.value
-            val += ' ' + this.attributeGenerator(name, value.value)
-    return val
+  this.dashToCamel = (str) ->
+    return str.replace(/\W+(.)/g, (x, chr) -> return chr.toUpperCase())
 
 
   this.addProperty = (obj, store, name) ->
@@ -59,8 +30,6 @@ angular.module('wk.chart').service 'modelUtils', ($log, $templateCache, modelTyp
         if _.isString(dataType)
           _data[name].validator = modelTypes.getValidator(dataType)
         else
-          if _.has(dataType, 'validator')
-            _data[name].validator = dataType.validator
           if dataType.type is 'enum'
             _data[name].enum = dataType.values
             _data[name].validator = modelTypes.getValidator(dataType)
@@ -77,8 +46,6 @@ angular.module('wk.chart').service 'modelUtils', ($log, $templateCache, modelTyp
       if _.isString(deco.value)
         _data[deco.name].validator = modelTypes.getValidator(deco.value)
       else
-      if _.has(deco, 'validator')
-        _data[deco.name].validator = deco.value.validator
       if deco.value.type is 'enum'
         _data[deco.name].enum = deco.value.values
         _data[deco.name].validator = modelTypes.getValidator(deco.value)
@@ -97,10 +64,8 @@ angular.module('wk.chart').service 'modelUtils', ($log, $templateCache, modelTyp
         if _.has(dProperties[name], 'generator')
           markup += dProperties[name].generator(iModel[name])
         else
-          markup += " #{name}=\"#{iModel[name]}\""
+          markup += " #{camelToDash(name)}=\"#{iModel[name]}\""
     return markup
-
-
 
   this.generateDecorators = (dDecorators, iModel) ->
     markup = ''
@@ -111,7 +76,7 @@ angular.module('wk.chart').service 'modelUtils', ($log, $templateCache, modelTyp
             markup += deco.generator(iModel[deco.name])
           else
             if iModel[deco.name]
-              markup += " #{deco.name}=\"#{iModel[deco.name]}\""
+              markup += " #{camelToDash(deco.name)}=\"#{iModel[deco.name]}\""
             else
               markup += ' ' + deco.name
           markup += this.generateProperties(deco.properties, iModel)

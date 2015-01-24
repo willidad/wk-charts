@@ -61,12 +61,14 @@ describe('chartGen Test Suite', function() {
         chart.dimensions.color.legend = 'top-left'
         chart.dimensions.color.valuesLegend$set = false
         chart.addLayout('barStacked')
-        chart.addLayout('line')
+        chart.addLayout('areaStacked')
         expect(chart.layouts[0]).toBeDefined();
         expect(chart.layouts.length).toBe(2)
         var layout = chart.layouts[0]
         layout.dimensions.y.property = 'abcde';
         layout.padding = 10;
+        var layout2 = chart.layouts[1];
+        layout2.areaStacked = 'zero'
         $rootScope.$apply(chart);
         console.log($rootScope.markup)
         expect($rootScope.markup).toBeTruthy()
