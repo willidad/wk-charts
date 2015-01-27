@@ -9,7 +9,7 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
     _chart = undefined
     _scaleList = scaleList()
     _showLabels = false
-    _layoutLifeCycle = d3.dispatch('configure', 'drawChart', 'prepareData', 'brush', 'redraw', 'drawAxis', 'update', 'updateAttrs', 'brushDraw', 'destroy', 'objectsSelected')
+    _layoutLifeCycle = d3.dispatch('configure', 'drawChart', 'prepareData', 'brush', 'redraw', 'drawAxis', 'update', 'updateAttrs', 'brushDraw', 'destroy', 'objectsSelected', 'animationStartState', 'animationEndState')
 
     me = () ->
 
@@ -25,6 +25,8 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
         _chart.lifeCycle().on "drawChart.#{me.id()}", me.draw # register for the drawing event
         _chart.lifeCycle().on "prepareData.#{me.id()}", me.prepareData
         _chart.lifeCycle().on "destroy.#{me.id()}", () -> _layoutLifeCycle.destroy() #passthrough
+        _chart.lifeCycle().on "animationStartState..#{me.id()}", me.animationStartState
+        _chart.lifeCycle().on "animationEndState..#{me.id()}", me.animationEndState
         return me
 
     me.scales = () ->
@@ -94,6 +96,12 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
       _layoutLifeCycle.on 'brush', (axis, notAnimated, idxRange) ->
           _container.drawSingleAxis(axis)
           _layoutLifeCycle.brushDraw.apply(getDrawArea(), [axis, idxRange, _container.width(), _container.height()])
+
+    me.animationStartState = (data) ->
+      _layoutLifeCycle.animationStartState.apply(getDrawArea(), buildArgs(data, true))
+
+    me.animationEndState = (data) ->
+      _layoutLifeCycle.animationEndState.apply(getDrawArea(), buildArgs(data, false))
 
     return me
 

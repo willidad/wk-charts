@@ -25,7 +25,7 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
 
     #--- LifeCycle Dispatcher ------------------------------------------------------------------------------------------
 
-    _lifeCycle = d3.dispatch('configure', 'resize', 'prepareData', 'scaleDomains', 'rescaleDomains', 'sizeContainer', 'drawAxis', 'drawChart', 'newData', 'update', 'updateAttrs', 'scopeApply', 'destroy' )
+    _lifeCycle = d3.dispatch('configure', 'resize', 'prepareData', 'scaleDomains', 'rescaleDomains', 'sizeContainer', 'drawAxis', 'drawChart', 'newData', 'update', 'updateAttrs', 'scopeApply', 'destroy', 'animationStartState', 'animationEndState' )
     _brush = d3.dispatch('draw', 'change')
 
     #--- Getter/Setter Functions ---------------------------------------------------------------------------------------
@@ -122,10 +122,12 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
         _data = data
         _scope.filteredData = data                    # put data on scope so tooltip and legend can access it
         _scope.scales = _allScales
+        _lifeCycle.animationStartState(data)
         _lifeCycle.prepareData(data, noAnimation)    # calls the registered layout types
         _lifeCycle.scaleDomains(data, noAnimation)   # calls registered the scales
         _lifeCycle.sizeContainer(data, noAnimation)  # calls container
         _lifeCycle.drawAxis(noAnimation)             # calls container
+        _lifeCycle.animationEndState(data)
         _lifeCycle.drawChart(data, noAnimation)     # calls layout
         _lifeCycle.scopeApply()                     # need a digest cycle after the debouce to ensure legend animations execute
 

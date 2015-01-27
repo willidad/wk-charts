@@ -15,7 +15,7 @@
 
 
 ###
-angular.module('wk.chart').directive 'line', ($log, behavior, utils, tooltipUtils, timing) ->
+angular.module('wk.chart').directive 'line', ($log, behavior, utils, tooltipUtils, dataManager) ->
   lineCntr = 0
   return {
     restrict: 'A'
@@ -44,6 +44,10 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, tooltipUtil
 
       lineBrush = undefined
 
+      layerKeys = undefined
+      layerKeysOld = undefined
+
+      xData = dataManager
 
       #--- Tooltip Event Handlers --------------------------------------------------------------------------------------
 
@@ -65,6 +69,59 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, tooltipUtil
         this.attr('transform', "translate(#{_scaleList.x.scale()(_pathArray[0][idx].xv) + offset})") # need to compute form scale because of brushing
 
       #--- Draw --------------------------------------------------------------------------------------------------------
+
+      setAnimationStart = (data, options, x, y, color) ->
+        $log.log 'preparing animation start state'
+        layerKeys = layerKeysOld
+        if x.scaleType() is 'time'
+          xData.key((d)-> +x.value(d)) # convert to number
+        else
+          xData.key(x.value)
+        xData.data(data)
+        animationStartPath = xData.getMergedOld()
+        if not xData.isInitial()
+          layerData = layerKeys.map((key) -> {key:key, value: animationStartPath.map((d) -> {x:d.key, y:d.data[key], key:key, data:d.data})})
+          drawPath.apply(this, [false, layerData, options, x, y, color])
+
+      setAnimationEnd = (data, options, x, y, color) ->
+        $log.log 'preparing animation end state'
+        layerKeys = y.layerKeys(data)
+        animationEndPath = xData.getMergedNew()
+        layerData = layerKeys.map((key) -> {key:key, value: animationEndPath.map((d) -> {x:d.key, y:d.data[key], key:key, data:d.data})})
+        drawPath.apply(this, [true, layerData, options, x, y, color])
+        layerKeysOld = layerKeys
+
+
+
+      drawPath = (doAnimate, data, options, x, y, color) ->
+        line = d3.svg.line()
+          .x((d) -> x.scale()(d.x))
+          .y((d) -> y.scale()(d.y))
+
+        drawLines = (s) ->
+          s.attr('d', (d) -> line(d.value))
+            .style('stroke', (d) -> color.scale()(d.key))
+            .style('opacity', 1).style('pointer-events', 'none')
+
+        layers = this.selectAll(".wk-chart-layer")
+          .data(data, (d) -> d.key)
+        enter = layers.enter().append('g').attr('class', "wk-chart-layer")
+        enter.append('path')
+          .attr('class','wk-chart-line')
+          .attr('d', (d) -> line(d.value))
+          .style('opacity', _initialOpacity)
+          .style('pointer-events', 'none')
+
+        if doAnimate
+          layers.select('.wk-chart-line').attr('transform', "translate(#{offset})")
+            .transition().duration(options.duration)
+            .call(drawLines)
+        else
+          layers.select('.wk-chart-line').attr('transform', "translate(#{offset})")
+            .call(drawLines)
+
+        layers.exit()
+          .remove()
 
       draw = (data, options, x, y, color) ->
 
@@ -218,8 +275,10 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, tooltipUtil
         _tooltip.on "moveData.#{_id}", ttMoveData
         _tooltip.on "moveMarker.#{_id}", ttMoveMarker
 
-      host.lifeCycle().on 'drawChart', draw
+      # host.lifeCycle().on 'drawChart', draw ignore for now
       host.lifeCycle().on 'brushDraw', brush
+      host.lifeCycle().on 'animationStartState', setAnimationStart
+      host.lifeCycle().on 'animationEndState', setAnimationEnd
 
       #--- Property Observers ------------------------------------------------------------------------------------------
 
