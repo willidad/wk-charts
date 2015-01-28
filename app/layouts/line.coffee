@@ -56,7 +56,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, tooltipUtil
         ttMoveData.apply(this, [idx])
 
       ttMoveData = (idx) ->
-        ttLayers = layoutData.map((d) -> {name: d.key, value: d.value[idx].data[d.key],color:{'background-color':d.color}, x:_scaleList.x.formattedValue(d.value[idx].data)})
+        ttLayers = layoutData.map((d) -> {name: d.key, value: _scaleList.y.layerValue(d.value[idx].data,d.key),color:{'background-color':d.color}, x:_scaleList.x.formattedValue(d.value[idx].data)})
         @headerName = _scaleList.x.axisLabel()
         @headerValue = _scaleList.x.formatValue(ttLayers[0].x)
         @layers = @layers.concat(ttLayers)
