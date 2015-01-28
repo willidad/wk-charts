@@ -1,4 +1,4 @@
-angular.module('wk.chart').service 'dataManager',($log) ->
+angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
 
   mergeSeriesKeys = (aOld,aNew) ->
     iOld = 0
@@ -16,24 +16,24 @@ angular.module('wk.chart').service 'dataManager',($log) ->
         iNew++;
       else if aNew.indexOf(aOld[iOld]) < 0 #TODO this is the root cause for some funny animation behavior. Fix it
         # aOld[iOld is deleted
-        result.push({iOld: iOld, iNew: undefined, key: aOld[iOld]})
+        result.push({iOld: iOld, iNew: undefined, key: aOld[iOld], atBorder: iNew is 0})
         # console.log('deleted', aOld[iOld]);
         iOld++
       else
         # aNew[iNew] is added
-        result.push({iOld: undefined, iNew: Math.min(iNew,lNewMax), key: aNew[iNew]})
+        result.push({iOld: undefined, iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:iOld is 0})
         # console.log('added', aNew[iNew]);
         iNew++
 
     while iOld <= lOldMax
       # if there is more old items, mark them as deleted
-      result.push({iOld: iOld, iNew: undefined, key: aOld[iOld]});
+      result.push({iOld: iOld, iNew: undefined, key: aOld[iOld], atBorder:true});
       # console.log('deleted', aOld[iOld]);
       iOld++;
 
     while iNew <= lNewMax
       # if there is more new items, mark them as added
-      result.push({iOld: undefined, iNew: Math.min(iNew,lNewMax), key: aNew[iNew]});
+      result.push({iOld: undefined, iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:true});
       # console.log('added', aNew[iNew]);
       iNew++;
 
@@ -67,35 +67,33 @@ angular.module('wk.chart').service 'dataManager',($log) ->
 
     me.getMergedOld = () ->
       ret = []
-      lastOld = undefined
       lastKey = undefined
+      lastOld = undefined
       i = 0
       while i < _mergedKeys.length
         cur = _mergedKeys[i]
         if cur.iOld isnt undefined
           ret.push({added:false, key:cur.key, data:_dataOld[cur.iOld]})
-          lastOld = i
           lastKey = cur.key
+          lastOld = cur.iOld
         else
-          ret.push({added:true, key:lastKey, data:_dataNew[cur.iNew]})
+          ret.push({added:true, key:(if cur.atBorder then cur.key else lastKey), data:if cur.atBorder then _dataNew[cur.iNew] else _dataOld[lastOld]})
         i++
       return ret
 
     me.getMergedNew = () ->
       ret = []
-      lastNew = undefined
       lastKey = undefined
+      lastNew = undefined
       i = _mergedKeys.length - 1
-
       while i >= 0
         cur = _mergedKeys[i]
-        lastKey = cur.key
         if cur.iNew isnt undefined
-          ret.unshift({deleted:false, key: lastKey, data:_dataNew[cur.iNew]})
-          lastNew = i
+          ret.unshift({deleted:false, key: cur.key, data:_dataNew[cur.iNew]})
           lastKey = cur.key
+          lastNew = cur.iNew
         else
-          ret.unshift({deleted:true, key:lastKey, data:_dataOld[cur.iOld]})
+          ret.unshift({deleted:true, key:(if cur.atBorder then cur.key else lastKey), data: if cur.atBorder then _dataOld[cur.iOld] else _dataNew[lastNew]})
         i--
       return ret
 
@@ -104,5 +102,5 @@ angular.module('wk.chart').service 'dataManager',($log) ->
 
     return me
 
-  return merge()
+  return merge
 
