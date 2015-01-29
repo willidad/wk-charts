@@ -363,8 +363,11 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
       else
         val
 
-    me.map = (data) ->
-      if Array.isArray(data) then data.map((d) -> _scale(me.value(data))) else _scale(me.value(data))
+    me.map = (data, layerKey) ->
+      if layerKey
+        if Array.isArray(data) then data.map((d) -> _scale(me.layerValue(data, layerKey))) else _scale(me.layerValue(data, layerKey))
+      else
+        if Array.isArray(data) then data.map((d) -> _scale(me.value(data))) else _scale(me.value(data))
 
     me.invert = (mappedValue) ->
       # takes a mapped value (pixel position , color value, returns the corresponding value in the input domain
