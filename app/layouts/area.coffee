@@ -15,7 +15,7 @@
   @example
 ###
 
-angular.module('wk.chart').directive 'area', ($log, utils, tooltipUtils) ->
+angular.module('wk.chart').directive 'area', ($log, utils, tooltipUtils, dataManagerFactory) ->
   lineCntr = 0
   return {
     restrict: 'A'
@@ -23,14 +23,8 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipUtils) ->
     link: (scope, element, attrs, controller) ->
       host = controller.me
       #$log.log 'linking s-line'
-      layerKeys = []
-      _layout = []
-      _dataOld = []
-      _pathValuesOld = []
-      _pathValuesNew = []
-      _pathArray = []
+
       _tooltip = undefined
-      _ttHighlight = undefined
       _circles = undefined
       _scaleList = {}
       _showMarkers = false
@@ -39,133 +33,142 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipUtils) ->
       area = undefined
       areaBrush = undefined
 
+      layerKeys = []
+      layerKeysOld = []
+      layoutData = undefined
+      _initialMarkerOpacity = 0
+      _markerOpacity = 0
+      _initialOpacity = 0
+
+      xData = dataManagerFactory()
+
       #--- Tooltip handlers --------------------------------------------------------------------------------------------
 
       ttEnter = (idx) ->
-        _pathArray = _.toArray(_pathValuesNew)
         ttMoveData.apply(this, [idx])
 
       ttMoveData = (idx) ->
-        ttLayers = _pathArray.map((l) -> {name:l[idx].key, value:_scaleList.y.formatValue(l[idx].yv), color:{'background-color': l[idx].color}, xv:l[idx].xv})
+        ttLayers = layoutData.map((d) -> {name: d.key, value: _scaleList.y.layerValue(d.value[idx].data,d.key),color:{'background-color':d.color}, x:_scaleList.x.formattedValue(d.value[idx].data)})
         @headerName = _scaleList.x.axisLabel()
-        @headerValue = _scaleList.x.formatValue(ttLayers[0].xv)
+        @headerValue = _scaleList.x.formatValue(ttLayers[0].x)
         @layers = @layers.concat(ttLayers)
 
       ttMoveMarker = (idx) ->
-        _circles = this.selectAll(".wk-chart-marker-#{_id}").data(_pathArray, (d) -> d[idx].key)
-        _circles.enter().append('g').attr('class', "wk-chart-marker-#{_id}").call(tooltipUtils.createTooltipMarkers, idx)
-        _circles.selectAll('circle').attr('cy', (d) -> d[idx].y)
+        _circles = this.selectAll(".wk-chart-marker-#{_id}").data(layoutData, (d) -> d.key)
+        _circles.enter().append('g').attr('class', "wk-chart-marker-#{_id}").call(tooltipUtils.createTooltipMarkers)
+        _circles.selectAll('circle').attr('cy', (d) -> d.value[idx].y)
         _circles.exit().remove()
-        this.attr('transform', "translate(#{_scaleList.x.scale()(_pathArray[0][idx].xv) + offset})")
+        this.attr('transform', "translate(#{_scaleList.x.map(layoutData[0].value[idx].data) + offset})") # need to compute form scale because of brushing
 
       #-----------------------------------------------------------------------------------------------------------------
 
-      draw = (data, options, x, y, color) ->
+      setAnimationStart = (data, options, x, y, color) ->
+        layerKeys = y.layerKeys(data)
+        if x.scaleType() is 'time'
+          xData.key((d)-> +x.value(d)) # convert to number
+        else
+          xData.key(x.value)
+        xData.data(data).keyScale(x)
 
-        mergedX = utils.mergeSeriesSorted(x.value(_dataOld), x.value(data))
-        _layerKeys = y.layerKeys(data)
-        _layout = []
+        if not xData.isInitial()
+          animationStartPath = xData.getMergedOld()
+          layoutData = layerKeys.map((key) -> {key:key, color: color.scale()(key), value: animationStartPath.map((d) -> {x:x.scale()(d.key), y:y.scale()(y.layerValue(d.data,key)), color:color.scale()(key), data:d.data})})
+          drawPath.apply(this, [false, layoutData, options, x, y, color])
 
-        _pathValuesNew = {}
-
-        for key in _layerKeys
-          _pathValuesNew[key] = data.map((d)-> {x:x.map(d),y:y.scale()(y.layerValue(d, key)), xv:x.value(d), yv:y.layerValue(d,key), key:key, color:color.scale()(key), data:d})
-
-          oldFirst = newFirst = undefined
-
-          layer = {key:key, color:color.scale()(key), value:[]}
-          # find starting value for old
-          i = 0
-          while i < mergedX.length
-            if mergedX[i][0] isnt undefined
-              oldFirst = _pathValuesOld[key][mergedX[i][0]]
-              break
-            i++
-          # find starting value for new
-
-          while i < mergedX.length
-            if mergedX[i][1] isnt undefined
-              newFirst = _pathValuesNew[key][mergedX[i][1]]
-              break
-            i++
-
-          for val, i in mergedX
-            v = {color:layer.color, x:val[2]}
-            # set x and y values for old values. If there is a added value, maintain the last valid position
-            if val[1] is undefined #ie an old value is deleted, maintain the last new position
-              v.yNew = newFirst.y
-              v.xNew = newFirst.x # animate to the predesessors new position
-              v.deleted = true
-            else
-              v.yNew = _pathValuesNew[key][val[1]].y
-              v.xNew = _pathValuesNew[key][val[1]].x
-              newFirst = _pathValuesNew[key][val[1]]
-              v.deleted = false
-
-            if _dataOld.length > 0
-              if  val[0] is undefined # ie a new value has been added
-                v.yOld = oldFirst.y
-                v.xOld = oldFirst.x # start x-animation from the predecessors old position
-              else
-                v.yOld = _pathValuesOld[key][val[0]].y
-                v.xOld = _pathValuesOld[key][val[0]].x
-                oldFirst = _pathValuesOld[key][val[0]]
-            else
-              v.xOld = v.xNew
-              v.yOld = v.yNew
+      setAnimationEnd = (data, options, x, y, color) ->
+        if _showMarkers
+          _markerOpacity = 1  #ensure makers show up animated when markers property changes
+        layerKeys = y.layerKeys(data)
+        animationEndPath = xData.getMergedNew()
+        layoutData = layerKeys.map((key) -> {key:key, color: color.scale()(key), value: animationEndPath.map((d) -> {x:x.scale()(d.key), y:y.scale()(y.layerValue(d.data,key)), color:color.scale()(key), data:d.data})})
+        drawPath.apply(this, [true, layoutData, options, x, y, color])
+        layerKeysOld = layerKeys
 
 
-            layer.value.push(v)
-
-          _layout.push(layer)
+      drawPath = (doAnimate, data, options, x, y, color) ->
 
         offset = if x.isOrdinal() then x.scale().rangeBand() / 2 else 0
-
         if _tooltip then _tooltip.data(data)
 
-        areaOld = d3.svg.area()
-          .x((d) ->  d.xOld)
-          .y0((d) ->  d.yOld)
-          .y1((d) ->  y.scale()(0))
-
-        areaNew = d3.svg.area()
-          .x((d) ->  d.xNew)
-          .y0((d) ->  d.yNew)
-          .y1((d) ->  y.scale()(0))
+        area = d3.svg.area()
+        .x((d) -> d.x)
+        .y((d) -> d.y)
+        .y1((d) ->  y.scale()(0))
 
         areaBrush = d3.svg.area()
-          .x((d) ->  x.scale()(d.x))
-          .y0((d) ->  d.yNew)
-          .y1((d) ->  y.scale()(0))
+        .x((d) -> x.map(d.data))
+        .y((d) -> d.y)
+        .y1((d) ->  y.scale()(0))
+
+        drawAreas = (s) ->
+          s.attr('d', (d) -> area(d.value))
+          .style('stroke', (d) -> d.color)
+          .style('opacity', 1).style('pointer-events', 'none')
 
         layers = this.selectAll(".wk-chart-layer")
-          .data(_layout, (d) -> d.key)
+        .data(data, (d) -> d.key)
         enter = layers.enter().append('g').attr('class', "wk-chart-layer")
         enter.append('path')
-          .attr('class','wk-chart-area-path')
-          .style('stroke', (d) -> d.color)
-          .style('fill', (d) -> d.color)
-          .style('opacity', 0)
-          .style('pointer-events', 'none')
+        .attr('class','wk-chart-area-path')
+        .attr('d', (d) -> area(d.value))
+        .style('opacity', _initialMarkerOpacity)
+        .style('pointer-events', 'none')
+        .style('stroke', (d) -> d.color)
+        .style('fill', (d) -> d.color)
 
-        layers.select('.wk-chart-area-path').attr('transform', "translate(#{offset})")
-          .attr('d', (d) -> areaOld(d.value))
-          .transition().duration(options.duration)
-            .attr('d', (d) -> areaNew(d.value))
-            .style('opacity', 0.7).style('pointer-events', 'none')
-        layers.exit().transition().duration(options.duration)
-          .style('opacity', 0)
-          .remove()
+        if doAnimate
+          layers.select('.wk-chart-area-path').attr('transform', "translate(#{offset})")
+          .transition().duration( options.duration)
+          .call(drawAreas)
+        else
+          layers.select('.wk-chart-area-path').attr('transform', "translate(#{offset})")
+          .call(drawAreas)
 
-        _dataOld = data
-        _pathValuesOld = _pathValuesNew
+        layers.exit()
+        .remove()
+
+        markers = (s, duration) ->
+          if _showMarkers
+            m = s.selectAll('.wk-chart-marker').data(
+              (d) -> d.value
+            , (d, i) -> i
+            )
+
+            m.enter().append('circle').attr('class', 'wk-chart-marker')
+            .style('fill', (d) -> d.color)
+            .attr('r', 5)
+            .style('pointer-events', 'none')
+            .style('opacity', _initialMarkerOpacity)
+            mUpdate = if doAnimate then m.transition().duration(duration) else m
+            mUpdate
+            .attr('cx', (d) -> d.x)
+            .attr('cy', (d) -> d.y)
+            .style('opacity', _markerOpacity)
+            mExit = if doAnimate then m.exit().transition().duration(duration) else m.exit()
+            mExit
+            .remove()
+          else
+            s.selectAll('.wk-chart-marker').transition().duration(duration)
+            .style('opacity', 0).remove()
+            _initialMarkerOpacity = 0
+            _markerOpacity = 0
+
+        layers.call(markers, options.duration)
+
+        _initialOpacity = 1
+
+
+      markersBrushed = (m) ->
+        if _showMarkers
+          m.attr('cx', (d) ->  _scaleList.x.map(d.data))
 
       brush = (axis, idxRange) ->
-        layers = this.select('.wk-chart-area-path')
+        lines = this.selectAll(".wk-chart-line")
         if axis.isOrdinal()
-          layers.attr('d', (d) -> areaBrush(d.value.slice(idxRange[0],idxRange[1] + 1)))
+          lines.attr('d', (d) -> areaBrush(d.value.slice(idxRange[0],idxRange[1] + 1)))
         else
-          layers.attr('d', (d) -> areaBrush(d.value))
+          lines.attr('d', (d) -> areaBrush(d.value))
+        markers = this.selectAll('.wk-chart-marker').call(markersBrushed)
 
 
       #--- Configuration and registration ------------------------------------------------------------------------------
@@ -181,8 +184,10 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipUtils) ->
         _tooltip.on "moveData.#{_id}", ttMoveData
         _tooltip.on "moveMarker.#{_id}", ttMoveMarker
 
-      host.lifeCycle().on 'drawChart', draw
+      #host.lifeCycle().on 'drawChart', draw
       host.lifeCycle().on 'brushDraw', brush
+      host.lifeCycle().on 'animationStartState', setAnimationStart
+      host.lifeCycle().on 'animationEndState', setAnimationEnd
 
       #--- Property Observers ------------------------------------------------------------------------------------------
 

@@ -13,7 +13,7 @@
   @usesDimension y [type=linear, domainRange=total]
   @usesDimension color [type=category20]
 ###
-angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig) ->
+angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig, dataManagerFactoryV2) ->
 
   stackedColumnCntr = 0
   return {
@@ -42,6 +42,8 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig) -
 
       config = _.clone(barConfig, true)
 
+      v2Mgr = dataManagerFactoryV2()
+
       ttEnter = (data) ->
         ttLayers = data.layers.map((l) -> {name:l.layerKey, value:_scaleList.y.formatValue(l.value), color: {'background-color': l.color}})
         @headerName = _scaleList.x.axisLabel()
@@ -54,6 +56,9 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig) -
         if not layers
           layers = @selectAll(".layer")
         #$log.debug "drawing stacked-bar"
+
+        v2Mgr.keyScale(x)
+        v2Mgr.data(data)
 
         barPadding = x.scale().rangeBand() / (1 - config.padding) * config.padding
         barOuterPadding = x.scale().rangeBand() / (1 - config.outerPadding) * config.outerPadding

@@ -23,13 +23,6 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, tooltipUtil
     link: (scope, element, attrs, controller) ->
       host = controller.me
       #$log.log 'linking s-line'
-      _layerKeys = []
-      _layout = []
-      _dataOld = []
-      _pathValuesOld = []
-      _pathValuesNew = []
-      _pathArray = []
-
 
       _tooltip = undefined
       _circles = undefined
@@ -73,14 +66,15 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, tooltipUtil
       #--- Draw --------------------------------------------------------------------------------------------------------
 
       setAnimationStart = (data, options, x, y, color) ->
-        layerKeys = layerKeysOld
+        layerKeys = y.layerKeys(data)
         if x.scaleType() is 'time'
           xData.key((d)-> +x.value(d)) # convert to number
         else
           xData.key(x.value)
-        xData.data(data)
-        animationStartPath = xData.getMergedOld()
+        xData.data(data).keyScale(x)
+
         if not xData.isInitial()
+          animationStartPath = xData.getMergedOld()
           layoutData = layerKeys.map((key) -> {key:key, color: color.scale()(key), value: animationStartPath.map((d) -> {x:x.scale()(d.key), y:y.scale()(y.layerValue(d.data,key)), color:color.scale()(key), data:d.data})})
           drawPath.apply(this, [false, layoutData, options, x, y, color])
 
