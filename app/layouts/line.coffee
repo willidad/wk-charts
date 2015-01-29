@@ -29,7 +29,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, tooltipUtil
       _pathValuesOld = []
       _pathValuesNew = []
       _pathArray = []
-      _initialOpacity = 0
+
 
       _tooltip = undefined
       _circles = undefined
@@ -43,10 +43,12 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, tooltipUtil
 
       lineBrush = undefined
 
-      layerKeys = undefined
-      layerKeysOld = undefined
+      layerKeys = []
+      layerKeysOld = []
       layoutData = undefined
       _initialMarkerOpacity = 0
+      _markerOpacity = 0
+      _initialOpacity = 0
 
       xData = dataManagerFactory()
 
@@ -71,7 +73,6 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, tooltipUtil
       #--- Draw --------------------------------------------------------------------------------------------------------
 
       setAnimationStart = (data, options, x, y, color) ->
-        #$log.log 'preparing animation start state'
         layerKeys = layerKeysOld
         if x.scaleType() is 'time'
           xData.key((d)-> +x.value(d)) # convert to number
@@ -79,19 +80,19 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, tooltipUtil
           xData.key(x.value)
         xData.data(data)
         animationStartPath = xData.getMergedOld()
-        #$log.debug 'animationStartPath', animationStartPath
         if not xData.isInitial()
           layoutData = layerKeys.map((key) -> {key:key, color: color.scale()(key), value: animationStartPath.map((d) -> {x:x.scale()(d.key), y:y.scale()(y.layerValue(d.data,key)), color:color.scale()(key), data:d.data})})
           drawPath.apply(this, [false, layoutData, options, x, y, color])
 
       setAnimationEnd = (data, options, x, y, color) ->
-        #$log.log 'preparing animation end state'
+        if _showMarkers
+          _markerOpacity = 1  #ensure makers show up animated when markers property changes
         layerKeys = y.layerKeys(data)
         animationEndPath = xData.getMergedNew()
-        #$log.debug 'animationEndPath', animationEndPath
         layoutData = layerKeys.map((key) -> {key:key, color: color.scale()(key), value: animationEndPath.map((d) -> {x:x.scale()(d.key), y:y.scale()(y.layerValue(d.data,key)), color:color.scale()(key), data:d.data})})
         drawPath.apply(this, [true, layoutData, options, x, y, color])
         layerKeysOld = layerKeys
+
 
       drawPath = (doAnimate, data, options, x, y, color) ->
 
@@ -117,7 +118,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, tooltipUtil
         enter.append('path')
           .attr('class','wk-chart-line')
           .attr('d', (d) -> line(d.value))
-          .style('opacity', _initialOpacity)
+          .style('opacity', _initialMarkerOpacity)
           .style('pointer-events', 'none')
           .style('stroke', (d) -> d.color)
 
@@ -143,28 +144,29 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, tooltipUtil
               .style('fill', (d) -> d.color)
               .attr('r', 5)
               .style('pointer-events', 'none')
-              .style('opacity', 0)
+              .style('opacity', _initialMarkerOpacity)
             mUpdate = if doAnimate then m.transition().duration(duration) else m
             mUpdate
               .attr('cx', (d) -> d.x)
               .attr('cy', (d) -> d.y)
-              .style('opacity', _initialMarkerOpacity)
+              .style('opacity', _markerOpacity)
             mExit = if doAnimate then m.exit().transition().duration(duration) else m.exit()
             mExit
               .remove()
-            _initialMarkerOpacity = 1
           else
             s.selectAll('.wk-chart-marker').transition().duration(duration)
               .style('opacity', 0).remove()
             _initialMarkerOpacity = 0
+            _markerOpacity = 0
 
         layers.call(markers, options.duration)
 
         _initialOpacity = 1
 
-      markersBrushed = (layer) ->
+
+      markersBrushed = (m) ->
         if _showMarkers
-          layer.attr('cx', (d) ->  x.map(d.data))
+          m.attr('cx', (d) ->  _scaleList.x.map(d.data))
 
       brush = (axis, idxRange) ->
         lines = this.selectAll(".wk-chart-line")
@@ -172,7 +174,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, tooltipUtil
           lines.attr('d', (d) -> lineBrush(d.value.slice(idxRange[0],idxRange[1] + 1)))
         else
           lines.attr('d', (d) -> lineBrush(d.value))
-        #markers = this.selectAll('.wk-chart-marker').call(markersBrushed)
+        markers = this.selectAll('.wk-chart-marker').call(markersBrushed)
 
       #--- Configuration and registration ------------------------------------------------------------------------------
 
