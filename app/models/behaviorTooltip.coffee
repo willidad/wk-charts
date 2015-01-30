@@ -71,7 +71,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         value = d3.select(this).datum()
         _templScope.ttData = if value.data then value.data else value
 
-      _tooltipDispatch.enter.apply(_templScope, [value]) # call layout to fill in data
+
       positionInitial()
 
       # create a marker line if required
@@ -90,6 +90,8 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         _markerLine.style({stroke: 'darkgrey', 'pointer-events': 'none'})
 
         _tooltipDispatch.moveMarker.apply(_markerG, [value])
+
+      _tooltipDispatch.enter.apply(_templScope, [value]) # call layout to fill in data
 
     #--- TooltipMove  Event Handler ------------------------------------------------------------------------------------
 
