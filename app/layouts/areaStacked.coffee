@@ -59,12 +59,7 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipUtils, 
         _circles.exit().remove()
         this.attr('transform', "translate(#{_scaleList.x.map(stackLayout[0].values[idx].data.data) + offs})") # need to compute form scale because of brushing
 
-      #-------------------------------------------------------------------------------------------------------------------
-
-      getLayerByKey = (key, layout) ->
-        for l in layout
-          if l.key is key
-            return l
+      #-----------------------------------------------------------------------------------------------------------------
 
       stack.values((d)->d.values).y((d) -> if d.added or d.deleted then 0 else d.value).x((d) -> d.key)
 
