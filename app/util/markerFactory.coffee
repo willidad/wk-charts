@@ -1,0 +1,82 @@
+angular.module('wk.chart').factory 'markerFactory', ($log, d3Animation) ->
+
+  markers = () ->
+
+    _x = undefined
+    _y = undefined
+    _color = undefined
+    _active = false
+    _opacity = 0
+    _initialOpacity = 0
+    _duration = d3Animation.duration;
+    _isVertical = false
+
+    me = (s, doAnimate) ->
+      if _active
+        m = s.selectAll('.wk-chart-marker').data(
+          (d) -> d.values
+        , (d, i) -> i
+        )
+
+        m.enter().append('circle').attr('class', 'wk-chart-marker')
+          .style('fill', _color)
+          .attr('r', 5)
+          .style('pointer-events', 'none')
+          .style('opacity', _initialOpacity)
+        mUpdate = if doAnimate then m.transition().duration(_duration) else m
+        mUpdate
+          .attr('cx', _x)
+          .attr('cy', _y)
+          .style('opacity', (d) -> (if d.added or d.deleted then 0 else 1) * _opacity)
+        mExit = if doAnimate then m.exit().transition().duration(_duration) else m.exit()
+        mExit
+          .remove()
+      else
+        s.selectAll('.wk-chart-marker').transition().duration(_duration)
+          .style('opacity', 0).remove()
+
+    me.brush = (selection) ->
+      if _isVertical
+        selection.selectAll('.wk-chart-marker').attr('cy', _y)
+      else
+        selection.selectAll('.wk-chart-marker').attr('cx', _x)
+
+
+    me.active = (trueFalse) ->
+      if arguments.length is 0 then return _active
+      _initialOpacity = if not _active and trueFalse then 0 else 1
+      _active = trueFalse
+      _opacity = if _active then 1 else 0
+      return me
+
+    me.x = (val) ->
+      if arguments.length is 0 then return _x
+      _x = val
+      return me
+
+    me.y = (val) ->
+      if arguments.length is 0 then return _y
+      _y = val
+      return me
+
+    me.color = (val) ->
+      if arguments.length is 0 then return _color
+      _color = val
+      return me
+
+    me.opacity = (val) ->
+      if arguments.length is 0 then return _opacity
+      _opacity = val
+      return me
+
+    me.duration = (val) ->
+      if arguments.length is 0 then return _duration
+      _duration = val
+      return me
+
+    me.isVertical = (val) ->
+      if arguments.length is 0 then return _isVertical
+      _isVertical = val
+      return me
+
+    return me

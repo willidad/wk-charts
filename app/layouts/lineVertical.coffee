@@ -15,7 +15,7 @@
 
 
 ###
-angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipUtils, dataManagerFactory) ->
+angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipUtils, dataManagerFactory, markerFactory) ->
   lineCntr = 0
   return {
     restrict: 'A'
@@ -41,6 +41,7 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipUtils,
       line = undefined
 
       xData = dataManagerFactory()
+      markers = markerFactory()
 
       #-----------------------------------------------------------------------------------------------------------------
 
@@ -67,8 +68,7 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipUtils,
           drawPath.apply(this, [false, layoutData, options, x, y, color])
 
       setAnimationEnd = (data, options, x, y, color) ->
-        if _showMarkers
-          _markerOpacity = 1  #ensure makers show up animated when markers property changes
+        markers.active(_showMarkers)
         layoutData = xData.animationEndLayers()
         drawPath.apply(this, [true, layoutData, options, x, y, color])
 
@@ -108,39 +108,12 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipUtils,
         layers.exit()
           .remove()
 
-        markers = (s, duration) ->
-          if _showMarkers
-            m = s.selectAll('.wk-chart-marker').data(
-              (d) -> d.values
-            , (d, i) -> i
-            )
-
-            m.enter().append('circle').attr('class', 'wk-chart-marker')
-            .style('fill', (d) -> color.scale()(d.layerKey))
-            .attr('r', 5)
-            .style('pointer-events', 'none')
-            .style('opacity', _initialMarkerOpacity)
-            mUpdate = if doAnimate then m.transition().duration(duration) else m
-            mUpdate
-            .attr('cy', (d) -> y.scale()(d.key))
-            .attr('cx', (d) -> x.scale()(if d.added or d.deleted then 0 else d.value))
-            .style('opacity', (d)-> (if d.added or d.deleted then 0 else 1) * _markerOpacity)
-            mExit = if doAnimate then m.exit().transition().duration(duration) else m.exit()
-            mExit
-            .remove()
-          else
-            s.selectAll('.wk-chart-marker').transition().duration(duration)
-            .style('opacity', 0).remove()
-            _initialMarkerOpacity = 0
-            _markerOpacity = 0
-
-        layers.call(markers, options.duration)
-
-        _initialOpacity = 1
-
-      markersBrushed = (m, axis) ->
-        if _showMarkers
-          m.attr('cy', (d) ->  _scaleList.y.scale()(d.key) + if axis.isOrdinal() then axis.scale().rangeBand() / 2 else 0)
+        markers
+          .isVertical(true)
+          .x((d) -> x.scale()(if d.added or d.deleted then 0 else d.value))
+          .y((d) -> y.scale()(d.key) + if y.isOrdinal() then y.scale().rangeBand() / 2 else 0)
+          .color((d) -> color.scale()(d.layerKey))
+        layers.call(markers, doAnimate)
 
       brush = (axis, idxRange) ->
         layers = this.selectAll(".wk-chart-line")
@@ -150,7 +123,7 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipUtils,
               .attr('transform', "translate(0,#{axis.scale().rangeBand() / 2})")
         else
           layers.attr('d', (d) -> line(d.value))
-        markers = this.selectAll('.wk-chart-marker').call(markersBrushed, axis)
+        markers.brush(this)
 
       #--- Configuration and registration ------------------------------------------------------------------------------
 
