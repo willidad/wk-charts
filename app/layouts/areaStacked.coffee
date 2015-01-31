@@ -154,17 +154,18 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipUtils, 
 
         layers.call(markers, options.duration)
 
-      markersBrushed = (m) ->
+      markersBrushed = (m, axis) ->
         if _showMarkers
-          m.attr('cx', (d) ->  _scaleList.x.scale()(d.key))
+          m.attr('cx', (d) ->  _scaleList.x.scale()(d.key) + axis.scale().rangeBand() / 2)
 
       brush = (axis, idxRange) ->
         layers = this.selectAll(".wk-chart-area-path")
         if axis.isOrdinal()
           layers.attr('d', (d) -> area(d.values.slice(idxRange[0],idxRange[1] + 1)))
+            .attr('transform', "translate(#{axis.scale().rangeBand() / 2})")
         else
           layers.attr('d', (d) -> area(d.values))
-        markers = this.selectAll('.wk-chart-marker').call(markersBrushed)
+        markers = this.selectAll('.wk-chart-marker').call(markersBrushed, axis)
 
       #--- Configuration and registration ------------------------------------------------------------------------------
 
