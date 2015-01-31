@@ -180,4 +180,5 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipUtils,
           _showMarkers = true
         else
           _showMarkers = false
+        host.lifeCycle().update()
   }
