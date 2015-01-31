@@ -81,10 +81,6 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, tooltipUtil
           .x((d) -> x.scale()(d.key))
           .y((d) -> y.scale()(if d.added or d.deleted then 0 else d.value))
 
-        lineBrush = d3.svg.line()
-        .x((d) -> x.scale()(d.key))
-        .y((d) -> y.scale()(d.value))
-
         drawLines = (s) ->
           s.attr('d', (d) -> line(d.values))
             .style('stroke', (d) -> color.scale()(d.layerKey))
