@@ -89,7 +89,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
           .remove()
 
         markers
-          .x((d) -> x.scale()(d.key))
+          .x((d) -> x.scale()(d.key) + if x.isOrdinal() then x.scale().rangeBand() / 2 else 0)
           .y((d) -> y.scale()(if d.added or d.deleted then 0 else d.value))
           .color((d) -> color.scale()(d.layerKey))
         layers.call(markers, doAnimate)
