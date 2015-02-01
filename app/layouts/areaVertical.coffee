@@ -60,8 +60,8 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelper
           ttHelper.layout(data)
 
         area = d3.svg.area() # tricky. Draw this like a horizontal chart and then rotate and position it.
-        .x((d) -> -y.scale()(d.key))
-        .y((d) -> x.scale()(if d.added or d.deleted then x.scale()(0) else d.value))
+        .x((d) -> -y.scale()(d.targetKey))
+        .y((d) -> x.scale()(d.value))
         .y1((d) ->  x.scale()(0))
 
         layers = this.selectAll(".wk-chart-layer")
@@ -89,8 +89,8 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelper
 
         markers
           .isVertical(true)
-          .x((d) -> x.scale()(if d.added or d.deleted then 0 else d.value))
-          .y((d) -> y.scale()(d.key) + if y.isOrdinal() then y.scale().rangeBand() / 2 else 0)
+          .x((d) -> x.scale()(d.value))
+          .y((d) -> y.scale()(d.targetKey) + if y.isOrdinal() then y.scale().rangeBand() / 2 else 0)
           .color((d) -> color.scale()(d.layerKey))
         layers.call(markers, doAnimate)
 
@@ -100,6 +100,7 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelper
           areaPath.attr('d', (d) -> area(d.values.slice(idxRange[0],idxRange[1] + 1)))
             .attr('transform', "translate(0,#{axis.scale().rangeBand() / 2})rotate(-90)")
           markers.brush(this, idxRange)
+          ttHelper.brushRange(idxRange)
         else
           areaPath.attr('d', (d) -> area(d.values))
           markers.brush(this)

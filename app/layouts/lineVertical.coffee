@@ -59,8 +59,8 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelper
           ttHelper.layout(data)
 
         line = d3.svg.line()
-          .x((d) -> x.scale()(if d.added or d.deleted then 0 else d.value))
-          .y((d) -> y.scale()(d.key))
+          .x((d) -> x.scale()(d.value))
+          .y((d) -> y.scale()(d.targetKey))
 
         drawLines = (s) ->
           s.attr('d', (d) -> line(d.values))
@@ -91,8 +91,8 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelper
 
         markers
           .isVertical(true)
-          .x((d) -> x.scale()(if d.added or d.deleted then 0 else d.value))
-          .y((d) -> y.scale()(d.key) + if y.isOrdinal() then y.scale().rangeBand() / 2 else 0)
+          .x((d) -> x.scale()(d.value))
+          .y((d) -> y.scale()(d.targetKey) + if y.isOrdinal() then y.scale().rangeBand() / 2 else 0)
           .color((d) -> color.scale()(d.layerKey))
         layers.call(markers, doAnimate)
 
@@ -102,6 +102,7 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelper
           layers.attr('d', (d) -> line(d.values.slice(idxRange[0],idxRange[1] + 1)))
               .attr('transform', "translate(0,#{axis.scale().rangeBand() / 2})")
           markers.brush(this, idxRange)
+          ttHelper.brushRange(idxRange)
         else
           layers.attr('d', (d) -> line(d.value))
           markers.brush(this)

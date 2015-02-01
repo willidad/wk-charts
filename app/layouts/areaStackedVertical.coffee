@@ -42,8 +42,8 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
 
       stack
         .values((d)->d.values)
-        .y((d) -> if d.added or d.deleted then 0 else d.value)
-        .x((d) -> d.key)
+        .y((d) -> d.value)
+        .x((d) -> d.targetKey)
 
       #--- Draw --------------------------------------------------------------------------------------------------------
 
@@ -77,7 +77,7 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
         else scaleX = x.scale()
 
         area = d3.svg.area()
-          .x((d) ->  -y.scale()(d.key))
+          .x((d) ->  -y.scale()(d.targetKey))
           .y0((d) ->  scaleX(d.y0 + d.y))
           .y1((d) ->  scaleX(d.y0))
 
@@ -105,7 +105,7 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
 
         markers
           .x((d) -> x.scale()(d.y + d.y0))
-          .y((d) -> y.scale()(d.key) +  if y.isOrdinal() then y.scale().rangeBand() / 2 else 0)
+          .y((d) -> y.scale()(d.targetKey) +  if y.isOrdinal() then y.scale().rangeBand() / 2 else 0)
           .color((d) -> color.scale()(d.layerKey))
 
         layers.call(markers, doAnimate)
@@ -115,9 +115,11 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
         if axis.isOrdinal()
           layers.attr('d', (d) -> area(d.values.slice(idxRange[0],idxRange[1] + 1)))
             .attr('transform', "translate(#{axis.scale().rangeBand() / 2})")
+          markers.brush(this, idxRange)
+          ttHelper.brushRange(idxRange)
         else
           layers.attr('d', (d) -> area(d.values))
-        markers.brush(this)
+          markers.brush(this)
 
       #--- Configuration and registration ------------------------------------------------------------------------------
 
@@ -128,10 +130,10 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
         @getKind('y').resetOnNewData(true).domainCalc('extent')
         _tooltip = host.behavior().tooltip
         ttHelper
-        .keyScale(_scaleList.y)
-        .valueScale(_scaleList.x)
-        .colorScale(_scaleList.color)
-        .value((d) -> d.y + d.y0)
+          .keyScale(_scaleList.y)
+          .valueScale(_scaleList.x)
+          .colorScale(_scaleList.color)
+          .value((d) -> d.y + d.y0)
         _tooltip.markerScale(_scaleList.y)
         _tooltip.on "enter.#{_id}", ttHelper.moveData
         _tooltip.on "moveData.#{_id}", ttHelper.moveData

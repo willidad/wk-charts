@@ -58,8 +58,8 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
           ttHelper.layout(data)
 
         line = d3.svg.line()
-          .x((d) -> x.scale()(d.key))
-          .y((d) -> y.scale()(if d.added or d.deleted then 0 else d.value))
+          .x((d) -> x.scale()(d.targetKey))
+          .y((d) -> y.scale()(d.value))
 
         drawLines = (s) ->
           s.attr('d', (d) -> line(d.values))
@@ -89,8 +89,8 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
           .remove()
 
         markers
-          .x((d) -> x.scale()(d.key) + if x.isOrdinal() then x.scale().rangeBand() / 2 else 0)
-          .y((d) -> y.scale()(if d.added or d.deleted then 0 else d.value))
+          .x((d) -> x.scale()(d.targetKey) + if x.isOrdinal() then x.scale().rangeBand() / 2 else 0)
+          .y((d) -> y.scale()(d.value))
           .color((d) -> color.scale()(d.layerKey))
         layers.call(markers, doAnimate)
 
@@ -98,9 +98,12 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
         lines = this.selectAll(".wk-chart-line")
         if axis.isOrdinal()
           lines.attr('d', (d) -> line(d.values.slice(idxRange[0],idxRange[1] + 1)))
+            .attr('transform', "translate(#{axis.scale().rangeBand() / 2})")
+          markers.brush(this, idxRange)
+          ttHelper.brushRange(idxRange)
         else
           lines.attr('d', (d) -> line(d.values))
-        markers.brush(this)
+          markers.brush(this)
 
       #--- Configuration and registration ------------------------------------------------------------------------------
 

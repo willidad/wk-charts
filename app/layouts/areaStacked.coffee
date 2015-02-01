@@ -44,8 +44,8 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipHelperF
 
       stack
         .values((d)->d.values)
-        .y((d) -> if d.added or d.deleted then 0 else d.value)
-        .x((d) -> d.key)
+        .y((d) -> d.value)
+        .x((d) -> d.targetKey)
 
       #--- Draw --------------------------------------------------------------------------------------------------------
 
@@ -80,7 +80,7 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipHelperF
         else scaleY = y.scale()
 
         area = d3.svg.area()
-          .x((d) ->  x.scale()(d.key))
+          .x((d) ->  x.scale()(d.targetKey))
           .y0((d) ->  scaleY(d.y0 + d.y))
           .y1((d) ->  scaleY(d.y0))
 
@@ -107,7 +107,7 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipHelperF
           .remove()
 
         markers
-          .x((d) -> x.scale()(d.key))
+          .x((d) -> x.scale()(d.targetKey))
           .y((d) -> scaleY(d.y + d.y0))
           .color((d) -> color.scale()(d.layerKey))
 
@@ -118,9 +118,11 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipHelperF
         if axis.isOrdinal()
           layers.attr('d', (d) -> area(d.values.slice(idxRange[0],idxRange[1] + 1)))
             .attr('transform', "translate(#{axis.scale().rangeBand() / 2})")
+          markers.brush(this, idxRange)
+          ttHelper.brushRange(idxRange)
         else
           layers.attr('d', (d) -> area(d.values))
-        markers.brush(this)
+          markers.brush(this)
 
       #--- Configuration and registration ------------------------------------------------------------------------------
 

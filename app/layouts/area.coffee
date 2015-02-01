@@ -58,8 +58,8 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
           ttHelper.layout(data)
 
         area = d3.svg.area()
-          .x((d) -> x.scale()(d.key))
-          .y((d) -> y.scale()(if d.added or d.deleted then 0 else d.value))
+          .x((d) -> x.scale()(d.targetKey))
+          .y((d) -> y.scale()(d.value))
           .y1((d) ->  y.scale()(0))
 
         layers = this.selectAll(".wk-chart-layer")
@@ -85,18 +85,21 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
           .remove()
 
         markers
-          .x((d) -> x.scale()(d.key) + if x.isOrdinal() then x.scale().rangeBand() / 2 else 0)
-          .y((d) -> y.scale()(if d.added or d.deleted then 0 else d.value))
+          .x((d) -> x.scale()(d.targetKey) + if x.isOrdinal() then x.scale().rangeBand() / 2 else 0)
+          .y((d) -> y.scale()(d.value))
           .color((d) -> color.scale()(d.layerKey))
         layers.call(markers, doAnimate)
 
       brush = (axis, idxRange) ->
         lines = this.selectAll(".wk-chart-area-path")
         if axis.isOrdinal()
-          lines.attr('d', (d) -> area(d.value.slice(idxRange[0],idxRange[1] + 1)))
+          lines.attr('d', (d) -> area(d.values.slice(idxRange[0],idxRange[1] + 1)))
+            .attr('transform', "translate(#{axis.scale().rangeBand() / 2})")
+          markers.brush(this, idxRange)
+          ttHelper.brushRange(idxRange)
         else
           lines.attr('d', (d) -> area(d.values))
-        markers.brush(this)
+          markers.brush(this)
 
       #--- Configuration and registration ------------------------------------------------------------------------------
 
