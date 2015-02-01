@@ -59,7 +59,7 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
     me.moveMarkers = (idx) ->
       lIdx = _getLayoutIdx(idx)
       _circles = this.selectAll(".wk-chart-tt-marker-#{_id}").data(_layout.filter((d) -> not d.deleted), (d) -> d.layerKey)
-      enter = _circles.enter().append('g').attr('class', "wk-chart-tt-marker-#{_id}") # TODO ensure markers are unique for multi-layout charts
+      enter = _circles.enter().append('g').attr('class', "wk-chart-tt-marker-#{_id}") # make markers unique for multi-layout charts
       enter.append('circle').attr('class', 'wk-chart-tt-marker')
         .attr('r', 9)
         .style('fill', (d)-> _colorScale.scale()(d.layerKey))
