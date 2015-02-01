@@ -14,7 +14,7 @@
   @usesDimension color [type=category20]
 
 ###
-angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, tooltipUtils, dataManagerFactory, markerFactory) ->
+angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, tooltipHelperFactory, dataManagerFactory, markerFactory) ->
   areaStackedVertCntr = 0
   return {
     restrict: 'A'
@@ -29,40 +29,21 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
       stackLayout = []
       area = undefined
       _tooltip = undefined
-      _circles = undefined
       _scaleList = {}
-      scaleY = undefined
       offs = 0
       _id = 'areaStacked' + areaStackedVertCntr++
 
       xData = dataManagerFactory()
       markers = markerFactory()
+      ttHelper = tooltipHelperFactory()
       layoutData = undefined
-      _initialMarkerOpacity = 0
-      _markerOpacity = 0
-      _initialOpacity = 0
-
-      #--- Tooltip Event Handlers --------------------------------------------------------------------------------------
-
-      ttEnter = (idx) ->
-        ttMoveData.apply(this, [idx])
-
-      ttMoveData = (idx) ->
-        ttLayers = layoutData.map((d) -> {name: d.layerKey, value: _scaleList.x.formatValue(d.values[idx].value),color:{'background-color':_scaleList.color.scale()(d.layerKey)}})
-        @headerName = _scaleList.y.axisLabel()
-        @headerValue = _scaleList.y.formattedValue(layoutData[0].values[idx].data.data)
-        @layers = @layers.concat(ttLayers)
-
-      ttMoveMarker = (idx) ->
-        _circles = this.selectAll(".wk-chart-marker-#{_id}").data(stackLayout, (d) -> d.layerKey)
-        _circles.enter().append('g').attr('class', "wk-chart-marker-#{_id}").call(tooltipUtils.createTooltipMarkers)
-        _circles.selectAll('circle').attr('cx', (d) -> _scaleList.x.scale()(d.values[idx].y + d.values[idx].y0))
-        _circles.exit().remove()
-        this.attr('transform', "translate(0,#{_scaleList.y.map(stackLayout[0].values[idx].data.data) + offs})") # need to compute form scale because of brushing
 
       #-------------------------------------------------------------------------------------------------------------------
 
-      stack.values((d)->d.values).y((d) -> if d.added or d.deleted then 0 else d.value).x((d) -> d.key)
+      stack
+        .values((d)->d.values)
+        .y((d) -> if d.added or d.deleted then 0 else d.value)
+        .x((d) -> d.key)
 
       #--- Draw --------------------------------------------------------------------------------------------------------
 
@@ -83,7 +64,9 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
 
         offs = if y.isOrdinal() then y.scale().rangeBand() / 2 else 0
 
-        if _tooltip then _tooltip.data(data)
+        if _tooltip
+          _tooltip.data(data)
+          ttHelper.layout(data)
 
         if not layers
           layers = this.selectAll('.wk-chart-layer')
@@ -144,10 +127,15 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
         @getKind('x').domainCalc('total').resetOnNewData(true)
         @getKind('y').resetOnNewData(true).domainCalc('extent')
         _tooltip = host.behavior().tooltip
+        ttHelper
+        .keyScale(_scaleList.y)
+        .valueScale(_scaleList.x)
+        .colorScale(_scaleList.color)
+        .value((d) -> d.y + d.y0)
         _tooltip.markerScale(_scaleList.y)
-        _tooltip.on "enter.#{_id}", ttMoveData
-        _tooltip.on "moveData.#{_id}", ttMoveData
-        _tooltip.on "moveMarker.#{_id}", ttMoveMarker
+        _tooltip.on "enter.#{_id}", ttHelper.moveData
+        _tooltip.on "moveData.#{_id}", ttHelper.moveData
+        _tooltip.on "moveMarker.#{_id}", ttHelper.moveMarkers
 
       host.lifeCycle().on 'brushDraw', brush
       host.lifeCycle().on 'animationStartState', setAnimationStart

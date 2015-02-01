@@ -357,6 +357,10 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
     me.formattedValue = (data) ->
       if _.isArray(data) then data.map((d) -> me.formatValue(me.value(d))) else me.formatValue(me.value(data))
 
+    me.formattedLayerValue = (data, layerKey) ->
+      if _.isArray(data) then data.map((d) -> me.formatValue(me.layerValue(d, layerKey))) else me.formatValue(me.layerValue(data, layerKey))
+
+
     me.formatValue = (val) ->
       if _outputFormatString and val and  (val.getUTCDate or not isNaN(val))
         _outputFormatFn(val)
@@ -420,7 +424,6 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
       if me.isOrdinal() and me.resetOnNewData()
         idx = me.invert(mappedValue)
         return _scale.domain()[idx]
-
 
     #--- Axis Attributes and functions ---------------------------------------------------------------------------------
 

@@ -15,7 +15,7 @@
 
 
 ###
-angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipUtils, dataManagerFactory, markerFactory) ->
+angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelperFactory, dataManagerFactory, markerFactory) ->
   lineCntr = 0
   return {
     restrict: 'A'
@@ -33,30 +33,11 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipUtils,
       _id = 'areaVertical' + lineCntr++
 
       layoutData = undefined
-      _initialMarkerOpacity = 0
-      _markerOpacity = 0
       _initialOpacity = 0
 
       xData = dataManagerFactory()
       markers = markerFactory()
-
-      #--- Tooltip handlers --------------------------------------------------------------------------------------------
-
-      ttEnter = (idx) ->
-        ttMoveData.apply(this, [idx])
-
-      ttMoveData = (idx) ->
-        ttLayers = layoutData.map((d) -> {name: d.layerKey, value: _scaleList.x.formatValue(d.values[idx].value),color:{'background-color':_scaleList.color.scale()(d.layerKey)}})
-        @headerName = _scaleList.y.axisLabel()
-        @headerValue = _scaleList.y.formattedValue(layoutData[0].values[idx].data.data)
-        @layers = @layers.concat(ttLayers)
-
-      ttMoveMarker = (idx) ->
-        _circles = this.selectAll(".wk-chart-marker-#{_id}").data(layoutData, (d) -> d.layerKey)
-        _circles.enter().append('g').attr('class', "wk-chart-marker-#{_id}").call(tooltipUtils.createTooltipMarkers)
-        _circles.selectAll('circle').attr('cx', (d) -> _scaleList.x.scale()(d.values[idx].value))
-        _circles.exit().remove()
-        this.attr('transform', "translate(0,#{_scaleList.y.map(layoutData[0].values[idx].data.data) + offset})") # need to compute form scale because of brushing
+      ttHelper = tooltipHelperFactory()
 
       #-----------------------------------------------------------------------------------------------------------------
 
@@ -67,8 +48,6 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipUtils,
           drawPath.apply(this, [false, layoutData, options, x, y, color])
 
       setAnimationEnd = (data, options, x, y, color) ->
-        if _showMarkers
-          _markerOpacity = 1  #ensure makers show up animated when markers property changes
         markers.active(_showMarkers)
         layoutData = xData.animationEndLayers()
         drawPath.apply(this, [true, layoutData, options, x, y, color])
@@ -76,7 +55,9 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipUtils,
       drawPath = (doAnimate, data, options, x, y, color) ->
 
         offset = if y.isOrdinal() then y.scale().rangeBand() / 2 else 0
-        if _tooltip then _tooltip.data(data)
+        if _tooltip
+          _tooltip.data(data)
+          ttHelper.layout(data)
 
         area = d3.svg.area() # tricky. Draw this like a horizontal chart and then rotate and position it.
         .x((d) -> -y.scale()(d.key))
@@ -118,10 +99,10 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipUtils,
         if axis.isOrdinal()
           areaPath.attr('d', (d) -> area(d.values.slice(idxRange[0],idxRange[1] + 1)))
             .attr('transform', "translate(0,#{axis.scale().rangeBand() / 2})rotate(-90)")
+          markers.brush(this, idxRange)
         else
           areaPath.attr('d', (d) -> area(d.values))
-        #markers = this.selectAll('.wk-chart-marker').call(markersBrushed, axis)
-        markers.brush(this)
+          markers.brush(this)
 
       #--- Configuration and registration ------------------------------------------------------------------------------
 
@@ -131,10 +112,15 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipUtils,
         @getKind('y').domainCalc('extent').resetOnNewData(true)
         @getKind('x').resetOnNewData(true).domainCalc('extent')
         _tooltip = host.behavior().tooltip
+        ttHelper
+          .keyScale(_scaleList.y)
+          .valueScale(_scaleList.x)
+          .colorScale(_scaleList.color)
+          .value((d) -> d.value)
         _tooltip.markerScale(_scaleList.y)
-        _tooltip.on "enter.#{_id}", ttEnter
-        _tooltip.on "moveData.#{_id}", ttMoveData
-        _tooltip.on "moveMarker.#{_id}", ttMoveMarker
+        _tooltip.on "enter.#{_id}", ttHelper.moveData
+        _tooltip.on "moveData.#{_id}", ttHelper.moveData
+        _tooltip.on "moveMarker.#{_id}", ttHelper.moveMarkers
 
       #host.lifeCycle().on 'drawChart', draw
       host.lifeCycle().on 'brushDraw', brush

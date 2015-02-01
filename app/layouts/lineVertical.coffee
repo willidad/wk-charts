@@ -15,7 +15,7 @@
 
 
 ###
-angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipUtils, dataManagerFactory, markerFactory) ->
+angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelperFactory, dataManagerFactory, markerFactory) ->
   lineCntr = 0
   return {
     restrict: 'A'
@@ -24,40 +24,19 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipUtils,
       host = controller.me
       #$log.log 'linking s-line'
 
-      markersBrushed = undefined
       brushStartIdx = 0
       _tooltip = undefined
-      _ttHighlight = undefined
-      _circles = undefined
       _showMarkers = false
       _scaleList = {}
       offset = 0
       _id = 'lineVertical' + lineCntr++
 
       layoutData = undefined
-      _initialMarkerOpacity = 0
-      _markerOpacity = 0
-      _initialOpacity = 0
       line = undefined
 
       xData = dataManagerFactory()
       markers = markerFactory()
-
-      #-----------------------------------------------------------------------------------------------------------------
-
-      ttMoveData = (idx) ->
-        ttLayers = layoutData.map((d) -> {name: d.layerKey, value: _scaleList.x.formatValue(d.values[idx].value),color:{'background-color':_scaleList.color.scale()(d.layerKey)}})
-        @headerName = _scaleList.y.axisLabel()
-        @headerValue = _scaleList.y.formattedValue(layoutData[0].values[idx].data.data)
-        @layers = @layers.concat(ttLayers)
-
-      ttMoveMarker = (idx) ->
-        _circles = this.selectAll(".wk-chart-marker-#{_id}").data(layoutData, (d) -> d.layerKey)
-        _circles.enter().append('g').attr('class', "wk-chart-marker-#{_id}").call(tooltipUtils.createTooltipMarkers)
-        _circles.selectAll('circle').attr('cx', (d) -> _scaleList.x.scale()(d.values[idx].value))
-        _circles.exit().remove()
-        offs = if _scaleList.y.isOrdinal then _scaleList.y.scale().rangeBand() / 2 else 0
-        this.attr('transform', "translate(0,#{_scaleList.y.scale()(layoutData[0].values[idx].key) + offs})") # need to compute form scale because of brushing
+      ttHelper = tooltipHelperFactory()
 
       #-----------------------------------------------------------------------------------------------------------------
 
@@ -75,7 +54,9 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipUtils,
       drawPath = (doAnimate, data, options, x, y, color) ->
 
         offset = if y.isOrdinal() then y.scale().rangeBand() / 2 else 0
-        if _tooltip then _tooltip.data(data)
+        if _tooltip
+          _tooltip.data(data)
+          ttHelper.layout(data)
 
         line = d3.svg.line()
           .x((d) -> x.scale()(if d.added or d.deleted then 0 else d.value))
@@ -93,16 +74,16 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipUtils,
         enter.append('path')
           .attr('class','wk-chart-line')
           .attr('d', (d) -> line(d.values))
-          .style('opacity', _initialMarkerOpacity)
+          .style('opacity', 0)
           .style('pointer-events', 'none')
           .style('stroke', (d) -> color.scale()(d.layerKey))
 
         if doAnimate
-          layers.select('.wk-chart-line')#.attr('transform', "translate(#{offset})")
+          layers.select('.wk-chart-line').attr('transform', "translate(0,#{offset})")
           .transition().duration( options.duration)
           .call(drawLines)
         else
-          layers.select('.wk-chart-line')#.attr('transform', "translate(#{offset})")
+          layers.select('.wk-chart-line').attr('transform', "translate(0,#{offset})")
           .call(drawLines)
 
         layers.exit()
@@ -118,12 +99,12 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipUtils,
       brush = (axis, idxRange) ->
         layers = this.selectAll(".wk-chart-line")
         if axis.isOrdinal()
-          brushStartIdx = idxRange[0]
           layers.attr('d', (d) -> line(d.values.slice(idxRange[0],idxRange[1] + 1)))
               .attr('transform', "translate(0,#{axis.scale().rangeBand() / 2})")
+          markers.brush(this, idxRange)
         else
           layers.attr('d', (d) -> line(d.value))
-        markers.brush(this)
+          markers.brush(this)
 
       #--- Configuration and registration ------------------------------------------------------------------------------
 
@@ -133,10 +114,14 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipUtils,
         @getKind('y').domainCalc('extent').resetOnNewData(true)
         @getKind('x').resetOnNewData(true).domainCalc('extent')
         _tooltip = host.behavior().tooltip
+        ttHelper
+          .keyScale(_scaleList.y)
+          .valueScale(_scaleList.x)
+          .colorScale(_scaleList.color)
+          .value((d) -> d.value)
         _tooltip.markerScale(_scaleList.y)
-        _tooltip.on "enter.#{_id}", ttMoveData
-        _tooltip.on "moveData.#{_id}", ttMoveData
-        _tooltip.on "moveMarker.#{_id}", ttMoveMarker
+        _tooltip.on "moveData.#{_id}", ttHelper.moveData
+        _tooltip.on "moveMarker.#{_id}", ttHelper.moveMarkers
 
       #host.lifeCycle().on 'drawChart', draw
       host.lifeCycle().on 'brushDraw', brush
