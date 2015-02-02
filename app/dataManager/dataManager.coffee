@@ -70,6 +70,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
     _layerKeysOld = []
     _mergedLayerKeys = undefined
     _isOrdinal = true
+    _isRangeScale = false
 
     me = {}
 
@@ -84,8 +85,6 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
         _keyNew = _keyNew.map((d) -> +d)
       _mergedKeys = mergeSeriesKeys(_keyOld, _keyNew)
       _mergedLayerKeys = mergeSeriesKeys(_layerKeysOld, _layerKeysNew)
-      #_startLayerMap = {}
-      #_endLayerMap = {}
       return me
 
     me.isInitial = () ->
@@ -139,7 +138,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
           layerAdded: layerKey.iOld is undefined,
           added: d.added,
           atBorder: d.atBorder,
-          value: _valueScale.layerValue(d.data, layerKey.key),
+          value: if not _isRangeScale then _valueScale.layerValue(d.data, layerKey.key) else {upper:_valueScale.upperValue(d.data), lower:_valueScale.lowerValue(d.data)}
           targetValue: _valueScale.layerValue(d.targetData, layerKey.key)
           data:d.data
       })})
@@ -192,7 +191,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
           layerDeleted: layerKey.iNew is undefined,
           deleted:d.deleted,
           atBorder: d.atBorder,
-          value: _valueScale.layerValue(d.data, layerKey.key), # todo: need a better animation target for deleted elements in ordinal scales
+          value: if not _isRangeScale then _valueScale.layerValue(d.data, layerKey.key) else {upper:_valueScale.upperValue(d.data), lower:_valueScale.lowerValue(d.data)}
           targetValue: _valueScale.layerValue(d.targetData, layerKey.key)
           data:d.data
         })})
@@ -206,6 +205,8 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
     me.valueScale = (scale) ->
       if arguments.length is 0 then return _valueScale
       _valueScale = scale
+      _isRangeScale = scale.kind() is 'rangeX' or scale.kind() is 'rangeY'
+
       return me
 
     return me

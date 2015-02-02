@@ -15,7 +15,7 @@
   @example
 ###
 
-angular.module('wk.chart').directive 'rangeArea', ($log, utils, dataManagerFactory, markerFactory, tooltipHelperFactory) ->
+angular.module('wk.chart').directive 'rangeAreaVertical', ($log, utils, dataManagerFactory, markerFactory, tooltipHelperFactory) ->
   lineCntr = 0
   return {
   restrict: 'A'
@@ -28,7 +28,7 @@ angular.module('wk.chart').directive 'rangeArea', ($log, utils, dataManagerFacto
     _scaleList = {}
     _showMarkers = false
     offset = 0
-    _id = 'rangearea' + lineCntr++
+    _id = 'rangeareavertical' + lineCntr++
     area = undefined
     layoutData = undefined
     _initialOpacity = 0
@@ -39,28 +39,28 @@ angular.module('wk.chart').directive 'rangeArea', ($log, utils, dataManagerFacto
 
     #-----------------------------------------------------------------------------------------------------------------
 
-    setAnimationStart = (data, options, x, y, color, size, shape, rangeX, rangeY) ->
-      xData.keyScale(x).valueScale(y).data(data)
+    setAnimationStart = (data, options, x, y, color, size) ->
+      xData.keyScale(y).valueScale(x).data(data)
       if not xData.isInitial()
         layoutData = xData.animationStartLayers()
-        drawPath.apply(this, [false, layoutData, options, x, y, color, size, shape, rangeX, rangeY])
+        drawPath.apply(this, [false, layoutData, options, x, y, color])
 
-    setAnimationEnd = (data, options, x, y, color, size, shape, rangeX, rangeY) ->
+    setAnimationEnd = (data, options, x, y, color, size) ->
       markers.active(_showMarkers)
       layoutData = xData.animationEndLayers()
-      drawPath.apply(this, [true, layoutData, options, x, y, color, size, shape, rangeX, rangeY])
+      drawPath.apply(this, [true, layoutData, options, x, y, color])
 
-    drawPath = (doAnimate, data, options, x, y, color, size, shape, rangeX, rangeY) ->
+    drawPath = (doAnimate, data, options, x, y, color) ->
 
-      offset = if x.isOrdinal() then x.scale().rangeBand() / 2 else 0
+      offset = if y.isOrdinal() then y.scale().rangeBand() / 2 else 0
       if _tooltip
         _tooltip.data(data)
         ttHelper.layout(data)
 
       area = d3.svg.area()
-        .x((d) -> x.scale()(d.targetKey))
-        .y((d) -> y.scale()(d.value))
-        .y1((d) -> y.scale()(d.value1))
+        .x((d) -> -y.scale()(d.targetKey))
+        .y((d) -> x.scale()(d.value))
+        .y1((d) -> x.scale()(d.value1))
 
       i = 0
       rangeData = [{values:data[1].values, layerKey:data[1].layerKey}]
@@ -82,7 +82,7 @@ angular.module('wk.chart').directive 'rangeArea', ($log, utils, dataManagerFacto
         .style('pointer-events', 'none')
         .style('stroke', (d) -> color.scale()(d.layerKey))
         .style('fill', (d) -> color.scale()(d.layerKey))
-        .attr('transform', "translate(#{offset})")
+        .attr('transform', "translate(0,#{offset})rotate(-90)") #rotate and position chart
 
       (if doAnimate then range.transition().duration( options.duration) else range)
         .attr('d', (d) -> area(d.values))
@@ -96,8 +96,8 @@ angular.module('wk.chart').directive 'rangeArea', ($log, utils, dataManagerFacto
         .remove()
 
       markers
-        .x((d) -> x.scale()(d.targetKey) + if x.isOrdinal() then x.scale().rangeBand() / 2 else 0)
-        .y((d) -> y.scale()(d.value))
+        .y((d) -> y.scale()(d.targetKey) + if y.isOrdinal() then y.scale().rangeBand() / 2 else 0)
+        .x((d) -> x.scale()(d.value))
         .color((d) -> color.scale()(d.layerKey))
       layers.call(markers, doAnimate)
 
@@ -117,15 +117,15 @@ angular.module('wk.chart').directive 'rangeArea', ($log, utils, dataManagerFacto
     host.lifeCycle().on 'configure', ->
       _scaleList = @getScales(['x', 'y', 'color'])
       @layerScale('color')
-      @getKind('y').domainCalc('extent').resetOnNewData(true)
-      @getKind('x').resetOnNewData(true).domainCalc('extent')
+      @getKind('x').domainCalc('extent').resetOnNewData(true)
+      @getKind('y').resetOnNewData(true).domainCalc('extent')
       _tooltip = host.behavior().tooltip
       ttHelper
-      .keyScale(_scaleList.x)
-      .valueScale(_scaleList.y)
+      .keyScale(_scaleList.y)
+      .valueScale(_scaleList.x)
       .colorScale(_scaleList.color)
       .value((d) -> d.value)
-      _tooltip.markerScale(_scaleList.x)
+      _tooltip.markerScale(_scaleList.y)
       _tooltip.on "enter.#{_id}", ttHelper.moveData
       _tooltip.on "moveData.#{_id}", ttHelper.moveData
       _tooltip.on "moveMarker.#{_id}", ttHelper.moveMarkers

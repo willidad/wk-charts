@@ -1,5 +1,7 @@
 angular.module('wk.chart').factory 'markerFactory', ($log, d3Animation) ->
 
+  markersCnt = 0
+
   markers = () ->
 
     _x = undefined
@@ -11,16 +13,17 @@ angular.module('wk.chart').factory 'markerFactory', ($log, d3Animation) ->
     _duration = d3Animation.duration;
     _isVertical = false
     _markerSelection = undefined
+    _id = markersCnt++
 
     me = (s, doAnimate) ->
       _markerSelection = s
       if _active
-        m = s.selectAll('.wk-chart-marker').data(
+        m = s.selectAll(".wk-chart-marker-#{_id}").data(
           (d) -> d.values
         , (d, i) -> i
         )
 
-        m.enter().append('circle').attr('class', 'wk-chart-marker')
+        m.enter().append('circle').attr('class', "wk-chart-marker-#{_id}")
           .style('fill', _color)
           .attr('r', 5)
           .style('pointer-events', 'none')
@@ -36,7 +39,7 @@ angular.module('wk.chart').factory 'markerFactory', ($log, d3Animation) ->
         mExit
           .remove()
       else
-        s.selectAll('.wk-chart-marker').transition().duration(_duration)
+        s.selectAll(".wk-chart-marker-#{_id}").transition().duration(_duration)
           .style('opacity', 0).remove()
 
     me.brush = (selection, idxRange) ->
@@ -48,14 +51,14 @@ angular.module('wk.chart').factory 'markerFactory', ($log, d3Animation) ->
         c = 'cx'
         v = _x
       if idxRange
-        _markerSelection.selectAll('.wk-chart-marker').each((d, i) ->
+        _markerSelection.selectAll(".wk-chart-marker-#{_id}").each((d, i) ->
           if idxRange[0] <= i and i <= idxRange[1]
             d3.select(this).attr(c,v).style('opacity', 1)
           else
             d3.select(this).style('opacity', 0)
         )
       else
-        _markerSelection.selectAll('.wk-chart-marker').attr(c, v)
+        _markerSelection.selectAll(".wk-chart-marker-#{_id}").attr(c, v)
 
     me.active = (trueFalse) ->
       if arguments.length is 0 then return _active

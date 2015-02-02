@@ -13,7 +13,7 @@
   @usesDimension rangeY [type=linear, domainRange=extent]
   @usesDimension color [type=category20]
 ###
-angular.module('wk.chart').directive 'rangeColumn', ($log, utils, barConfig, wkChartMargins)->
+angular.module('wk.chart').directive 'rangeColumn', ($log, utils, barConfig, dataManagerFactory, markerFactory, tooltipHelperFactory)->
   sBarCntr = 0
   return {
   restrict: 'A'
@@ -24,109 +24,109 @@ angular.module('wk.chart').directive 'rangeColumn', ($log, utils, barConfig, wkC
 
     _id = "rangeColumn#{sBarCntr++}"
 
-    columns = null
-    _scaleList = {}
-    _selected = undefined
-    _merge = utils.mergeData()
-    _merge([]).key((d) -> d.key)
-    initial = true
-    barPaddingOld = 0
-    barOuterPaddingOld = 0
-
-    config = _.clone(barConfig, true)
-
-    #--- Tooltip Event Handlers --------------------------------------------------------------------------------------
+    _id = "rangebars#{sBarCntr++}"
 
     _tooltip = undefined
+    _selected = undefined
+    _scaleList = {}
+    _showMarkers = false
+    offset = 0
+    layoutData = undefined
+    config = _.clone(barConfig, true)
 
-    ttEnter = (data) ->
-      @headerName = _scaleList.x.axisLabel()
-      @headerValue = _scaleList.x.formattedValue(data.data)
-      @layers.push({name: _scaleList.rangeY.upperProperty(), value: _scaleList.rangeY.formatValue(_scaleList.rangeY.upperValue(data.data)), color:{'background-color': _scaleList.color.map(data.data)}})
-      @layers.push({name: _scaleList.rangeY.lowerProperty(), value: _scaleList.rangeY.formatValue(_scaleList.rangeY.lowerValue(data.data)), color:{'background-color': _scaleList.color.map(data.data)}})
-    #--- Draw --------------------------------------------------------------------------------------------------------
+    xData = dataManagerFactory()
+    markers = markerFactory()
+    ttHelper = tooltipHelperFactory()
 
-    draw = (data, options, x, y, color, size, shape, rangeX, rangeY) ->
+    #-----------------------------------------------------------------------------------------------------------------
 
-      if not columns
-        columns = @selectAll('.wk-chart-column')
+    setAnimationStart = (data, options, x, y, color, size) ->
+      xData.keyScale(x).valueScale(y).data(data)
+      if not xData.isInitial()
+        layoutData = xData.animationStartLayers()
+        drawPath.apply(this, [false, layoutData, options, x, y, color])
 
-      barPadding = x.scale().rangeBand() / (1 - config.padding) * config.padding
-      barOuterPadding = x.scale().rangeBand() / (1 - config.outerPadding) * config.outerPadding
+    setAnimationEnd = (data, options, x, y, color, size) ->
+      markers.active(_showMarkers)
+      layoutData = xData.animationEndLayers()
+      drawPath.apply(this, [true, layoutData, options, x, y, color])
 
-      layout = data.map((d) -> {
-        data:d,
-        key:x.value(d),
-        x:x.map(d),
-        y:rangeY.scale()(rangeY.lowerValue(d)),
-        color:color.map(d),
-        width:x.scale().rangeBand(x.value(d)),
-        height:Math.abs(rangeY.scale()(rangeY.lowerValue(d)) - rangeY.scale()(rangeY.upperValue(d)))
-      })
+    drawPath = (doAnimate, data, options, x, y, color) ->
 
-      _merge(layout).first({x:0, width:0}).last({x:options.width + barPadding/2 - barOuterPaddingOld, width: barOuterPadding})
+      barHeight = x.scale().rangeBand()
+      barPadding = barHeight / (1 - config.padding) * config.padding
+      offset = if y.isOrdinal() then barHeight / 2 else 0
+      if _tooltip
+        _tooltip.data(data)
+        ttHelper.layout(data)
 
+      offset = (d) ->
+        if d.deleted and d.atBorder then return barHeight
+        if d.deleted then return -barPadding / 2
+        if d.added and d.atBorder then return  barPadding / 2
+        if d.added then return barHeight + barPadding / 2
+        return 0
 
-      columns = columns.data(layout, (d) -> d.key)
+      i = 0
+      rangeData = [{values:data[1].values, layerKey:data[1].layerKey}]
+      while i < rangeData[0].values.length
+        rangeData[0].values[i].value1 = data[0].values[i].targetValue
+        i++
 
-      enter = columns.enter().append('g').attr('class','wk-chart-column')
-        .attr('transform', (d,i) -> "translate(#{if initial then d.x else _merge.addedPred(d).x  + _merge.addedPred(d).width + if i then barPaddingOld / 2 else barOuterPaddingOld},#{d.y - d.height}) scale(#{if initial then 1 else 0},1)")
-      enter.append('rect')
-        .attr('class', 'wk-chart-rect wk-chart-selectable')
-        .attr('height', (d) -> d.height)
-        .attr('width', (d) -> d.width)
-        .style('fill',(d) -> d.color)
-        .style('opacity', if initial then 0 else 1)
-        .call(_tooltip.tooltip)
-        .call(_selected)
+      layers = this.selectAll(".wk-chart-layer")
+      .data(data, (d) -> d.layerKey)
+      layers.enter()
+      .append('g').attr('class','wk-chart-layer')
 
-      enter.append('text')
-        .attr('class', 'wk-chart-data-label')
-        .attr('x', (d) -> d.width / 2)
-        .attr('y', - wkChartMargins.dataLabelPadding.vert)
-        .attr({'text-anchor':'middle'})
-        .style({opacity: 0})
+      range = this.selectAll('.wk-chart-rect')
+      .data(rangeData[0].values, (d) -> d.key)
+      range.enter().append('rect')
+      .attr('class','wk-chart-rect')
+      .style('opacity', 0)
+      .style('fill', color.scale()(range[0].layerKey))
+      .call(_tooltip.tooltip)
+      .call(_selected)
+      .attr('transform',(d) -> "translate(#{x.scale()(d.targetKey)})")
 
-      columns.transition().duration(options.duration)
-        .attr("transform", (d) -> "translate(#{d.x}, #{d.y - d.height}) scale(1,1)")
-      columns.select('rect').transition().duration(options.duration)
-        .attr('width', (d) -> d.width)
-        .attr('height', (d) -> d.height)
-        .style('opacity',1)
-      columns.select('text')
-        .text((d) -> rangeY.formatValue(rangeY.upperValue(d)))
-        .transition().duration(options.duration)
-        .attr('x', (d) -> d.width / 2)
-        .style('opacity', if host.showDataLabels() then 1 else 0)
+      (if doAnimate then range.transition().duration( options.duration) else range)
+      .attr('transform',(d) -> "translate(#{x.scale()(d.targetKey) + offset(d)})")
+      .attr('width', (d) -> if d.added or d.deleted then 0 else barHeight)
+      .attr('height', (d) -> Math.abs(y.scale()(d.targetValue) - y.scale()(d.value1)))
+      .attr('y', (d) -> y.scale()(d.targetValue))
+      .style('stroke', (d) -> color.scale()(d.layerKey))
+      .style('opacity', (d) -> if d.added or d.deleted then 0 else 1)
 
-      columns.exit().transition().duration(options.duration)
-        .attr('transform', (d) -> "translate(#{_merge.deletedSucc(d).x - barPadding / 2},#{d.y}) scale(0,1)")
-        .remove()
+      range.exit().remove()
 
-      initial = false
-      barPaddingOld = barPadding
-      barOuterPaddingOld = barOuterPadding
+      layers.exit()
+      .remove()
 
     brush = (axis, idxRange) ->
-      columns
-      .attr('transform',(d) -> "translate(#{if (x = axis.scale()(d.key)) >= 0 then x else -1000}, #{d.y})")
+      this.selectAll('.wk-chart-rect')
+      .attr('transform',(d) -> "translate(0, #{if (x = axis.scale()(d.targetKey)) >= 0 then x else -1000})")
       .selectAll('.wk-chart-rect')
-      .attr('width', (d) -> axis.scale().rangeBand())
-      columns.selectAll('text')
-      .attr('x',axis.scale().rangeBand() / 2)
+      .attr('height', (d) -> axis.scale().rangeBand())
 
     #--- Configuration and registration ------------------------------------------------------------------------------
 
     host.lifeCycle().on 'configure', ->
-      _scaleList = @getScales(['x', 'rangeY', 'color'])
-      @getKind('rangeY').domainCalc('extent').resetOnNewData(true)
+      _scaleList = @getScales(['x', 'y', 'color'])
+      @getKind('y').domainCalc('extent').resetOnNewData(true)
       @getKind('x').resetOnNewData(true).rangePadding(config).scaleType('ordinal')
       _tooltip = host.behavior().tooltip
+      ttHelper
+      .keyScale(_scaleList.x)
+      .valueScale(_scaleList.y)
+      .colorScale(_scaleList.color)
+      .value((d) -> d.value)
       _selected = host.behavior().selected
-      _tooltip.on "enter.#{_id}", ttEnter
+      _tooltip.on "enter.#{_id}", ttHelper.enter
 
-    host.lifeCycle().on 'drawChart', draw
+    #host.lifeCycle().on 'drawChart', draw
     host.lifeCycle().on 'brushDraw', brush
+    host.lifeCycle().on 'animationStartState', setAnimationStart
+    host.lifeCycle().on 'animationEndState', setAnimationEnd
+
     ###*
     @ngdoc attr
       @name column#padding

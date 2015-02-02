@@ -5,6 +5,7 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
   ttHelpers = () ->
     _keyScale = undefined
     _valueScale = undefined
+    _isRangeScale = false
     _colorScale = undefined
     _layout = undefined
     _value = undefined
@@ -22,6 +23,7 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
     me.valueScale = (val) ->
       if arguments.length is 0 then return _valueScale
       _valueScale = val
+      _isRangeScale = _valueScale.kind() is 'rangeX' or _valueScale.kind() is 'rangeY'
       return me
 
     me.colorScale = (val) ->
@@ -65,7 +67,11 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
     me.enter = (data) ->
       @headerName = _keyScale.axisLabel()
       @headerValue  = _keyScale.formatValue(data.key)
-      @layers = @layers.concat({name:data.layerKey, value:_valueScale.formatValue(data.value), color: {'background-color': _colorScale.scale()(data.layerKey)}})
+      if not _isRangeScale
+        @layers = @layers.concat({name:data.layerKey, value:_valueScale.formatValue(data.value), color: {'background-color': _colorScale.scale()(data.layerKey)}})
+      else
+        @layers = @layers.concat({name:data.layerKey, value:_valueScale.formatValue(data.value), color: {'background-color': _colorScale.scale()(data.layerKey)}})
+          .concat({name:data.layerKey, value:_valueScale.formatValue(data.value), color: {'background-color': _colorScale.scale()(data.layerKey)}})
 
     me.moveData = (idx) ->
       lIdx = _getLayoutIdx(idx) # for ordinal scales, the index returned is really an index into the domain values, not into _layout or data. Is different if brushed or has deleted items at beginning
