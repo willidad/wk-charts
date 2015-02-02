@@ -15,7 +15,7 @@
 
 
 ###
-angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig)->
+angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig, dataManagerFactory, tooltipHelperFactory)->
 
   clusteredBarCntr = 0
   return {
@@ -37,6 +37,9 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig)->
       barOuterPaddingOld = 0
       config = _.clone(barConfig, true)
 
+      xData = dataManagerFactory()
+      ttHelper = tooltipHelperFactory()
+
       initial = true
 
       #-----------------------------------------------------------------------------------------------------------------
@@ -52,72 +55,65 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig)->
 
       #-----------------------------------------------------------------------------------------------------------------
 
-      draw = (data, options, x, y, color) ->
+      setAnimationStart = (data, options, x, y, color) ->
+        xData.keyScale(y).valueScale(x).data(data)
+        if not xData.isInitial()
+          layoutData = xData.animationStartLayers()
+          drawPath.apply(this, [false, layoutData, options, x, y, color])
+
+      setAnimationEnd = (data, options, x, y, color) ->
+        layoutData = xData.animationEndLayers()
+        drawPath.apply(this, [true, layoutData, options, x, y, color])
+
+      drawPath = (doAnimate, data, options, x, y, color) ->
         #$log.info "rendering clustered-bar"
 
         barPadding = y.scale().rangeBand() / (1 - config.padding) * config.padding
         barOuterPadding = y.scale().rangeBand() / (1 - config.outerPadding) * config.outerPadding
 
         # map data to the right format for rendering
-        layerKeys = x.layerKeys(data)
+        layerKeys = data.filter((d) -> not d.added and not d.deleted).map((d) -> d.layerKey)
+        clusterHeight = y.scale().rangeBand()
+        clusterY = d3.scale.ordinal().domain(layerKeys).rangeBands([0, clusterHeight], 0, 0)
 
-        clusterY = d3.scale.ordinal().domain(x.layerKeys(data)).rangeBands([0, y.scale().rangeBand()], 0, 0)
-
-        cluster = data.map((d) -> l = {
-          key:y.value(d), data:d, y:y.map(d), height: y.scale().rangeBand(y.value(d))
-          layers: layerKeys.map((k) -> {layerKey: k, color:color.scale()(k), key:y.value(d), value: d[k], y:clusterY(k), x: x.scale()(d[k]), width:x.scale()(d[k]), height:clusterY.rangeBand(k)})}
-        )
-
-        _merge(cluster).first({y:options.height + barPaddingOld / 2 - barOuterPadding, height:y.scale().rangeBand()}).last({y:0, height:barOuterPaddingOld - barPaddingOld / 2})
-        _mergeLayers(cluster[0].layers).first({y:0, height:0}).last({y:cluster[0].height, height:0})
+        offset = (d) ->
+          if d.deleted and d.atBorder then return -barPadding / 2
+          if d.deleted then return clusterHeight + barPadding / 2
+          if d.added and d.atBorder then return clusterHeight + barPadding / 2
+          if d.added then return -barPadding / 2
+          return 0
 
         if not layers
           layers = @selectAll('.wk-chart-layer')
 
-        layers = layers.data(cluster, (d) -> d.key)
+        layers = layers.data(data, (d) -> d.layerKey)
 
         layers.enter().append('g')
-          .attr('class', 'wk-chart-layer').call(_tooltip.tooltip)
-          .attr('transform', (d)->
-            null
-            "translate(0, #{if initial then d.y else _merge.addedPred(d).y - barPaddingOld / 2}) scale(1,#{if initial then 1 else 0})")
-          .style('opacity', if initial then 0 else 1)
-
-        layers
-          .transition().duration(options.duration)
-            .attr('transform',(d) -> "translate(0,#{d.y}) scale(1,1)")
-            .style('opacity', 1)
+          .attr('class', 'wk-chart-layer')
+        #(if doAnimate then layers.transition().duration(options.duration) else layers)
+        #  .attr('transform', (d)-> "translate(1,#{clusterY(d.layerKey)})scale(1,#{if d.added or d.deleted then 0 else 1})")
 
         layers.exit()
-          .transition().duration(options.duration)
-            .attr('transform',(d) -> "translate(0, #{_merge.deletedSucc(d).y + _merge.deletedSucc(d).height + barPadding / 2}) scale(1,0)")
-            .remove()
+          .remove()
 
-        bars = layers.selectAll('.wk-chart-bar')
+        bars = layers.selectAll('.wk-chart-rect')
           .data(
-            (d) -> d.layers
+            (d) -> d.values
           , (d) -> d.layerKey + '|' + d.key
           )
 
         bars.enter().append('rect')
-          .attr('class', 'wk-chart-bar wk-chart-selectable')
-          .attr('y', (d) -> if initial then d.y else _mergeLayers.addedPred(d).y + _mergeLayers.addedPred(d).height)
-          .attr('height', (d) -> if initial then d.height else 0)
-          .attr('x', x.scale()(0))
+          .attr('class', 'wk-chart-rect wk-chart-selectable')
+          .style('fill', (d) -> color.scale()(d.layerKey)).call(_tooltip.tooltip)
+        (if doAnimate then bars.transition().duration(options.duration) else bars)
+          .attr('y', (d) -> y.scale()(d.targetKey) + (if d.added or d.deleted then 0 else clusterY(d.layerKey)) + offset(d))
+          .attr('height', (d) -> if d.layerAdded or d.layerDeleted or d.added or d.deleted then 0 else clusterY.rangeBand())
+          .attr('width', (d) -> Math.abs(x.scale()(d.targetValue or 0 )))
+          .attr('x', (d) -> Math.min(x.scale()(0), x.scale()(d.targetValue or 0)))
 
-
-        bars.style('fill', (d) -> color.scale()(d.layerKey)).transition().duration(options.duration)
-          .attr('width', (d) -> d.width)
-          .attr('y', (d) -> d.y)
-          .attr('x', (d) -> Math.min(x.scale()(0), d.x))
-          .attr('height', (d) -> Math.abs(d.height))
 
         bars.exit()
-          .transition().duration(options.duration)
-            #.attr('width',0)
-            .attr('height', 0)
-            .attr('y', (d) -> _mergeLayers.deletedSucc(d).y)
-            .remove()
+          .remove()
 
         initial = false
         barPaddingOld = barPadding
@@ -140,10 +136,17 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig)->
         @getKind('y').resetOnNewData(true).rangePadding(config).scaleType('ordinal')
         @layerScale('color')
         _tooltip = host.behavior().tooltip
-        _tooltip.on "enter.#{_id}", ttEnter
+        _tooltip.on "enter.#{_id}", ttHelper.enter
+        ttHelper
+          .keyScale(_scaleList.y)
+          .valueScale(_scaleList.x)
+          .colorScale(_scaleList.color)
+          .value((d) -> d.value)
 
-      host.lifeCycle().on 'drawChart', draw
+      #host.lifeCycle().on 'drawChart', draw
       host.lifeCycle().on 'brushDraw', drawBrush
+      host.lifeCycle().on 'animationStartState', setAnimationStart
+      host.lifeCycle().on 'animationEndState', setAnimationEnd
 
       ###*
         @ngdoc attr

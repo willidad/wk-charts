@@ -8,35 +8,53 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
     lMax = Math.max(lOldMax, lNewMax)
     result = []
 
+    iPred = 0
+
     while iOld <= lOldMax and iNew <= lNewMax
       if aOld[iOld] is aNew[iNew] # old is also in new
         result.push({iOld: iOld, iNew: Math.min(iNew,lNewMax),key: aOld[iOld]});
+        iPred = iOld
         #console.log('same', aOld[iOld]);
         iOld++;
         iNew++;
       else if aOld.indexOf(aNew[iNew], iOld) >= 0
         # test if the non matching new is in old behind the current old. If yes, all old items until the match are deleted, if no, the non-match is added
         # aOld[iOld is deleted
-        result.push({iOld: iOld, iNew: undefined, key: aOld[iOld], atBorder: iNew is 0})
+        result.push({deleted: true, iOld: iOld, key: aOld[iOld], atBorder: iNew is 0})
         # console.log('deleted', aOld[iOld]);
         iOld++
       else
         # aNew[iNew] is added
-        result.push({iOld: undefined, iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:iOld is 0})
+        result.push({added: true, iPred: iPred, predKey: aOld[iPred], iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:iOld is 0})
         # console.log('added', aNew[iNew]);
         iNew++
 
     while iOld <= lOldMax
       # if there is more old items, mark them as deleted
-      result.push({iOld: iOld, iNew: undefined, key: aOld[iOld], atBorder:true});
+      result.push({deleted: true, iOld: iOld, key: aOld[iOld], atBorder:true});
       # console.log('deleted', aOld[iOld]);
       iOld++;
 
     while iNew <= lNewMax
       # if there is more new items, mark them as added
-      result.push({iOld: undefined, iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:true});
+      result.push({added: true, iPred: iPred, predKey: aOld[iPred], iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:true});
       # console.log('added', aNew[iNew]);
       iNew++;
+
+    # set the deleteSuccessor by traversing form the end
+
+    i = result.length - 1
+    atBorder = true
+    iSucc = aNew.length - 1
+    while i >= 0
+      cur = result[i]
+      if cur.deleted
+        cur.iSucc = iSucc
+        cur.succKey = aNew[iSucc]
+      else
+        iSucc = cur.iNew
+        atBorder = false
+      i--
 
     return result
 
@@ -112,12 +130,13 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
     me.animationStartLayers = () ->
       series =getMergedStart()
       return _mergedLayerKeys.map((layerKey) -> {
-        layerKey:layerKey.key,
+        layerKey: if layerKey.iOld is undefined then _layerKeysNew[layerKey.iNew] else layerKey.key,
         added: layerKey.iOld is undefined,
         values: series.map((d) -> {
           key: d.key,
           targetKey: d.targetKey,
           layerKey: layerKey.key,
+          layerAdded: layerKey.iOld is undefined,
           added: d.added,
           atBorder: d.atBorder,
           value: _valueScale.layerValue(d.data, layerKey.key),
@@ -164,12 +183,13 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
     me.animationEndLayers = () ->
       series = getMergedEnd()
       return _mergedLayerKeys.map((layerKey) -> {
-        layerKey:layerKey.key,
+        layerKey: if layerKey.iNew is undefined then _layerKeysOld[layerKey.iOld] else layerKey.key,
         deleted:layerKey.iNew is undefined,
         values: series.map((d) -> {
           key: d.key,
           targetKey: d.targetKey,
           layerKey: layerKey.key,
+          layerDeleted: layerKey.iNew is undefined,
           deleted:d.deleted,
           atBorder: d.atBorder,
           value: _valueScale.layerValue(d.data, layerKey.key), # todo: need a better animation target for deleted elements in ordinal scales
