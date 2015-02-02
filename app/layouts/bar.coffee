@@ -39,16 +39,8 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, wkChartMar
 
     xData = dataManagerFactory()
     ttHelper = tooltipHelperFactory()
-
-    #--- Tooltip Event Handlers --------------------------------------------------------------------------------------
-
     _tooltip = undefined
-    ###
-    ttEnter = (data) ->
-      @headerName = _scaleList.y.axisLabel()
-      @headerValue = _scaleList.x.axisLabel()
-      @layers.push({name: _scaleList.color.formattedValue(data.data), value: _scaleList.x.formattedValue(data.data), color:{'background-color': _scaleList.color.map(data.data)}})
-    ###
+
     #--- Draw --------------------------------------------------------------------------------------------------------
 
     setAnimationStart = (data, options, x, y, color) ->
@@ -122,8 +114,8 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, wkChartMar
     brush = (axis, idxRange) ->
       bars
         .attr('transform',(d) -> "translate(0, #{if (y = axis.scale()(d.key)) >= 0 then y else -1000})")
-        .selectAll('.wk-chart-rect')
-        .attr('height', (d) -> axis.scale().rangeBand())
+          .selectAll('.wk-chart-rect')
+          .attr('height', (d) -> axis.scale().rangeBand())
       bars.selectAll('text')
         .attr('y',axis.scale().rangeBand() / 2)
 
