@@ -62,10 +62,10 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
       else
         return idx
       ###
-    me.enter = (value) ->
+    me.enter = (data) ->
       @headerName = _keyScale.axisLabel()
-      @headerValue  = _valueScale.axisLabel()
-      @layers = @layers.concat({name:_keyScale.formatValue(value.targetKey), value:_valueScale.formatValue(value.value), color: {'background-color': _colorScale.map(value.data)}})
+      @headerValue  = _keyScale.formatValue(data.key)
+      @layers = @layers.concat({name:data.layerKey, value:_valueScale.formatValue(data.value), color: {'background-color': _colorScale.scale()(data.layerKey)}})
 
     me.moveData = (idx) ->
       lIdx = _getLayoutIdx(idx) # for ordinal scales, the index returned is really an index into the domain values, not into _layout or data. Is different if brushed or has deleted items at beginning
