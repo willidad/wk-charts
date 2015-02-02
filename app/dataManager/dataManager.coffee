@@ -87,12 +87,25 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
       while i < _mergedKeys.length
         cur = _mergedKeys[i]
         if cur.iOld isnt undefined
-          ret.push({added:false, key:cur.key, targetKey: cur.key, data:_dataOld[cur.iOld]})
+          ret.push({
+            added:false,
+            key:cur.key,
+            targetKey: cur.key,
+            data:_dataOld[cur.iOld]
+            targetData :_dataOld[cur.iOld]
+          })
           lastKey = cur.key
           lastOld = cur.iOld
           atBorder = false
         else
-          ret.push({added:true, atBorder: atBorder, targetKey: (if cur.atBorder and not _isOrdinal then cur.key else lastKey), key:cur.key, data: if cur.atBorder then _dataNew[cur.iNew] else _dataOld[lastOld]})
+          ret.push({
+            added:true,
+            atBorder: atBorder,
+            targetKey: (if cur.atBorder and not _isOrdinal then cur.key else lastKey),
+            key:cur.key,
+            data: if cur.atBorder then _dataNew[cur.iNew] else _dataOld[lastOld],
+            targetData: _dataNew[cur.iNew]
+          })
         i++
       return ret
 
@@ -108,6 +121,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
           added: d.added,
           atBorder: d.atBorder,
           value: _valueScale.layerValue(d.data, layerKey.key),
+          targetValue: _valueScale.layerValue(d.targetData, layerKey.key)
           data:d.data
       })})
 
@@ -124,12 +138,25 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
       while i >= 0
         cur = _mergedKeys[i]
         if cur.iNew isnt undefined
-          ret.unshift({deleted:false, key: cur.key, targetKey: cur.key, data:_dataNew[cur.iNew]})
+          ret.unshift({
+            deleted:false,
+            key: cur.key,
+            targetKey: cur.key,
+            data:_dataNew[cur.iNew]
+            targetData: _dataNew[cur.iNew]
+          })
           lastKey = cur.key
           lastNew = cur.iNew
           atBorder = false
         else
-          ret.unshift({deleted:true, atBorder: atBorder, targetKey: (if cur.atBorder and not _isOrdinal then cur.key else lastKey), key:cur.key, data: if cur.atBorder then _dataOld[cur.iOld] else _dataNew[lastNew]})
+          ret.unshift({
+            deleted:true,
+            atBorder: atBorder,
+            targetKey: (if cur.atBorder and not _isOrdinal then cur.key else lastKey),
+            key:cur.key,
+            data: if cur.atBorder then _dataOld[cur.iOld] else _dataNew[lastNew],
+            targetData: _dataOld[cur.iOld]
+          })
         i--
       return ret
 
@@ -146,6 +173,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
           deleted:d.deleted,
           atBorder: d.atBorder,
           value: _valueScale.layerValue(d.data, layerKey.key), # todo: need a better animation target for deleted elements in ordinal scales
+          targetValue: _valueScale.layerValue(d.targetData, layerKey.key)
           data:d.data
         })})
 
