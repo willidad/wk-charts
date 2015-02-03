@@ -374,43 +374,30 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
         if Array.isArray(data) then data.map((d) -> _scale(me.value(data))) else _scale(me.value(data))
 
     me.invert = (mappedValue) ->
-      # takes a mapped value (pixel position , color value, returns the corresponding value in the input domain
-      # the type of inverse is dependent on the scale type for quantitative scales.
-      # Ordinal scales ...
+      # Returns the value in the input domain x for the corresponding value in the output range.
+      # There are four different cases how this is done:
+      #  - d3 support the invert function on the scale  - will use invert then
+      #  - d3 support invertRange function on the scale - will use invertRange then, however the handling of the inverted values needs to be special (in tooltips)
+      #  - d3 does not support inverting on ordinal scales. In this case we are using our own invert algorithm, which makes a few assumptions:
+      #     - the scale domain is explicitly set whenever the data changes. wk-charts does this for x and y dimensions automatically.
+      #       For other dimensions this only happens when the reset attribute is true on the dimension. In this case invert returns the domain value tht is the closest match ti the input value
+      #     - the scale domain is not explicitly set. In this case it inverts based on the domains default. The resulting values may not be meaningful. It is up to the consumer of invert to assure
+      #       that the prerequisites are met and the returned values are interpreted in a meaningful fashion
+      # Returns: input domain value
 
       if _.has(me.scale(),'invert') # i.e. the d3 scale supports the inverse calculation: linear, log, pow, sqrt
-        _data = me.chart().getData()
-
-        # bisect.left never returns 0 in this specific scenario. We need to move the val by an interval to hit the middle of the range and to ensure
-        # that the first element will be captured. Also ensures better visual experience with tooltips
-        if me.kind() is 'rangeX' or me.kind() is 'rangeY'
-          val = me.scale().invert(mappedValue)
-          if me.upperProperty()
-            bisect = d3.bisector(me.upperValue).left
-          else
-            step = me.lowerValue(_data[1]) - me.lowerValue(_data[0])
-            bisect = d3.bisector((d) -> me.lowerValue(d) + step).left
-        else
-          range = _scale.range()
-          interval = (range[1] - range[0]) / _data.length
-          val = me.scale().invert(mappedValue - interval/2)
-          bisect = d3.bisector(me.value).left
-
-        idx = bisect(_data, val)
-        idx = if idx < 0 then 0 else if idx >= _data.length then _data.length - 1 else idx
-        return idx # the inverse value does not necessarily correspond to a value in the data
+        return _scale.invert(mappedValue)
+        # NOTE: THIS VERSION DOES NOT RETURN A INDEX INTO THE DATA ANYMORE. FINDING THE DATA REFERENCE IS LEFT TO THE CONSUMER OF THE RESULT
 
       if _.has(me.scale(),'invertExtent') # d3 supports this for quantize, quantile, threshold. returns the range that gets mapped to the value
-        return me.scale().invertExtent(mappedValue) #TODO How should this be mapped correctly. Use case???
+        return me.scale().invertExtent(mappedValue)
 
-      # d3 does not support invert for ordinal scales, thus things become a bit more tricky.
-      # in case we are setting the domain explicitly, we know tha the range values and the domain elements are in the same order
-      # in case the domain is set 'lazy' (i.e. as values are used) we cannot map range and domain values easily. Not clear how to do this effectively
+      # d3 does not support invert for ordinal scales. Can only invert if domain is explicitly set whenever data changes.
 
-      if me.resetOnNewData()
+      if me.isOrdinal() and me.resetOnNewData()
         domain = _scale.domain()
         range = _scale.range()
-        if _isVertical
+        if range[0] > range[1]
           interval = range[0] - range[1]
           idx = range.length - Math.floor(mappedValue / interval) - 1
           if idx < 0 then idx = 0
@@ -418,13 +405,29 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
           interval = range[1] - range[0]
           idx = Math.floor(mappedValue / interval)
           if idx >= range.length then idx = range.length - 1
-        return idx
+        return domain[idx]
 
-    me.invertOrdinal = (mappedValue) ->
-      if me.isOrdinal() and me.resetOnNewData()
-        idx = me.invert(mappedValue)
-        return _scale.domain()[idx]
+      # in all other cases we cannot meaningfully invert.
+      return undefined
 
+    me.findIndex = (value) -> # used to find the data object after inverting a range value
+      # returns the index to data first object in the data array that holds the value in the dimension
+      _data = me.chart().getData()
+      if _isOrdinal
+        return _.findIndex(_data,(d) -> return value is me.value(d)) # assumes the value exists in data.
+      if _.isArray(value) and value.length is 2
+        # we are finding the range extend bounds
+        #TODO  IMPLEMENT THIS CASE
+        return
+
+      # we cannot assume that an exact match in the data. use d3.bisect to find the entry
+      bisect = d3.bisector(me.value).left
+      idx = bisect(_data, value)
+      idx = if idx < 0 then 0 else if idx >= _data.length then _data.length - 1 else idx
+      return idx # the inverse value does not necessarily correspond to a value in the data
+
+    me.find = (value) ->
+      return  me.chart().getData()[me.findIndex(value)]
     #--- Axis Attributes and functions ---------------------------------------------------------------------------------
 
     me.showAxis = (trueFalse) ->

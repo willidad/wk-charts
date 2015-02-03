@@ -97,8 +97,10 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelper
       brush = (axis, idxRange, width, height) ->
         areaPath = this.selectAll(".wk-chart-area-path")
         if axis.isOrdinal()
-          areaPath.attr('d', (d) -> area(d.values.slice(idxRange[0],idxRange[1] + 1)))
-            .attr('transform', "translate(0,#{axis.scale().rangeBand() / 2})rotate(-90)")
+          areaPath.attr('d', (d) ->
+            null
+            area(d.values.slice(idxRange[0],idxRange[1] + 1)))
+          .attr('transform', "translate(0,#{axis.scale().rangeBand() / 2})rotate(-90)")
           markers.brush(this, idxRange)
           ttHelper.brushRange(idxRange)
         else

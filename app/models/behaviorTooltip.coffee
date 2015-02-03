@@ -44,8 +44,8 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
     positionInitial = () ->
       _templScope.position = {
         position: 'absolute'
-        left: 0 + 'px'
-        top: 0 + 'px'
+        left: '0px'
+        top: '0px'
         'z-index': 1500
         opacity: 0
       }
@@ -63,16 +63,17 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
 
       # get tooltip data value
 
-      if _showMarkerLine
+      if _showMarkerLine # show tooltip based on mouse position. Invert the position and find the corresponding data value #TODO Better name for the indicator value
         _pos = d3.mouse(this)
-        value = _markerScale.invert(if _markerScale.isHorizontal() then _pos[0] else _pos[1])
-        _templScope.ttData = me.data()[value]
-      else
+        keyValue = _markerScale.invert(if _markerScale.isHorizontal() then _pos[0] else _pos[1])
+        dataObj = _markerScale.find(keyValue)
+        _templScope.ttData = dataObj
+      else # show tooltip from element the mouse is over. Get the linked datum of the object
         value = d3.select(this).datum()
-        _templScope.ttData = if value.data then value.data else value
+        dataObj = _templScope.ttData = if value.data then value.data else value
 
-
-      positionInitial()
+      positionInitial() #position in upper left corner to compute the space requirements. positionBox() will the move it to the right
+                        # place and deal with ensure that box does not move outside the borders
 
       # create a marker line if required
       if _showMarkerLine
@@ -89,9 +90,9 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
 
         _markerLine.style({stroke: 'darkgrey', 'pointer-events': 'none'})
 
-        _tooltipDispatch.moveMarker.apply(_markerG, [value])
+        _tooltipDispatch.moveMarker.apply(_markerG, [keyValue, dataObj])
 
-      _tooltipDispatch.enter.apply(_templScope, [value]) # call layout to fill in data
+      _tooltipDispatch.enter.apply(_templScope, [dataObj, dataObj]) # provide dataObj twice in case moveMarker is registered as inter callback
 
     #--- TooltipMove  Event Handler ------------------------------------------------------------------------------------
 
@@ -100,11 +101,12 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       _pos = d3.mouse(_area)
       positionBox()
       if _showMarkerLine
-        dataIdx = _markerScale.invert(if _markerScale.isHorizontal() then _pos[0] else _pos[1])
-        _tooltipDispatch.moveMarker.apply(_markerG, [dataIdx])
+        keyValue = _markerScale.invert(if _markerScale.isHorizontal() then _pos[0] else _pos[1])
+        dataObj = _markerScale.find(keyValue)
+        _tooltipDispatch.moveMarker.apply(_markerG, [keyValue, dataObj])
         _templScope.layers = []
-        _templScope.ttData = me.data()[dataIdx]
-        _tooltipDispatch.moveData.apply(_templScope, [dataIdx])
+        _templScope.ttData = me.data()[dataObj]
+        _tooltipDispatch.moveData.apply(_templScope, [keyValue, dataObj])
       _templScope.$apply()
 
     #--- TooltipLeave Event Handler ------------------------------------------------------------------------------------

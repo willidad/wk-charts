@@ -74,12 +74,14 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, wkChartMar
 
       enter = bars.enter().append('g').attr('class','wk-chart-bar')
         .attr('transform', (d)-> "translate(0, #{y.scale()(d.targetKey)})")
+
       enter.append('rect')
         .attr('class', 'wk-chart-rect wk-chart-selectable')
         .attr('height', (d) -> if d.added or d.deleted then 0 else barHeight)
         .style('opacity', if initial then 0 else 1)
         .call(_tooltip.tooltip)
         .call(_selected)
+
       enter.append('text')
         .attr('class':'wk-chart-data-label')
         .attr('y', (d) -> barHeight / 2 )
@@ -92,9 +94,10 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, wkChartMar
 
       rect = bars.select('rect')
         .style('fill', (d) -> color.scale()(d.key))
+        .style('stroke', (d) -> color.scale()(d.key))
       (if doAnimate then rect.transition().duration(options.duration) else rect)
           .attr('height', (d) -> if d.added or d.deleted then 0 else barHeight)
-          .attr('width', (d) -> Math.abs(x.scale()(0) - x.scale()(d.value)))
+          .attr('width', (d) -> Math.abs(x.scale()(0) - x.scale()(d.targetValue)))
           .style('opacity', 1)
       text = bars.select('text')
         .text((d) -> x.formatValue(d.value))
@@ -134,7 +137,6 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, wkChartMar
         .value((d) -> d.value)
       _tooltip.on "enter.#{_id}", ttHelper.enter
 
-    #host.lifeCycle().on 'drawChart', draw
     host.lifeCycle().on 'brushDraw', brush
     host.lifeCycle().on 'animationStartState', setAnimationStart
     host.lifeCycle().on 'animationEndState', setAnimationEnd

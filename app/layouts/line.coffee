@@ -119,7 +119,6 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
           .colorScale(_scaleList.color)
           .value((d) -> d.value)
         _tooltip.markerScale(_scaleList.x)
-        _tooltip.on "enter.#{_id}", ttHelper.moveData
         _tooltip.on "moveData.#{_id}", ttHelper.moveData
         _tooltip.on "moveMarker.#{_id}", ttHelper.moveMarkers
 

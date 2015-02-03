@@ -11,6 +11,7 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
     _value = undefined
     _indexer = undefined
     _brushRange = []
+    _circles = undefined
     _id = helperCnt++
 
     me = {}
@@ -50,61 +51,44 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
       _value = val
       return me
 
-    _getLayoutIdx = (idx) ->
-      return _indexer[idx] + _brushRange[0]
-      ###
-      if _keyScale.isOrdinal()
-        domainVal = _keyScale.scale().domain()[idx] # the index returned is really an index into the domain values, not into _layout or data. Is different if brushed or has deleted items at beginning
-        if idx is domainVal then return idx # do not need to search if the same (true if not brushed or deleted items at beginning
-        for d, i in _layout[0].values
-          key = _keyScale.value(d.data)
-          if domainVal is key then return i
-          if +key is +domainVal then return i  # deal with date values and implicitly converted string numbers
-        return undefined
-      else
-        return idx
-      ###
     me.enter = (data) ->
       @headerName = _keyScale.axisLabel()
-      @headerValue  = _keyScale.formatValue(data.key)
-      if not _isRangeScale
-        @layers = @layers.concat({name:data.layerKey, value:_valueScale.formatValue(data.value), color: {'background-color': _colorScale.scale()(data.layerKey)}})
-      else
-        @layers = @layers.concat({name:data.layerKey, value:_valueScale.formatValue(data.value), color: {'background-color': _colorScale.scale()(data.layerKey)}})
-          .concat({name:data.layerKey, value:_valueScale.formatValue(data.value), color: {'background-color': _colorScale.scale()(data.layerKey)}})
+      @headerValue  = _keyScale.formattedValue(data)
+      layerKeys = _valueScale.layerKeys(data)
+      @layers = @layers.concat(layerKeys.map((key) -> {name:key, value:_valueScale.formatValue(data[key]), color: {'background-color': _colorScale.scale()(key)}}))
 
-    me.moveData = (idx) ->
-      lIdx = _getLayoutIdx(idx) # for ordinal scales, the index returned is really an index into the domain values, not into _layout or data. Is different if brushed or has deleted items at beginning
-      ttLayers = _layout.filter((d) -> not d.deleted).map((d) -> {name: d.layerKey, value: _valueScale.formatValue(d.values[lIdx].value), color: {'background-color': _colorScale.scale()(d.layerKey)}})
-      @headerName = _keyScale.axisLabel()
-      @headerValue = _keyScale.formattedValue(_layout[0].values[lIdx].data)
-      @layers = @layers.concat(ttLayers)
+    me.moveData = (key, data) ->
+      me.enter.apply(this, [data])
 
-    me.moveMarkers = (idx) ->
-      lIdx = _getLayoutIdx(idx)
-      _circles = this.selectAll(".wk-chart-tt-marker-#{_id}").data(_layout.filter((d) -> not d.deleted), (d) -> d.layerKey)
+    me.moveMarkers = (key, data) ->
+      layerKeys = _valueScale.layerKeys(data)
+      cData = layerKeys.map((key) -> {key: key, value: _valueScale.layerValue(data, key)})
+      _circles = this.selectAll(".wk-chart-tt-marker-#{_id}").data(cData, (d) -> d.key)
       enter = _circles.enter().append('g').attr('class', "wk-chart-tt-marker-#{_id}") # make markers unique for multi-layout charts
       enter.append('circle').attr('class', 'wk-chart-tt-marker')
         .attr('r', 9)
-        .style('fill', (d)-> _colorScale.scale()(d.layerKey))
+        .style('fill', (d)-> _colorScale.scale()(d.key))
         .style('fill-opacity', 0.3)
-        .style('stroke', (d)-> _colorScale.scale()(d.layerKey))
+        .style('stroke', (d)-> _colorScale.scale()(d.key))
         .style('pointer-events', 'none')
-      enter.append('circle').attr('class', 'wk-chart-tt-marker')
+      enter.append('circle').attr('class', 'wk-chart-tt-inner-marker')
         .attr('r', 4)
-        .style('fill', (d)-> _colorScale.scale()(d.layerKey))
+        .style('fill', (d)-> _colorScale.scale()(d.key))
         .style('fill-opacity', 0.6)
         .style('stroke', 'white')
         .style('pointer-events', 'none')
-      _circles.selectAll('circle')
-        .attr((if _keyScale.isHorizontal() then 'cy' else 'cx'), (d) -> _valueScale.scale()(_value(d.values[lIdx])))
+      c = if _keyScale.isHorizontal() then 'cy' else 'cx'
+      _circles.select('.wk-chart-tt-marker')
+        .attr(c, (d) -> _valueScale.scale()(d.value))
+      _circles.select('.wk-chart-tt-inner-marker')
+      .attr(c, (d) -> _valueScale.scale()(d.value))
       _circles.exit()
         .remove()
       offset = if _keyScale.isOrdinal() then _keyScale.scale().rangeBand() / 2 else 0
       if _keyScale.isHorizontal()
-        this.attr('transform', "translate(#{_keyScale.map(_layout[0].values[lIdx].data) + offset})") # need to compute from scale because of brushing
+        this.attr('transform', "translate(#{_keyScale.scale()(key) + offset})") # need to compute from scale because of brushing
       else
-        this.attr('transform', "translate(0,#{_keyScale.map(_layout[0].values[lIdx].data) + offset})") # need to compute from scale because of brushing + offset
+        this.attr('transform', "translate(0,#{_keyScale.scale()(key) + offset})")  # need to compute from scale because of brushing + offset
     return me
 
   return ttHelpers

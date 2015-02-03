@@ -27,6 +27,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
     _boundsIdx = undefined
     _boundsValues = undefined
     _boundsDomain = []
+    _lastLeftVal = _lastRightVal = _lastBottomVal = _lastTopVal = undefined
     _brushEvents = d3.dispatch('brushStart', 'brush', 'brushEnd')
 
     left = top = right = bottom = startTop = startLeft = startRight = startBottom = undefined
@@ -84,39 +85,36 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
     setSelection = (left, right, top, bottom) ->
       if _brushX
         #test if selected elements are changed
-        _left = me.x().invert(left)
-        _right = me.x().invert(right)
-        if _boundsIdx[0] isnt _left or _boundsIdx[1] isnt _right
+        _leftVal = me.x().invert(left)
+        _rightVal = me.x().invert(right)
+        if _lastLeftVal isnt _leftVal or _lastRightVal isnt _rightVal
+          _lastRightVal = _rightVal
+          _lastLeftVal = _leftVal
+          _left = me.x().findIndex(_leftVal)
+          _right = me.x().findIndex(_rightVal)
           _boundsIdx = [_left, _right]
           # bounds have changed, update bounds values array
           if me.x().isOrdinal()
             _boundsValues = _data.map((d) -> me.x().value(d)).slice(_left, _right + 1)
           else
-            if me.x().kind() is 'rangeX'
-              if me.x().upperProperty()
-                _boundsValues = [me.x().lowerValue(_data[_left]), me.x().upperValue(_data[_right])]
-              else
-                step = me.x().lowerValue(_data[1]) - me.x().lowerValue(_data[0])
-                _boundsValues = [me.x().lowerValue(_data[_left]), me.x().lowerValue(_data[_right]) + step]
-            else
-              _boundsValues = [me.x().value(_data[_boundsIdx[0]]), me.x().value(_data[_right])]
+            _boundsValues = [me.x().value(_data[_boundsIdx[0]]), me.x().value(_data[_right])]
           _boundsDomain = _data.slice(_left, _right+ 1)
           _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain)
           selectionSharing.setSelection _boundsValues, _boundsIdx, _brushGroup
       if _brushY
         #test if selected elements are changed
-        _bottom = me.y().invert(bottom)
-        _top = me.y().invert(top)
-        if _boundsIdx[0] isnt _bottom or _boundsIdx[1] isnt _top
+        _bottomVal = me.y().invert(bottom)
+        _topVal = me.y().invert(top)
+        if _lastBottomVal isnt _bottomVal or _lastTopVal isnt _topVal
+          _lastBottomVal = _bottomVal
+          _lastTopVal = _topVal
+          _bottom = me.y().findIndex(_bottomVal)
+          _top = me.y().findIndex(_topVal)
           _boundsIdx = [_bottom, _top]
           if me.y().isOrdinal()
             _boundsValues = _data.map((d) -> me.y().value(d)).slice(_bottom, _top + 1)
           else
-            if me.y().kind() is 'rangeY'
-              step = me.y().lowerValue(_data[1]) - me.y().lowerValue(_data[0])
-              _boundsValues = [me.y().lowerValue(_data[_bottom]), me.y().lowerValue(_data[_top]) + step]
-            else
-              _boundsValues = [me.y().value(_data[_bottom]), me.y().value(_data[_top])]
+            _boundsValues = [me.y().value(_data[_bottom]), me.y().value(_data[_top])]
           _boundsDomain = _data.slice(_bottom, _top + 1)
           _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain)
           selectionSharing.setSelection _boundsValues, _boundsIdx, _brushGroup
