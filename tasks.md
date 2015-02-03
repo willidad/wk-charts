@@ -9,9 +9,9 @@ Elements moving in their position in the data cause an exception in d3
 
 scatter chart shows no color on shapes when brush is enabled (probably CSS problem, verify)
 
-column chart does not show tooltip correctly
+Fix: column chart does not show tooltip correctly
 
-bar chart does not show tooltip category color correctly
+Fix: e3c73d9 bar chart does not show tooltip category color correctly
 
 enter / exit animations on reverse charts do not work correctly
     -> animate to/from wrong target
@@ -25,6 +25,7 @@ TODO
 change charts to new animation method
 
 - barClustered
+Done:  - columnChart
 - columnClustered
 - pie
 - spider
