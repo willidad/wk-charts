@@ -16,7 +16,7 @@ bar chart does not show tooltip category color correctly
 enter / exit animations on reverse charts do not work correctly
     -> animate to/from wrong target
 
-Tooltip markers on stacked area charts are not correctly positioned
+Fix: 5566ae7 Tooltip markers on stacked area charts are not correctly positioned
 
 Fix: 1554895 Tooltip markers do not snap to data values anymore
 

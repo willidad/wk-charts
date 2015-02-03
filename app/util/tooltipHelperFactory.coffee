@@ -7,6 +7,7 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
     _valueScale = undefined
     _isStacked = false
     _colorScale = undefined
+    _colorByKey = false
     _layout = undefined
     _value = undefined
     _indexer = undefined
@@ -37,6 +38,11 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
       _colorScale = val
       return me
 
+    me.colorByKey = (val) ->
+      if arguments.length is 0 then return _colorByKey
+      _colorByKey = val
+      return me
+
     me.layout = (val) ->
       if arguments.length is 0 then return _layout
       _layout = val
@@ -60,7 +66,13 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
       @headerName = _keyScale.axisLabel()
       @headerValue  = _keyScale.formattedValue(data)
       layerKeys = _valueScale.layerKeys(data)
-      @layers = @layers.concat(layerKeys.map((key) -> {name:key, value:_valueScale.formatValue(data[key]), color: {'background-color': _colorScale.scale()(key)}}))
+      if _colorScale.property()
+        @layers = @layers.concat(layerKeys.map((key) -> {name:key, value:_valueScale.formatValue(data[key]), color: {'background-color': _colorScale.map(data)}}))
+      else if _colorByKey
+        @layers = @layers.concat(layerKeys.map((key) -> {name:key, value:_valueScale.formatValue(data[key]), color: {'background-color': _colorScale.scale()(_keyScale.value(data))}}))
+      else
+        @layers = @layers.concat(layerKeys.map((key) -> {name:key, value:_valueScale.formatValue(data[key]), color: {'background-color': _colorScale.scale()(key)}}))
+
 
     me.moveData = (key, data) ->
       me.enter.apply(this, [data])

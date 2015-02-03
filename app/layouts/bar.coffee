@@ -134,6 +134,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, wkChartMar
         .keyScale(_scaleList.y)
         .valueScale(_scaleList.x)
         .colorScale(_scaleList.color)
+        .colorByKey(true)
         .value((d) -> d.value)
       _tooltip.on "enter.#{_id}", ttHelper.enter
 
