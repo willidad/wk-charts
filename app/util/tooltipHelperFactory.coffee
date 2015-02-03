@@ -61,6 +61,7 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
       me.enter.apply(this, [data])
 
     me.moveMarkers = (key, data) ->
+      markerKey = _keyScale.value(data) # use the data objects key instead of the inversion result to ensure marker snaps to data.
       layerKeys = _valueScale.layerKeys(data)
       cData = layerKeys.map((key) -> {key: key, value: _valueScale.layerValue(data, key)})
       _circles = this.selectAll(".wk-chart-tt-marker-#{_id}").data(cData, (d) -> d.key)
@@ -86,9 +87,9 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
         .remove()
       offset = if _keyScale.isOrdinal() then _keyScale.scale().rangeBand() / 2 else 0
       if _keyScale.isHorizontal()
-        this.attr('transform', "translate(#{_keyScale.scale()(key) + offset})") # need to compute from scale because of brushing
+        this.attr('transform', "translate(#{_keyScale.scale()(markerKey) + offset})") # need to compute from scale because of brushing
       else
-        this.attr('transform', "translate(0,#{_keyScale.scale()(key) + offset})")  # need to compute from scale because of brushing + offset
+        this.attr('transform', "translate(0,#{_keyScale.scale()(markerKey) + offset})")  # need to compute from scale because of brushing + offset
     return me
 
   return ttHelpers
