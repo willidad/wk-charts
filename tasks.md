@@ -18,7 +18,7 @@ enter / exit animations on reverse charts do not work correctly
 
 Tooltip markers on stacked area charts are not correctly positioned
 
-Tooltip markers do not snap to data values anymore
+Fix: 1554895 Tooltip markers do not snap to data values anymore
 
 TODO
 

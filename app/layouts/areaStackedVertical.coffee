@@ -132,6 +132,7 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
         ttHelper
           .keyScale(_scaleList.y)
           .valueScale(_scaleList.x)
+          .isStacked(true)
           .colorScale(_scaleList.color)
           .value((d) -> d.y + d.y0)
         _tooltip.markerScale(_scaleList.y)

@@ -5,7 +5,7 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
   ttHelpers = () ->
     _keyScale = undefined
     _valueScale = undefined
-    _isRangeScale = false
+    _isStacked = false
     _colorScale = undefined
     _layout = undefined
     _value = undefined
@@ -25,6 +25,11 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
       if arguments.length is 0 then return _valueScale
       _valueScale = val
       _isRangeScale = _valueScale.kind() is 'rangeX' or _valueScale.kind() is 'rangeY'
+      return me
+
+    me.isStacked = (val) ->
+      if arguments.length is 0 then return _isStacked
+      _isStacked = val
       return me
 
     me.colorScale = (val) ->
@@ -64,6 +69,13 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
       markerKey = _keyScale.value(data) # use the data objects key instead of the inversion result to ensure marker snaps to data.
       layerKeys = _valueScale.layerKeys(data)
       cData = layerKeys.map((key) -> {key: key, value: _valueScale.layerValue(data, key)})
+      if _isStacked
+        #total up the values to position the markers correctly
+        sum = 0
+        for l in cData
+          sum = sum + l.value
+          l.value = sum
+
       _circles = this.selectAll(".wk-chart-tt-marker-#{_id}").data(cData, (d) -> d.key)
       enter = _circles.enter().append('g').attr('class', "wk-chart-tt-marker-#{_id}") # make markers unique for multi-layout charts
       enter.append('circle').attr('class', 'wk-chart-tt-marker')
