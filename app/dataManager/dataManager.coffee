@@ -138,7 +138,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
           layerAdded: layerKey.iOld is undefined,
           added: d.added,
           atBorder: d.atBorder,
-          value: if not _isRangeScale then _valueScale.layerValue(d.data, layerKey.key) else {upper:_valueScale.upperValue(d.data), lower:_valueScale.lowerValue(d.data)}
+          value: if not _isRangeScale then _valueScale.layerValue(d.data, layerKey.key) else {upper:_valueScale.upperValue(d.date), lower:_valueScale.lowerValue(d.data)}
           targetValue: _valueScale.layerValue(d.targetData, layerKey.key)
           data:d.data
       })})
