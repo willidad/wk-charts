@@ -13,7 +13,7 @@
   @usesDimension y [type=linear, domainRange=extent]
   @usesDimension color [type=category20]
 ###
-angular.module('wk.chart').directive 'column', ($log, utils, barConfig, wkChartMargins, dataManagerFactory, tooltipHelperFactory)->
+angular.module('wk.chart').directive 'column', ($log, utils, barConfig, dataManagerFactory, dataLabelFactory, tooltipHelperFactory)->
   sBarCntr = 0
   return {
   restrict: 'A'
@@ -25,20 +25,14 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, wkChartM
     _id = "column#{sBarCntr++}"
 
     columns = null
-    barPaddingOld = 0
-    barOuterPaddingOld = 0
     _scaleList = {}
     _selected = undefined
-
-    _merge = utils.mergeData()
-    _merge([]).key((d) -> d.key)
-
-    initial = true
 
     config = _.clone(barConfig, true)
 
     xData = dataManagerFactory()
     ttHelper = tooltipHelperFactory()
+    dataLabels = dataLabelFactory()
     _tooltip = undefined
 
     #--- Draw --------------------------------------------------------------------------------------------------------
@@ -51,9 +45,12 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, wkChartM
 
     setAnimationEnd = (data, options, x, y, color) ->
       layoutData = xData.animationEndLayers()
+      dataLabels.duration(options.duration).active(host.showDataLabels()) # needs to be here to ensure right opacity animation !
       drawPath.apply(this, [true, layoutData, options, x, y, color])
 
     drawPath = (doAnimate, data, options, x, y, color) ->
+
+
 
       if not columns
         columns = @selectAll('.wk-chart-columns')
@@ -61,7 +58,6 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, wkChartM
 
       barWidth = x.scale().rangeBand()
       barPadding = barWidth / (1 - config.padding) * config.padding
-      barOuterPadding = barWidth / (1 - config.outerPadding) * config.outerPadding
 
       offset = (d) ->
         if d.deleted and d.atBorder then return barWidth
@@ -78,16 +74,9 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, wkChartM
       enter.append('rect')
         .attr('class', 'wk-chart-rect wk-chart-selectable')
         .attr('width', (d) -> if d.added or d.deleted then 0 else barWidth)
-        .style('opacity', if initial then 0 else 1)
+        .style('opacity', 0)
         .call(_tooltip.tooltip)
         .call(_selected)
-
-      enter.append('text')
-      .attr('class':'wk-chart-data-label')
-      .attr('x', (d) -> barWidth / 2 )
-      .attr('y', (d) -> Math.min(y.scale()(0), y.scale()(d.targetValue)) - wkChartMargins.dataLabelPadding.vert)
-      .attr({'text-anchor':'middle'})
-      .style({opacity: 0})
 
       (if doAnimate then columns.transition().duration(options.duration) else columns)
         .attr('transform', (d) -> "translate(#{x.scale()(d.targetKey) + offset(d)})")
@@ -100,28 +89,18 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, wkChartM
         .attr('height', (d) -> Math.abs(y.scale()(0) - y.scale()(d.targetValue)))
         .attr('y', (d) -> Math.min(y.scale()(0), y.scale()(d.targetValue)))
         .style('opacity', 1)
-      text = columns.select('text')
-        .text((d) -> y.formatValue(d.value))
-      (if doAnimate then text.transition().duration(options.duration) else text)
-        .attr('x', (d) -> barWidth / 2)
-        .attr('y', (d) -> Math.min(y.scale()(0), y.scale()(d.targetValue) - wkChartMargins.dataLabelPadding.hor))
-        .style('opacity', if host.showDataLabels() then 1 else 0)
+
+      columns.call(dataLabels, doAnimate)
 
       columns.exit()
       .remove()
-
-      initial = false
-
-      barPaddingOld = barPadding
-      barOuterPaddingOld = barOuterPadding
 
     brush = (axis, idxRange) ->
       columns
         .attr('transform',(d) -> "translate(#{if (x = axis.scale()(d.key)) >= 0 then x else -1000})")
         .selectAll('.wk-chart-rect')
         .attr('width', (d) -> axis.scale().rangeBand())
-      columns.selectAll('text')
-        .attr('x',axis.scale().rangeBand() / 2)
+      dataLabels.brush(columns)
 
     #--- Configuration and registration ------------------------------------------------------------------------------
 
@@ -137,6 +116,9 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, wkChartM
         .colorScale(_scaleList.color)
         .colorByKey(true)
         .value((d) -> d.value)
+      dataLabels
+        .keyScale(_scaleList.x)
+        .valueScale(_scaleList.y)
       _tooltip.on "enter.#{_id}", ttHelper.enter
 
     host.lifeCycle().on 'brushDraw', brush

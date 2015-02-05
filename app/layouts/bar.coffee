@@ -13,7 +13,7 @@
   @usesDimension y [type=linear, domainRange=extent]
   @usesDimension color [type=category20]
 ###
-angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, wkChartMargins, dataManagerFactory, tooltipHelperFactory)->
+angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelFactory, dataManagerFactory, tooltipHelperFactory)->
   sBarCntr = 0
   return {
   restrict: 'A'
@@ -29,16 +29,11 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, wkChartMar
     barOuterPaddingOld = 0
     _scaleList = {}
     _selected = undefined
-
-    _merge = utils.mergeData()
-    _merge([]).key((d) -> d.key)
-
-    initial = true
-
     config = _.clone(barConfig, true)
 
     xData = dataManagerFactory()
     ttHelper = tooltipHelperFactory()
+    dataLabels = dataLabelFactory()
     _tooltip = undefined
 
     #--- Draw --------------------------------------------------------------------------------------------------------
@@ -51,6 +46,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, wkChartMar
 
     setAnimationEnd = (data, options, x, y, color) ->
       layoutData = xData.animationEndLayers()
+      dataLabels.duration(options.duration).active(host.showDataLabels()) # needs to be here to ensure right opacity animation !
       drawPath.apply(this, [true, layoutData, options, x, y, color])
 
     drawPath = (doAnimate, data, options, x, y, color) ->
@@ -78,16 +74,9 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, wkChartMar
       enter.append('rect')
         .attr('class', 'wk-chart-rect wk-chart-selectable')
         .attr('height', (d) -> if d.added or d.deleted then 0 else barHeight)
-        .style('opacity', if initial then 0 else 1)
+        .style('opacity', 0)
         .call(_tooltip.tooltip)
         .call(_selected)
-
-      enter.append('text')
-        .attr('class':'wk-chart-data-label')
-        .attr('y', (d) -> barHeight / 2 )
-        .attr('x', (d) -> x.scale()(d.value) + wkChartMargins.dataLabelPadding.hor)
-        .attr({dy: '0.35em', 'text-anchor':'start'})
-        .style({opacity: 0})
 
       (if doAnimate then bars.transition().duration(options.duration) else bars)
           .attr('transform', (d) -> "translate(0, #{y.scale()(d.targetKey) + offset(d)}) scale(1,1)")
@@ -99,28 +88,18 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, wkChartMar
           .attr('height', (d) -> if d.added or d.deleted then 0 else barHeight)
           .attr('width', (d) -> Math.abs(x.scale()(0) - x.scale()(d.targetValue)))
           .style('opacity', 1)
-      text = bars.select('text')
-        .text((d) -> x.formatValue(d.value))
-      (if doAnimate then text.transition().duration(options.duration) else text)
-          .attr('y', (d) -> barHeight / 2)
-          .attr('x', (d) -> x.scale()(d.value) + wkChartMargins.dataLabelPadding.hor)
-          .style('opacity', if host.showDataLabels() then 1 else 0)
 
       bars.exit()
         .remove()
 
-      initial = false
-
-      barPaddingOld = barPadding
-      barOuterPaddingOld = barOuterPadding
+      bars.call(dataLabels, doAnimate)
 
     brush = (axis, idxRange) ->
       bars
         .attr('transform',(d) -> "translate(0, #{if (y = axis.scale()(d.key)) >= 0 then y else -1000})")
           .selectAll('.wk-chart-rect')
           .attr('height', (d) -> axis.scale().rangeBand())
-      bars.selectAll('text')
-        .attr('y',axis.scale().rangeBand() / 2)
+      dataLabels.brush(bars)
 
     #--- Configuration and registration ------------------------------------------------------------------------------
 
@@ -137,6 +116,9 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, wkChartMar
         .colorByKey(true)
         .value((d) -> d.value)
       _tooltip.on "enter.#{_id}", ttHelper.enter
+      dataLabels
+        .keyScale(_scaleList.y)
+        .valueScale(_scaleList.x)
 
     host.lifeCycle().on 'brushDraw', brush
     host.lifeCycle().on 'animationStartState', setAnimationStart
