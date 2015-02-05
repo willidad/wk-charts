@@ -39,7 +39,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
     #--- Draw --------------------------------------------------------------------------------------------------------
 
     setAnimationStart = (data, options, x, y, color) ->
-      xData.keyScale(y).valueScale(x).data(data)
+      xData.keyScale(y).valueScale(x).data(data, true)
       if not xData.isInitial()
         layoutData = xData.animationStartLayers()
         drawPath.apply(this, [false, layoutData, options, x, y, color])
@@ -66,7 +66,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
         if d.added then return -barPadding / 2
         return 0
 
-      bars = bars.data(data[0].values, (d) -> d.key)
+      bars = bars.data(data[0].values, (d, i) -> d.key)
 
       enter = bars.enter().append('g').attr('class','wk-chart-bar')
         .attr('transform', (d)-> "translate(0, #{y.scale()(d.targetKey)})")

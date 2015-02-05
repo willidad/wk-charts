@@ -1,6 +1,6 @@
 angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
 
-  mergeSeriesKeys = (aOld,aNew) ->
+  mergeSeriesKeys = (aOld,aNew, moveItemsMove) ->
     iOld = 0
     iNew = 0
     lOldMax = aOld.length - 1
@@ -10,24 +10,45 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
 
     iPred = 0
 
-    while iOld <= lOldMax and iNew <= lNewMax
-      if aOld[iOld] is aNew[iNew] # old is also in new
-        result.push({iOld: iOld, iNew: Math.min(iNew,lNewMax),key: aOld[iOld]});
-        iPred = iOld
-        #console.log('same', aOld[iOld]);
-        iOld++;
-        iNew++;
-      else if aOld.indexOf(aNew[iNew], iOld) >= 0
-        # test if the non matching new is in old behind the current old. If yes, all old items until the match are deleted, if no, the non-match is added
-        # aOld[iOld is deleted
-        result.push({deleted: true, iOld: iOld, key: aOld[iOld], atBorder: iNew is 0})
-        # console.log('deleted', aOld[iOld]);
-        iOld++
-      else
-        # aNew[iNew] is added
-        result.push({added: true, iPred: iPred, predKey: aOld[iPred], iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:iOld is 0})
-        # console.log('added', aNew[iNew]);
-        iNew++
+    if moveItemsMove
+      while iOld <= lOldMax and iNew <= lNewMax
+        if (idx = aNew.indexOf(aOld[iOld])) >= 0 # old is also in new (start at iNew since items before have ben considered already
+          result.push({iOld: iOld, iNew: idx,key: aOld[iOld]});
+          iPred = iOld
+          #console.log('same', aOld[iOld]);
+          iOld++
+        else
+          # old is not in new, i.e. deleted
+          # aOld[iOld is deleted
+          result.push({deleted: true, iOld: iOld, key: aOld[iOld], atBorder: iNew is 0})
+          # console.log('deleted', aOld[iOld]);
+          iOld++
+        if aOld.indexOf(aNew[iNew]) < 0 # new is not in old
+          # aNew[iNew] is added
+          result.push({added: true, iPred: iPred, predKey: aOld[iPred], iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:iOld is 0})
+          # console.log('added', aNew[iNew]);
+          iNew++
+        else
+          iNew++ # this item exists in aOld, it will be handled with the old-side tests. Just skip it
+    else
+      while iOld <= lOldMax and iNew <= lNewMax
+        if aOld[iOld] is aNew[iNew] # old is also in new
+          result.push({iOld: iOld, iNew: Math.min(iNew,lNewMax),key: aOld[iOld]});
+          iPred = iOld
+          #console.log('same', aOld[iOld]);
+          iOld++;
+          iNew++;
+        else if aOld.indexOf(aNew[iNew], iOld) >= 0
+          # test if the non matching new is in old behind the current old. If yes, all old items until the match are deleted, if no, the non-match is added
+          # aOld[iOld is deleted
+          result.push({deleted: true, iOld: iOld, key: aOld[iOld], atBorder: iNew is 0})
+          # console.log('deleted', aOld[iOld]);
+          iOld++
+        else
+          # aNew[iNew] is added
+          result.push({added: true, iPred: iPred, predKey: aOld[iPred], iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:iOld is 0})
+          # console.log('added', aNew[iNew]);
+          iNew++
 
     while iOld <= lOldMax
       # if there is more old items, mark them as deleted
@@ -74,7 +95,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
 
     me = {}
 
-    me.data = (data) ->
+    me.data = (data, moveItemsMove) ->
       _dataOld = _dataNew
       _keyOld = _keyNew
       _layerKeysOld = _layerKeysNew
@@ -83,7 +104,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
       _keyNew = _keyScale.value(data)
       if _keyScale.scaleType() is 'time'  # convert to number to ensure date equality works correctly
         _keyNew = _keyNew.map((d) -> +d)
-      _mergedKeys = mergeSeriesKeys(_keyOld, _keyNew)
+      _mergedKeys = mergeSeriesKeys(_keyOld, _keyNew, moveItemsMove)
       _mergedLayerKeys = mergeSeriesKeys(_layerKeysOld, _layerKeysNew)
       return me
 

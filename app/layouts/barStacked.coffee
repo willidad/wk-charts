@@ -45,7 +45,7 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig, data
       #-----------------------------------------------------------------------------------------------------------------
 
       setAnimationStart = (data, options, x, y, color) ->
-        xData.keyScale(y).valueScale(x).data(data)
+        xData.keyScale(y).valueScale(x).data(data, true)
         if not xData.isInitial()
           layoutData = xData.animationStartLayers()
           drawPath.apply(this, [false, layoutData, options, x, y, color])
