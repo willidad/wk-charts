@@ -42,7 +42,7 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
 
       stack
         .values((d)->d.values)
-        .y((d) -> d.value)
+        .y((d) -> if d.layerAdded or d.layerDeleted then 0 else d.value)
         .x((d) -> d.targetKey)
 
       #--- Draw --------------------------------------------------------------------------------------------------------

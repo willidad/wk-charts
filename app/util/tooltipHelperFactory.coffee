@@ -64,7 +64,7 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
 
     me.enter = (data) ->
       @headerName = _keyScale.axisLabel()
-      @headerValue  = _keyScale.formattedValue(data)
+      @headerValue  = _keyScale.formattedValue(data) 
       layerKeys = _valueScale.layerKeys(data)
       if _colorScale.property()
         @layers = @layers.concat(layerKeys.map((key) -> {name:key, value:_valueScale.formatValue(data[key]), color: {'background-color': _colorScale.map(data)}}))

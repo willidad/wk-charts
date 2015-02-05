@@ -20,6 +20,8 @@ Fix: 5566ae7 Tooltip markers on stacked area charts are not correctly positioned
 
 Fix: 1554895 Tooltip markers do not snap to data values anymore
 
+Tooltip on non-zero stacked area chart positions markers wrong
+
 TODO
 
 change charts to new animation method
@@ -31,7 +33,7 @@ Done:  - columnChart
 - spider
 
 Finish removal of range dimension
-- rewrite histogram
+- rewrite histogram 
 
 Verify animation change impact on bubble and Scatter charts
 - new method does not add value, just complicates things there

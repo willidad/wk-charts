@@ -59,7 +59,7 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
 
         area = d3.svg.area()
           .x((d) -> x.scale()(d.targetKey))
-          .y((d) -> y.scale()(d.value))
+          .y((d) -> y.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
           .y1((d) ->  y.scale()(0))
 
         layers = this.selectAll(".wk-chart-layer")
@@ -80,13 +80,12 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
           .style('stroke', (d) -> color.scale()(d.layerKey))
           .style('opacity', (d) -> if d.added or d.deleted then 0 else 1)
           .style('pointer-events', 'none')
-
         layers.exit()
           .remove()
 
         markers
           .x((d) -> x.scale()(d.targetKey) + if x.isOrdinal() then x.scale().rangeBand() / 2 else 0)
-          .y((d) -> y.scale()(d.value))
+          .y((d) -> y.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
           .color((d) -> color.scale()(d.layerKey))
         layers.call(markers, doAnimate)
 

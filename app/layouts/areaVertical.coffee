@@ -61,7 +61,7 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelper
 
         area = d3.svg.area() # tricky. Draw this like a horizontal chart and then rotate and position it.
         .x((d) -> -y.scale()(d.targetKey))
-        .y((d) -> x.scale()(d.value))
+        .y((d) -> x.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
         .y1((d) ->  x.scale()(0))
 
         layers = this.selectAll(".wk-chart-layer")
@@ -89,7 +89,7 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelper
 
         markers
           .isVertical(true)
-          .x((d) -> x.scale()(d.value))
+          .x((d) -> x.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
           .y((d) -> y.scale()(d.targetKey) + if y.isOrdinal() then y.scale().rangeBand() / 2 else 0)
           .color((d) -> color.scale()(d.layerKey))
         layers.call(markers, doAnimate)

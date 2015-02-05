@@ -32,9 +32,7 @@ angular.module('wk.chart').factory 'markerFactory', ($log, d3Animation) ->
         mUpdate
           .attr('cx', _x)
           .attr('cy', _y)
-          .style('opacity', (d) ->
-            null
-            (if d.added or d.deleted then 0 else 1) * _opacity)
+          .style('opacity', (d) -> (if d.added or d.deleted or d.layerAdded or d.layerDeleted then 0 else 1) * _opacity)
         mExit = if doAnimate then m.exit().transition().duration(_duration) else m.exit()
         mExit
           .remove()
