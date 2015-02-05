@@ -59,7 +59,7 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelper
           ttHelper.layout(data)
 
         line = d3.svg.line()
-          .x((d) -> x.scale()(d.value))
+          .x((d) -> x.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
           .y((d) -> y.scale()(d.targetKey))
 
         drawLines = (s) ->
@@ -91,7 +91,7 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelper
 
         markers
           .isVertical(true)
-          .x((d) -> x.scale()(d.value))
+          .x((d) -> x.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
           .y((d) -> y.scale()(d.targetKey) + if y.isOrdinal() then y.scale().rangeBand() / 2 else 0)
           .color((d) -> color.scale()(d.layerKey))
         layers.call(markers, doAnimate)

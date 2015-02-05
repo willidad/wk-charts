@@ -59,7 +59,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
 
         line = d3.svg.line()
           .x((d) -> x.scale()(d.targetKey))
-          .y((d) -> y.scale()(d.value))
+          .y((d) -> y.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
 
         drawLines = (s) ->
           s.attr('d', (d) -> line(d.values))
@@ -90,7 +90,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
 
         markers
           .x((d) -> x.scale()(d.targetKey) + if x.isOrdinal() then x.scale().rangeBand() / 2 else 0)
-          .y((d) -> y.scale()(d.value))
+          .y((d) -> y.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
           .color((d) -> color.scale()(d.layerKey))
         layers.call(markers, doAnimate)
 
