@@ -386,7 +386,8 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
       # Returns: input domain value
 
       if _.has(me.scale(),'invert') # i.e. the d3 scale supports the inverse calculation: linear, log, pow, sqrt
-        return _scale.invert(mappedValue)
+        interv = (_scale.range()[1] - _scale.range()[0]) / _chart.getData().length
+        return _scale.invert(mappedValue - interv/2) # ensure the marker flips in teh middle between the data points
         # NOTE: THIS VERSION DOES NOT RETURN A INDEX INTO THE DATA ANYMORE. FINDING THE DATA REFERENCE IS LEFT TO THE CONSUMER OF THE RESULT
 
       if _.has(me.scale(),'invertExtent') # d3 supports this for quantize, quantile, threshold. returns the range that gets mapped to the value
