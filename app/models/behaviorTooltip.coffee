@@ -72,6 +72,8 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         value = d3.select(this).datum()
         dataObj = _templScope.ttData = if value.data then value.data else value
 
+      _tooltipDispatch.enter.apply(_templScope, [dataObj, dataObj]) # get the data so the TT can be positioned correctly
+
       positionInitial() #position in upper left corner to compute the space requirements. positionBox() will the move it to the right
                         # place and deal with ensure that box does not move outside the borders
 
@@ -92,7 +94,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
 
         _tooltipDispatch.moveMarker.apply(_markerG, [keyValue, dataObj])
 
-      _tooltipDispatch.enter.apply(_templScope, [dataObj, dataObj]) # provide dataObj twice in case moveMarker is registered as inter callback
+
 
     #--- TooltipMove  Event Handler ------------------------------------------------------------------------------------
 
