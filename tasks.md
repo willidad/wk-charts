@@ -42,7 +42,7 @@ Finish removal of range dimension
 Verify animation change impact on bubble and Scatter charts
 - new method does not add value, just complicates things there
 
-Spline interpolation for line and area charts
+Implemented: c711c07 Spline interpolation for line and area charts
 
 
 

@@ -77,6 +77,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
   areaStackedVertical = {areaStackedVertical:propertyType.enum(['zero', 'silhouette','expand','wiggle'])}
   geojson = {geojson:propertyType.object}
   projection = {projection:propertyType.object}
+  spline = {spline:propertyType.boolean}
 
   property = {
     property:propertyType.list
@@ -207,12 +208,12 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
 
 
   this.layouts = {
-    line:               layout('line','x,y,color',false,'y', [markers])
-    lineVertical:       layout('line-vertical','x,y,color', false,'x', [markers])
-    area:               layout('area','x,y,color', false, 'x')
-    areaVertical:       layout('area-vertical','x,y,color', false, 'y')
-    areaStacked:        layout('area-stacked','x,y,color', false, 'y', [areaStacked])
-    areaStackedVertical:layout('area-stacked-vertical','x,y,color', false, 'x'[areaStackedVertical])
+    line:               layout('line','x,y,color',false,'y', [markers, spline])
+    lineVertical:       layout('line-vertical','x,y,color', false,'x', [markers, spline])
+    area:               layout('area','x,y,color', false, 'x', [markers, spline])
+    areaVertical:       layout('area-vertical','x,y,color', false, 'y', [markers, spline])
+    areaStacked:        layout('area-stacked','x,y,color', false, 'y', [areaStacked, markers, spline])
+    areaStackedVertical:layout('area-stacked-vertical','x,y,color', false, 'x', [areaStackedVertical, markers, spline])
     bars:               layout('bars','x,y,color', false, false, [labels, padding, outerPadding],[selection])
     barStacked:         layout('barStacked','x,y,color', false, 'x', [padding, outerPadding],[selection])
     barClustered:       layout('barClustered','x,y,color', false, 'x', [padding, outerPadding],[selection])
