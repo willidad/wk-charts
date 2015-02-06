@@ -34,6 +34,7 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
     _selected = undefined
     _tooltip = undefined
     _showLabels = false
+    _donat = false
     selectionOffset = 0
     animationDuration = 0
 
@@ -44,7 +45,7 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
     ttEnter = (data) ->
       @headerName = _scaleList.color.axisLabel()
       @headerValue = _scaleList.size.axisLabel()
-      @layers.push({name: _scaleList.color.formattedValue(data.data), value: _scaleList.size.formattedValue(data.data), color:{'background-color': _scaleList.color.map(data.data)}})
+      @layers.push({name: _scaleList.color.formattedValue(data), value: _scaleList.size.formattedValue(data), color:{'background-color': _scaleList.color.map(data)}})
 
     #-------------------------------------------------------------------------------------------------------------------
 
@@ -61,13 +62,12 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
         pieBox= @append('g').attr('class','wk-chart-pieBox')
       pieBox.attr('transform', "translate(#{options.width / 2},#{options.height / 2})")
 
-      innerArc = d3.svg.arc()
-        .outerRadius(r * if _showLabels then 0.8 else 0.9)
-        .innerRadius(0)
+      outerR  = r * if _showLabels then 0.8 else 0.9
+      innerR = outerR * if _donat then 0.6 else 0
 
-      highlArc = d3.svg.arc()
-        .outerRadius(r * if _showLabels then 0.85 else 1)
-        .innerRadius(r * if _showLabels then 0.8 else 0.95)
+      innerArc = d3.svg.arc()
+        .outerRadius(outerR)
+        .innerRadius(innerR)
 
       outerArc = d3.svg.arc()
         .outerRadius(r * 0.9)
@@ -230,6 +230,13 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
       else if val is 'true' or val is ""
         _showLabels = true
       layout.lifeCycle().update()
-  }
 
+    attrs.$observe 'donat' , (val) ->
+      if val is 'false'
+        _donat = false
+      else if val is 'true' or val is ""
+        _donat = true
+      layout.lifeCycle().update()
+
+  }
   #TODO verify behavior with custom tooltips
