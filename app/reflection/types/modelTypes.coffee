@@ -70,6 +70,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
 
   markers = {markers:propertyType.bool}
   labels = {labels:propertyType.bool}
+  donat = {donat:propertyType.bool}
   padding = {padding:propertyType.number}
   outerPadding = {outerPadding:propertyType.number}
   areaStacked = {areaStacked:propertyType.enum(['zero', 'silhouette','expand','wiggle'])}
@@ -223,7 +224,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
     rangeBars:          layout('range-bars','x,rangeX,color', false, false,[labels],[selection])
     rangeColumn:        layout('range-column','x,rangeY,color', false, false,[labels],[selection])
     histogram:          layout('histogram','x,rangeX,color', false, false,[labels],[selection])
-    pie:                layout('pie','size,color', false, false,[labels],[selection])
+    pie:                layout('pie','size,color', false, false,[labels, donat],[selection])
     spider:             layout('spider','x,y,color', false, false,[],[selection])
     bubble:             layout('bubble','x,y,color,size', false, false,[],[selection, brush])
     scatter:            layout('scatter','x,y,color,size,shape', false, false,[],[selection, brush])

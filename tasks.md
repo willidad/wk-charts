@@ -22,6 +22,8 @@ Fix: 1554895 Tooltip markers do not snap to data values anymore
 
 Tooltip on non-zero stacked area chart positions markers wrong
 
+Tooltip range-area, area, line does not display left-most value (range-area Monatl. Temperatur)
+
 TODO
 
 change charts to new animation method
