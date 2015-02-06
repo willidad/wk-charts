@@ -10,7 +10,7 @@
   draws a column range chart layout
 
   @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
-  @usesDimension rangeY [type=linear, domainRange=extent]
+  @usesDimension y [type=linear, domainRange=extent]
   @usesDimension color [type=category20]
 ###
 angular.module('wk.chart').directive 'rangeColumn', ($log, utils, barConfig, dataManagerFactory, markerFactory, tooltipHelperFactory)->

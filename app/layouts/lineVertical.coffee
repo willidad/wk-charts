@@ -164,7 +164,7 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelper
         @ngdoc attr
         @name lineVertical#spline
         @values true, false
-        @param [markers=false] {boolean} - interpolate the line using bSpline
+        @param [spline=false] {boolean} - interpolate the line using bSpline
       ###
       attrs.$observe 'spline', (val) ->
         if val is '' or val is 'true'

@@ -206,7 +206,6 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
   
   #---------------------------------------------------------------------------------------------------------------------
 
-
   this.layouts = {
     line:               layout('line','x,y,color',false,'y', [markers, spline])
     lineVertical:       layout('line-vertical','x,y,color', false,'x', [markers, spline])

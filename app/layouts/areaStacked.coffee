@@ -185,7 +185,7 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipHelperF
         @ngdoc attr
         @name areaStacked#spline
         @values true, false
-        @param [markers=false] {boolean} - interpolate the area shape using bSpline
+        @param [spline=false] {boolean} - interpolate the area shape using bSpline
       ###
       attrs.$observe 'spline', (val) ->
         if val is '' or val is 'true'

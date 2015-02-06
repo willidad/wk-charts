@@ -9,7 +9,7 @@
 
   draws a range bar chart layout
 
-  @usesDimension rangeX [type=linear, domainRange=extent] The horizontal dimension
+  @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
   @usesDimension y [type=linear, domainRange=extent]
   @usesDimension color [type=category20]
 ###

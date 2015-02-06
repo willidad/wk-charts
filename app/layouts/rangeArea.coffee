@@ -27,6 +27,7 @@ angular.module('wk.chart').directive 'rangeArea', ($log, utils, dataManagerFacto
     _tooltip = undefined
     _scaleList = {}
     _showMarkers = false
+    _spline = false
     offset = 0
     _id = 'rangearea' + lineCntr++
     area = undefined
@@ -61,6 +62,9 @@ angular.module('wk.chart').directive 'rangeArea', ($log, utils, dataManagerFacto
         .x((d) -> x.scale()(d.targetKey))
         .y((d) -> y.scale()(d.value))
         .y1((d) -> y.scale()(d.value1))
+
+      if _spline
+        area.interpolate('basis')
 
       i = 0
       rangeData = [{values:data[1].values, layerKey:data[1].layerKey}]
@@ -136,7 +140,12 @@ angular.module('wk.chart').directive 'rangeArea', ($log, utils, dataManagerFacto
     host.lifeCycle().on 'animationEndState', setAnimationEnd
 
     #--- Property Observers ------------------------------------------------------------------------------------------
-
+    ###*
+      @ngdoc attr
+      @name rangeArea#markers
+      @values true, false
+      @param [markers=false] {boolean} - show a data maker icon for each data point
+    ###
     attrs.$observe 'markers', (val) ->
       if val is '' or val is 'true'
         _showMarkers = true
@@ -144,4 +153,16 @@ angular.module('wk.chart').directive 'rangeArea', ($log, utils, dataManagerFacto
         _showMarkers = false
       host.lifeCycle().update()
 
+    ###*
+      @ngdoc attr
+      @name rangeArea#spline
+      @values true, false
+      @param [spline=false] {boolean} - interpolate the area shape using bSpline
+    ###
+    attrs.$observe 'spline', (val) ->
+      if val is '' or val is 'true'
+        _spline = true
+      else
+        _spline = false
+      host.lifeCycle().update()
   }

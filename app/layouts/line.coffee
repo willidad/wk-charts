@@ -164,7 +164,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
         @ngdoc attr
         @name line#spline
         @values true, false
-        @param [markers=false] {boolean} - interpolate the line using bSpline
+        @param [spline=false] {boolean} - interpolate the line using bSpline
       ###
       attrs.$observe 'spline', (val) ->
         if val is '' or val is 'true'
