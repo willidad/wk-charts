@@ -27,6 +27,7 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelper
       brushStartIdx = 0
       _tooltip = undefined
       _showMarkers = false
+      _spline = false
       _scaleList = {}
       offset = 0
       _id = 'lineVertical' + lineCntr++
@@ -62,6 +63,9 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelper
 
         line = d3.svg.line()
           .x((d) -> x.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
+
+        if _spline
+          line.interpolate('basis')
 
         if y.isOrdinal
           line.y((d) -> if d.lowBorder then options.height + moveOutside else if d.highBorder then -moveOutside else y.scale()(d.targetKey))
@@ -154,5 +158,18 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelper
           _showMarkers = true
         else
           _showMarkers = false
+        host.lifeCycle().update()
+
+      ###*
+        @ngdoc attr
+        @name lineVertical#spline
+        @values true, false
+        @param [markers=false] {boolean} - interpolate the line using bSpline
+      ###
+      attrs.$observe 'spline', (val) ->
+        if val is '' or val is 'true'
+          _spline = true
+        else
+          _spline = false
         host.lifeCycle().update()
   }

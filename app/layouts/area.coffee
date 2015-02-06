@@ -27,6 +27,7 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
       _tooltip = undefined
       _scaleList = {}
       _showMarkers = false
+      _spline = false
       offset = 0
       _id = 'area' + lineCntr++
       area = undefined
@@ -61,6 +62,9 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
           .x((d) -> x.scale()(d.targetKey))
           .y((d) -> y.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
           .y1((d) ->  y.scale()(0))
+
+        if _spline
+          area.interpolate('basis')
 
         layers = this.selectAll(".wk-chart-layer")
           .data(data, (d) -> d.layerKey)
@@ -124,12 +128,30 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
       host.lifeCycle().on 'animationEndState', setAnimationEnd
 
       #--- Property Observers ------------------------------------------------------------------------------------------
-
+      ###*
+        @ngdoc attr
+        @name area#markers
+        @values true, false
+        @param [markers=false] {boolean} - show a data maker icon for each data point
+      ###
       attrs.$observe 'markers', (val) ->
         if val is '' or val is 'true'
           _showMarkers = true
         else
           _showMarkers = false
+        host.lifeCycle().update()
+
+      ###*
+        @ngdoc attr
+        @name area#spline
+        @values true, false
+        @param [markers=false] {boolean} - interpolate the area shape using bSpline
+      ###
+      attrs.$observe 'spline', (val) ->
+        if val is '' or val is 'true'
+          _spline = true
+        else
+          _spline = false
         host.lifeCycle().update()
 
   }

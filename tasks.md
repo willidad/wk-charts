@@ -24,7 +24,7 @@ Tooltip on non-zero stacked area chart positions markers wrong
 
 Fix: acecfab Tooltip range-area, area, line does not display left-most value (range-area Monatl. Temperatur)
 
-tooltips cause page to jump - tt reaches outside the viewport and causes scroll bar to appear
+Fix: 19bce28 tooltips cause page to jump - tt reaches outside the viewport and causes scroll bar to appear
 
 TODO
 
@@ -42,7 +42,7 @@ Finish removal of range dimension
 Verify animation change impact on bubble and Scatter charts
 - new method does not add value, just complicates things there
 
-
+Spline interpolation for line and area charts
 
 
 

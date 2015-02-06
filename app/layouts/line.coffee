@@ -26,6 +26,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
 
       _tooltip = undefined
       _showMarkers = false
+      _spline = false
       _scaleList = {}
       offset = 0
       _id = 'line' + lineCntr++
@@ -60,7 +61,11 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
         moveOutside = (options.width / data[0].values.length)*2
 
         line = d3.svg.line()
+
           .y((d) -> y.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
+
+        if _spline
+          line.interpolate('basis')
 
         if x.isOrdinal()
           line.x((d) -> if d.highBorder then options.width + moveOutside else if d.lowBorder then -moveOutside else x.scale()(d.targetKey))
@@ -154,4 +159,18 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
         else
           _showMarkers = false
         host.lifeCycle().update()
+
+      ###*
+        @ngdoc attr
+        @name line#spline
+        @values true, false
+        @param [markers=false] {boolean} - interpolate the line using bSpline
+      ###
+      attrs.$observe 'spline', (val) ->
+        if val is '' or val is 'true'
+          _spline = true
+        else
+          _spline = false
+        host.lifeCycle().update()
+
   }

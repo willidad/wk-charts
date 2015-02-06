@@ -27,6 +27,7 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelper
       _ttHighlight = undefined
       _circles = undefined
       _scaleList = {}
+      _spline = false
       _showMarkers = false
       offset = 0
       area = undefined
@@ -60,9 +61,12 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelper
           ttHelper.layout(data)
 
         area = d3.svg.area() # tricky. Draw this like a horizontal chart and then rotate and position it.
-        .x((d) -> -y.scale()(d.targetKey))
-        .y((d) -> x.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
-        .y1((d) ->  x.scale()(0))
+          .x((d) -> -y.scale()(d.targetKey))
+          .y((d) -> x.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
+          .y1((d) ->  x.scale()(0))
+
+        if _spline
+          area.interpolate('basis')
 
         layers = this.selectAll(".wk-chart-layer")
           .data(data, (d) -> d.layerKey)
@@ -131,11 +135,28 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelper
       host.lifeCycle().on 'animationEndState', setAnimationEnd
 
       #--- Property Observers ------------------------------------------------------------------------------------------
-
+      ###*
+        @ngdoc attr
+        @name areaVertical#markers
+        @values true, false
+        @param [markers=false] {boolean} - show a data maker icon for each data point
+      ###
       attrs.$observe 'markers', (val) ->
         if val is '' or val is 'true'
           _showMarkers = true
         else
           _showMarkers = false
+        host.lifeCycle().update()
+      ###*
+        @ngdoc attr
+        @name areaVertical#spline
+        @values true, false
+        @param [markers=false] {boolean} - interpolate the area shape using bSpline
+      ###
+      attrs.$observe 'spline', (val) ->
+        if val is '' or val is 'true'
+          _spline = true
+        else
+          _spline = false
         host.lifeCycle().update()
     }

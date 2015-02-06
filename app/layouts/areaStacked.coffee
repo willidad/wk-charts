@@ -26,6 +26,7 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipHelperF
       offset = 'zero'
       layers = null
       _showMarkers = false
+      _spline = false
       stackLayout = []
       area = undefined
       _tooltip = undefined
@@ -83,6 +84,9 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipHelperF
           .x((d) ->  x.scale()(d.targetKey))
           .y0((d) ->  scaleY(d.y0 + d.y))
           .y1((d) ->  scaleY(d.y0))
+
+        if _spline
+          area.interpolate('basis')
 
         layers = layers
           .data(stackLayout, (d) -> d.layerKey)
@@ -164,12 +168,30 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipHelperF
           offset = "zero"
         stack.offset(offset)
         host.lifeCycle().update()
-
+      ###*
+        @ngdoc attr
+        @name areaStacked#markers
+        @values true, false
+        @param [markers=false] {boolean} - show a data maker icon for each data point
+      ###
       attrs.$observe 'markers', (val) ->
         if val is '' or val is 'true'
           _showMarkers = true
         else
           _showMarkers = false
+        host.lifeCycle().update()
+
+      ###*
+        @ngdoc attr
+        @name areaStacked#spline
+        @values true, false
+        @param [markers=false] {boolean} - interpolate the area shape using bSpline
+      ###
+      attrs.$observe 'spline', (val) ->
+        if val is '' or val is 'true'
+          _spline = true
+        else
+          _spline = false
         host.lifeCycle().update()
   }
 
