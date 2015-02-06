@@ -58,9 +58,15 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelper
           _tooltip.data(data)
           ttHelper.layout(data)
 
+        moveOutside = (options.height / data[0].values.length)*2
+
         line = d3.svg.line()
           .x((d) -> x.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
-          .y((d) -> y.scale()(d.targetKey))
+
+        if y.isOrdinal
+          line.y((d) -> if d.lowBorder then options.height + moveOutside else if d.highBorder then -moveOutside else y.scale()(d.targetKey))
+        else
+          line.y((d) -> y.scale()(d.targetKey))
 
         drawLines = (s) ->
           s.attr('d', (d) -> line(d.values))
@@ -92,8 +98,13 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelper
         markers
           .isVertical(true)
           .x((d) -> x.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
-          .y((d) -> y.scale()(d.targetKey) + if y.isOrdinal() then y.scale().rangeBand() / 2 else 0)
           .color((d) -> color.scale()(d.layerKey))
+
+        if y.isOrdinal
+          markers.y((d) -> if d.lowBorder then options.height + moveOutside else if d.highBorder then -moveOutside else y.scale()(d.targetKey) +  y.scale().rangeBand() / 2)
+        else
+          markers.y((d) -> y.scale()(d.targetKey))
+
         layers.call(markers, doAnimate)
 
       brush = (axis, idxRange) ->

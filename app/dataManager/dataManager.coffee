@@ -20,12 +20,12 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
         else
           # old is not in new, i.e. deleted
           # aOld[iOld is deleted
-          result.push({deleted: true, iOld: iOld, key: aOld[iOld], atBorder: iNew is 0})
+          result.push({deleted: true, iOld: iOld, key: aOld[iOld], atBorder: iNew is 0, lowBorder: iNew is 0})
           # console.log('deleted', aOld[iOld]);
           iOld++
         if aOld.indexOf(aNew[iNew]) < 0 # new is not in old
           # aNew[iNew] is added
-          result.push({added: true, iPred: iPred, predKey: aOld[iPred], iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:iOld is 0})
+          result.push({added: true, iPred: iPred, predKey: aOld[iPred], iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:iOld is 0, lowBorder:iOld is 0})
           # console.log('added', aNew[iNew]);
           iNew++
         else
@@ -41,24 +41,24 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
         else if aOld.indexOf(aNew[iNew], iOld) >= 0
           # test if the non matching new is in old behind the current old. If yes, all old items until the match are deleted, if no, the non-match is added
           # aOld[iOld is deleted
-          result.push({deleted: true, iOld: iOld, key: aOld[iOld], atBorder: iNew is 0})
+          result.push({deleted: true, iOld: iOld, key: aOld[iOld], atBorder: iNew is 0, lowBorder: iNew is 0})
           # console.log('deleted', aOld[iOld]);
           iOld++
         else
           # aNew[iNew] is added
-          result.push({added: true, iPred: iPred, predKey: aOld[iPred], iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:iOld is 0})
+          result.push({added: true, iPred: iPred, predKey: aOld[iPred], iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:iOld is 0, lowBorder:iOld is 0})
           # console.log('added', aNew[iNew]);
           iNew++
 
     while iOld <= lOldMax
       # if there is more old items, mark them as deleted
-      result.push({deleted: true, iOld: iOld, key: aOld[iOld], atBorder:true});
+      result.push({deleted: true, iOld: iOld, key: aOld[iOld], atBorder:true, highBorder: true});
       # console.log('deleted', aOld[iOld]);
       iOld++;
 
     while iNew <= lNewMax
       # if there is more new items, mark them as added
-      result.push({added: true, iPred: iPred, predKey: aOld[iPred], iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:true});
+      result.push({added: true, iPred: iPred, predKey: aOld[iPred], iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:true, highBorder: true });
       # console.log('added', aNew[iNew]);
       iNew++;
 
@@ -139,6 +139,8 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
           ret.push({
             added:true,
             atBorder: atBorder,
+            lowBorder: cur.lowBorder,
+            highBorder: cur.highBorder
             targetKey: (if cur.atBorder and not _isOrdinal then cur.key else lastKey),
             key:cur.key,
             data: if cur.atBorder then _dataNew[cur.iNew] else _dataOld[lastOld],
@@ -159,6 +161,8 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
           layerAdded: layerKey.iOld is undefined,
           added: d.added,
           atBorder: d.atBorder,
+          lowBorder: d.lowBorder,
+          highBorder: d.highBorder
           value: if not _isRangeScale then _valueScale.layerValue(d.data, layerKey.key) else {upper:_valueScale.upperValue(d.data), lower:_valueScale.lowerValue(d.data)}
           targetValue: _valueScale.layerValue(d.targetData, layerKey.key)
           data:d.data
@@ -191,6 +195,8 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
           ret.unshift({
             deleted:true,
             atBorder: atBorder,
+            lowBorder: cur.lowBorder,
+            highBorder: cur.highBorder
             targetKey: (if cur.atBorder and not _isOrdinal then cur.key else lastKey),
             key:cur.key,
             data: if cur.atBorder then _dataOld[cur.iOld] else _dataNew[lastNew],
@@ -212,6 +218,8 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
           layerDeleted: layerKey.iNew is undefined,
           deleted:d.deleted,
           atBorder: d.atBorder,
+          lowBorder: d.lowBorder,
+          highBorder: d.highBorder
           value: if not _isRangeScale then _valueScale.layerValue(d.data, layerKey.key) else {upper:_valueScale.upperValue(d.data), lower:_valueScale.lowerValue(d.data)}
           targetValue: _valueScale.layerValue(d.targetData, layerKey.key)
           data:d.data

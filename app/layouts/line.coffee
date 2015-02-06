@@ -57,9 +57,15 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
           _tooltip.data(data)
           ttHelper.layout(data)
 
+        moveOutside = (options.width / data[0].values.length)*2
+
         line = d3.svg.line()
-          .x((d) -> x.scale()(d.targetKey))
           .y((d) -> y.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
+
+        if x.isOrdinal()
+          line.x((d) -> if d.highBorder then options.width + moveOutside else if d.lowBorder then -moveOutside else x.scale()(d.targetKey))
+        else
+          line.x((d) -> x.scale()(d.targetKey))
 
         drawLines = (s) ->
           s.attr('d', (d) -> line(d.values))
@@ -89,9 +95,15 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
           .remove()
 
         markers
-          .x((d) -> x.scale()(d.targetKey) + if x.isOrdinal() then x.scale().rangeBand() / 2 else 0)
+          #.x((d) -> x.scale()(d.targetKey) + if x.isOrdinal() then x.scale().rangeBand() / 2 else 0)
           .y((d) -> y.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
           .color((d) -> color.scale()(d.layerKey))
+
+        if x.isOrdinal()
+          markers.x((d) -> if d.highBorder then options.width + moveOutside else if d.lowBorder then -moveOutside else x.scale()(d.targetKey) + x.scale().rangeBand() / 2)
+        else
+          markers.x((d) -> x.scale()(d.targetKey))
+
         layers.call(markers, doAnimate)
 
       brush = (axis, idxRange) ->

@@ -5,7 +5,7 @@ Applying a brush does not work under certain conditions:
 
 Line charts show orphan lines att he chart border after moving elements out of the chart area
 
-Elements moving in their position in the data cause an exception in d3
+Fix: Elements moving in their position in the data cause an exception in d3
 
 scatter chart shows no color on shapes when brush is enabled (probably CSS problem, verify)
 
@@ -22,7 +22,7 @@ Fix: 1554895 Tooltip markers do not snap to data values anymore
 
 Tooltip on non-zero stacked area chart positions markers wrong
 
-Tooltip range-area, area, line does not display left-most value (range-area Monatl. Temperatur)
+Fix: acecfab Tooltip range-area, area, line does not display left-most value (range-area Monatl. Temperatur)
 
 TODO
 
