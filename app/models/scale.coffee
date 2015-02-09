@@ -43,7 +43,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
     _outputFormatString = undefined
     _outputFormatFn = undefined
 
-    _tickFormat = wkChartLocale.timeFormat.multi([
+    _timeFormat = wkChartLocale.timeFormat.multi([
       [".%L", (d) ->  d.getMilliseconds()],
       [":%S", (d) ->  d.getSeconds()],
       ["%I:%M", (d) ->  d.getMinutes()],
@@ -438,7 +438,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
         if trueFalse
           _axis = d3.svg.axis()
           if me.scaleType() is 'time'
-            _axis.tickFormat(_tickFormat)
+            _axis.tickFormat(_timeFormat)
         else
           _axis = undefined
         return me
