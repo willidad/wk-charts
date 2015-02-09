@@ -24,8 +24,6 @@ angular.module('wk.chart').directive 'rangeColumn', ($log, utils, barConfig, dat
 
     _id = "rangeColumn#{sBarCntr++}"
 
-    _id = "rangebars#{sBarCntr++}"
-
     _tooltip = undefined
     _selected = undefined
     _scaleList = {}
@@ -129,7 +127,7 @@ angular.module('wk.chart').directive 'rangeColumn', ($log, utils, barConfig, dat
 
     ###*
     @ngdoc attr
-      @name column#padding
+      @name rangeColumn#padding
       @values true, false, [padding, outerPadding]
       @param [padding=true] {boolean | list}
       * Defines the inner and outer padding between the bars.
@@ -159,7 +157,7 @@ angular.module('wk.chart').directive 'rangeColumn', ($log, utils, barConfig, dat
       host.lifeCycle().update()
     ###*
         @ngdoc attr
-        @name column#labels
+        @name rangeColumn#labels
         @values true, false
         @param [labels=true] {boolean} controls the display of data labels for each of the bars.
     ###

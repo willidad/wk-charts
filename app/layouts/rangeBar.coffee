@@ -128,7 +128,7 @@ angular.module('wk.chart').directive 'rangeBars', ($log, utils, barConfig, dataM
 
     ###*
       @ngdoc attr
-      @name bars#padding
+      @name rangeBars#padding
       @values true, false, [padding, outerPadding]
       @description bla bla
       @param [padding=true] {boolean | list}
@@ -160,7 +160,7 @@ angular.module('wk.chart').directive 'rangeBars', ($log, utils, barConfig, dataM
 
     ###*
         @ngdoc attr
-        @name bars#labels
+        @name rangeBars#labels
         @values true, false
         @param [labels=true] {boolean} controls the display of data labels for each of the bars.
     ###
