@@ -129,12 +129,12 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
         labels.enter().append('text').attr('class', 'wk-chart-data-label')
           .each((d) -> @_current = d)
           .attr("dy", ".35em")
-          .style('font-size','1.3em')
+          .style(layout.dataLabelStyle())
           .style('opacity', 0)
           .text((d) -> size.formattedValue(d.data))
 
         labels.transition().duration(options.duration)
-          .style('opacity',1)
+          .style('opacity',1)#.style(layout.dataLabelStyle())
           .text((d) -> size.formattedValue(d.data))
           .attrTween('transform', (d) ->
             _this = this
@@ -240,14 +240,14 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
       layout.lifeCycle().update()
 
     ###*
-    @ngdoc attr
-    @name pie#labelStyle
-    @param [labelStyle] {object} defined the font style attributes for the labels.
-###
+      @ngdoc attr
+      @name pie#labelStyle
+      @param [labelStyle] {object} defined the font style attributes for the labels.
+    ###
     attrs.$observe 'labelStyle', (val) ->
       if val
-        _labelStyle = val
-      host.lifeCycle().update()
+        layout.dataLabelStyle(scope.$eval(val))
+      layout.lifeCycle().update()
 
   }
   #TODO verify behavior with custom tooltips

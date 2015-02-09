@@ -9,8 +9,10 @@
   @param {array} data - Data to be graphed, {@link guide/data ...more}
   @param {boolean} [deep-watch=false]
   @param {string} [filter] - filters the data using the angular filter function
-  @param {string} [title] - The chart title
-  @param {string} [subtitle] - The chart subtitle
+  @param {string} [header] - The chart title
+  @param {object} [headerStyle={'font-size':'1.8em}]
+  @param {string} [subHeader] - The chart subtitle
+  @param {object} [subHeaderStyle={'font-size':'1.3em}]
   @param {boolean} [edit=false] - sets chart to edit mode if true
   @param {function} [edit-selection] - called when and editable chart element is clicked in edit mode.
   @param {number} [animation-duration=300] - animation duration in milliseconds
@@ -61,7 +63,7 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
 
       attrs.$observe 'headerStyle', (val) ->
         if val
-          me.titleStyle(val)
+          me.titleStyle(scope.$eval(val))
 
       attrs.$observe 'subHeader', (val) ->
         if val
@@ -71,7 +73,7 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
 
       attrs.$observe 'subHeaderStyle', (val) ->
         if val
-          me.subTitleStyle(val)
+          me.subTitleStyle(scope.$eval(val))
 
       scope.$watch 'filter', (val) ->
         if val

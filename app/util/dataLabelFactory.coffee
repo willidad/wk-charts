@@ -13,8 +13,9 @@ angular.module('wk.chart').factory 'dataLabelFactory', ($log, wkChartMargins) ->
     _anchor = undefined
     _margin = undefined
     _duration = undefined
+    _style = {'font-size':'1.3em'}
 
-    me = (s, doAnimate) ->
+    me = (s, doAnimate, style) ->
       _labelSelection = s
       #if _active
       #text = s.select('.wk-chart-data-label')#.data((d) -> d)
@@ -26,10 +27,11 @@ angular.module('wk.chart').factory 'dataLabelFactory', ($log, wkChartMargins) ->
         .attr(_anchor)
         .style('opacity', 0)
         .attr(_keyAxis, (d) -> if d.added or d.deleted then 0 else barSize / 2)
-        .attr(_valueAxis, (d) -> Math.min(_valueScale.scale()(0), _valueScale.scale()(d.targetValue) + _margin))
+        .attr(_valueAxis, (d) -> _margin + if _valueAxis is 'x' then Math.abs(_valueScale.scale()(0) - _valueScale.scale()(d.targetValue)) else Math.min(_valueScale.scale()(0), _valueScale.scale()(d.targetValue)))
 
       text
         .text((d) -> _valueScale.formatValue(d.targetValue))
+        .style(style)
       (if doAnimate then text.transition().duration(_duration) else text)
         .attr(_keyAxis, (d) -> if d.added or d.deleted then 0 else barSize / 2)
         .attr(_valueAxis, (d) -> _margin + if _valueAxis is 'x' then Math.abs(_valueScale.scale()(0) - _valueScale.scale()(d.targetValue)) else Math.min(_valueScale.scale()(0), _valueScale.scale()(d.targetValue)))
@@ -66,6 +68,11 @@ angular.module('wk.chart').factory 'dataLabelFactory', ($log, wkChartMargins) ->
     me.duration = (val) ->
       if arguments.length is 0 then return _duration
       _duration = val
+      return me
+
+    me.style = (val) ->
+      if arguments.length is 0 then return _style
+      _style = val
       return me
 
     return me

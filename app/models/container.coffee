@@ -105,13 +105,13 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
 
     #--- utility functions ---------------------------------------------------------------------------------------------
     #  Return: text height
-    drawAndPositionText = (container, text, selector, fontSize, offset) ->
+    drawAndPositionText = (container, text, selector, style, offset) ->
       elem = container.select('.' + selector)
       if elem.empty()
         elem = container.append('text')
           .attr({class:selector, 'text-anchor': 'middle', y:if offset then offset else 0})
-          .style('font-size',fontSize)
-      elem.text(text)
+
+      elem.text(text).style(style)
       #measure size and return it
       return elem.node().getBBox().height
 
@@ -122,16 +122,16 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       if area.empty()
         area = _container.append('g').attr('class','wk-chart-title-area wk-center-hor')
       if title
-        _titleHeight = drawAndPositionText(area, title, 'wk-chart-title wk-chart-label-text', '2em')
+        _titleHeight = drawAndPositionText(area, title, 'wk-chart-title wk-chart-label-text', _chart.titleStyle())
       if subTitle
-        drawAndPositionText(area, subTitle, 'wk-chart-subtitle wk-chart-label-text', '1.8em', _titleHeight)
+        drawAndPositionText(area, subTitle, 'wk-chart-subtitle wk-chart-label-text', _chart.subTitleStyle(), _titleHeight)
 
       return area.node().getBBox().height
 
-    measureText = (textList, container, textClasses) ->
+    measureText = (textList, container, textClasses, style) ->
       measureContainer = container.append('g')
       for t in textList
-        measureContainer.append('text').attr('class':textClasses).text(t)
+        measureContainer.append('text').attr('class':textClasses).text(t).style(style)
 
       bounds = measureContainer.node().getBBox()
       measureContainer.remove()
@@ -166,10 +166,12 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
           .attr('transform',"rotate(#{dim.rotateTickLabels()}, 0, #{if dim.axisOrient() is 'bottom' then 10 else -10})")
           .style('text-anchor', if dim.axisOrient() is 'bottom' then 'end' else 'start')
           .style('pointer-events', 'none')
+          .style(dim.tickLabelStyle())
       else
         axis.selectAll(".wk-chart-#{dim.axisOrient()}.wk-chart-axis text")
           .attr('transform', null)
           .style('pointer-events', 'none')
+          .style(dim.tickLabelStyle())
 
     _removeAxis = (orient) ->
       _container.select(".wk-chart-axis.wk-chart-#{orient}, .wk-chart-axis-select.wk-chart-#{orient}").remove()
@@ -249,7 +251,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
             if s.showLabel()
               if label.empty()
                 label = _container.append('g').attr('class', 'wk-chart-label wk-chart-'  + s.axisOrient())
-              labelHeight[s.axisOrient()] = drawAndPositionText(label, s.axisLabel(), 'wk-chart-label-text wk-chart-' + s.axisOrient(), '1.5em');
+              labelHeight[s.axisOrient()] = drawAndPositionText(label, s.axisLabel(), 'wk-chart-label-text wk-chart-' + s.axisOrient(), s.axisLabelStyle());
             else
               label.remove()
           if s.axisOrientOld() and s.axisOrientOld() isnt s.axisOrient()
@@ -262,9 +264,9 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
 
           if l.showDataLabels() is k
             if s.isHorizontal()
-              dataLabelWidth = wkChartMargins.dataLabelPadding.hor + measureText(s.formattedValue(data), _container, 'wk-chart-data-label').width
+              dataLabelWidth = wkChartMargins.dataLabelPadding.hor + measureText(s.formattedValue(data),  _container, 'wk-chart-data-label', l.dataLabelStyle()).width
             else
-              dataLabelHeight = wkChartMargins.dataLabelPadding.vert + measureText(s.formattedValue(data), _container, 'wk-chart-data-label').height
+              dataLabelHeight = wkChartMargins.dataLabelPadding.vert + measureText(s.formattedValue(data), _container, 'wk-chart-data-label', l.dataLabelStyle()).height
 
       #--- compute size of the drawing area  ---------------------------------------------------------------------------
       _frameHeight = titleAreaHeight + axisRect.top.height + labelHeight.top + axisRect.bottom.height + labelHeight.bottom + _margin.top + _margin.bottom

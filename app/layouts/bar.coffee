@@ -92,7 +92,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
       bars.exit()
         .remove()
 
-      bars.call(dataLabels, doAnimate)
+      bars.call(dataLabels, doAnimate, host.dataLabelStyle())
 
     brush = (axis, idxRange) ->
       bars
@@ -176,6 +176,6 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
     ###
     attrs.$observe 'labelStyle', (val) ->
       if val
-        dataLabels.style(val)
+        host.dataLabelStyle(scope.$eval(val))
       host.lifeCycle().update()
   }

@@ -90,7 +90,7 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, dataMana
         .attr('y', (d) -> Math.min(y.scale()(0), y.scale()(d.targetValue)))
         .style('opacity', 1)
 
-      columns.call(dataLabels, doAnimate)
+      columns.call(dataLabels, doAnimate, host.dataLabelStyle())
 
       columns.exit()
       .remove()
@@ -175,7 +175,7 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, dataMana
 ###
     attrs.$observe 'labelStyle', (val) ->
       if val
-        dataLabels.style(val)
+        host.dataLabelStyle(scope.$eval(val))
       host.lifeCycle().update()
 
   }

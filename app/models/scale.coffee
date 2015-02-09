@@ -496,6 +496,13 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
         _axisLabel = text
         return me
 
+    _axisLabelStyle = {'font-size': '1.5em'}
+    me.axisLabelStyle = (val) ->
+      if arguments.length is 0 then return _axisLabelStyle
+      if _.isObject(val)
+        _.assign(_axisLabelStyle, val)
+      return me
+
     me.rotateTickLabels = (nbr) ->
       if arguments.length is 0 then return _rotateTickLabels
       else

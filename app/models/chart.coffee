@@ -60,10 +60,11 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
         _title = val
         return me
 
-    _titleStyle = undefined
+    _titleStyle = {'font-size': '1.8em'}
     me.titleStyle = (val) ->
       if arguments.length is 0 then return _titleStyle
-      _titleStyle = val
+      if _.isObject(val)
+        _.assign(_titleStyle, val)
       return me
 
     me.subTitle = (val) ->
@@ -72,10 +73,11 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
         _subTitle = val
         return me
 
-    _subTitleStyle = undefined
+    _subTitleStyle = {'font-size': '1.3em'}
     me.subTitleStyle = (val) ->
       if arguments.length is 0 then return _subTitleStyle
-      _subTitleStyle = val
+      if _.isObject(val)
+        _.assign(_subTitleStyle, val)
       return me
 
     me.addLayout = (layout) ->
