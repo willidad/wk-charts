@@ -10,9 +10,9 @@
   @param {boolean} [deep-watch=false]
   @param {string} [filter] - filters the data using the angular filter function
   @param {string} [header] - The chart title
-  @param {object} [headerStyle={'font-size':'1.8em}]
+  @param {object} [headerStyle=font-size:"1.8em"]
   @param {string} [subHeader] - The chart subtitle
-  @param {object} [subHeaderStyle={'font-size':'1.3em}]
+  @param {object} [subHeaderStyle=font-size:"1.3em"]
   @param {boolean} [edit=false] - sets chart to edit mode if true
   @param {function} [edit-selection] - called when and editable chart element is clicked in edit mode.
   @param {number} [animation-duration=300] - animation duration in milliseconds

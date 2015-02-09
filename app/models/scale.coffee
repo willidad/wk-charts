@@ -483,6 +483,13 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
           me.axis().tickValues(val)
         return me
 
+    _tickLabelStyle = {'font-size': '1em'}
+    me.tickLabelStyle = (val) ->
+      if arguments.length is 0 then return _tickLabelStyle
+      if _.isObject(val)
+        _.assign(_tickLabelStyle, val)
+      return me
+
     me.showLabel = (val) ->
       if arguments.length is 0 then return _showLabel
       else

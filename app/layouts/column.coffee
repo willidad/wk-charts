@@ -169,10 +169,10 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, dataMana
       host.lifeCycle().update()
 
     ###*
-    @ngdoc attr
-    @name column#labelStyle
-    @param [labelStyle] {object} defined the font style attributes for the labels.
-###
+      @ngdoc attr
+      @name column#labelStyle
+      @param [labelStyle=font-size:"1.3em"] {object} defined the font style attributes for the labels.
+    ###
     attrs.$observe 'labelStyle', (val) ->
       if val
         host.dataLabelStyle(scope.$eval(val))

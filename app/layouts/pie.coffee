@@ -242,7 +242,7 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
     ###*
       @ngdoc attr
       @name pie#labelStyle
-      @param [labelStyle] {object} defined the font style attributes for the labels.
+      @param [labelStyle=font-size:"1.3em"] {object} defined the font style attributes for the labels.
     ###
     attrs.$observe 'labelStyle', (val) ->
       if val

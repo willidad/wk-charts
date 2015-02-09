@@ -50,7 +50,8 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
     _dataLabelStyle = {'font-size':'1.3em'}
     me.dataLabelStyle = (val) ->
       if arguments.length is 0 then return _dataLabelStyle
-      _dataLabelStyle = val
+      if _.isObject(val)
+        _.assign(_dataLabelStyle, val)
       return me
 
     me.behavior = () ->

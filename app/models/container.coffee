@@ -147,6 +147,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
         .attr({dy:'0.35em'})
         .attr('transform',"rotate(#{dim.rotateTickLabels()}, 0, #{if dim.axisOrient() is 'bottom' then 10 else -10})")
         .style('text-anchor', if dim.axisOrient() is 'bottom' then 'end' else 'start')
+      axis.selectAll('text').style(dim.tickLabelStyle())
 
       box = axis.node().getBBox()
       axis.remove()

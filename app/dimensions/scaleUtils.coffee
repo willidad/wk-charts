@@ -158,7 +158,7 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
           @ngdoc attr
           @name labelStyle
           @usedBy dimension.x, dimension.y
-          @param [labelStyle={'font-style':'1,5em'}] {object}
+          @param [labelStyle=font-size:"1.3em"] {object}
       ###
 
       attrs.$observe 'labelStyle', (val) ->
@@ -186,12 +186,15 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
           me.ticks(+val)
           if me.axis()
             me.updateAttrs()
-
-      _tickLabelStyle = {'font-size': '1em'}
-      me.tickLabelStyle = (val) ->
-        if arguments.length is 0 then return _tickLabelStyle
-        _tickLabelStyle = val
-        return me
+      ###*
+          @ngdoc attr
+          @name tickLabelStyle
+          @usedBy dimension.x, dimension.y
+          @param [tickLabelStyle=font-size:"1em"] {object}
+      ###
+      attrs.$observe 'tickLabelStyle', (val) ->
+        if val
+          me.tickLabelStyle(scope.$eval(val))
 
       ###*
         @ngdoc attr
