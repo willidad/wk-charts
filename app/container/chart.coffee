@@ -11,6 +11,8 @@
   @param {string} [filter] - filters the data using the angular filter function
   @param {string} [title] - The chart title
   @param {string} [subtitle] - The chart subtitle
+  @param {boolean} [edit=false] - sets chart to edit mode if true
+  @param {function} [edit-selection] - called when and editable chart element is clicked in edit mode.
   @param {number} [animation-duration=300] - animation duration in milliseconds
 ###
 angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
@@ -21,6 +23,7 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
     scope:
       data: '='
       filter: '='
+      editSelected: '&'
     controller: ($scope) ->
       this.me = chart()
       this.me.scope($scope)
@@ -42,21 +45,33 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
       me.lifeCycle().on 'scopeApply', () ->
         scope.$apply()
 
+      me.lifeCycle().on 'editSelected', (selection, object) ->
+        scope.editSelected({selected:selection, object:object})
+        scope.$apply()
+
       attrs.$observe 'animationDuration', (val) ->
         if val and _.isNumber(+val) and +val >= 0
           me.animationDuration(val)
 
-      attrs.$observe 'title', (val) ->
+      attrs.$observe 'header', (val) ->
         if val
           me.title(val)
         else
           me.title(undefined)
 
-      attrs.$observe 'subtitle', (val) ->
+      attrs.$observe 'headerStyle', (val) ->
+        if val
+          me.titleStyle(val)
+
+      attrs.$observe 'subHeader', (val) ->
         if val
           me.subTitle(val)
         else
           me.subTitle(undefined)
+
+      attrs.$observe 'subHeaderStyle', (val) ->
+        if val
+          me.subTitleStyle(val)
 
       scope.$watch 'filter', (val) ->
         if val
@@ -76,6 +91,12 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
         if watcherRemoveFn
           watcherRemoveFn()
         watcherRemoveFn = scope.$watch 'data', dataWatchFn, deepWatch
+
+      attrs.$observe 'edit', (val) ->
+        if val is '' or val is 'true'
+          me.editMode(true)
+        else
+          me.editMode(false)
 
       dataWatchFn = (val) ->
         if val

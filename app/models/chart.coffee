@@ -20,12 +20,13 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
     _toolTipTemplate = ''
     _title = undefined
     _subTitle = undefined
+    _editMode = false
     _behavior = behavior()
     _animationDuration = d3Animation.duration
 
     #--- LifeCycle Dispatcher ------------------------------------------------------------------------------------------
 
-    _lifeCycle = d3.dispatch('configure', 'resize', 'prepareData', 'scaleDomains', 'rescaleDomains', 'sizeContainer', 'drawAxis', 'drawChart', 'newData', 'update', 'updateAttrs', 'scopeApply', 'destroy', 'animationStartState', 'animationEndState' )
+    _lifeCycle = d3.dispatch('configure', 'resize', 'prepareData', 'scaleDomains', 'rescaleDomains', 'sizeContainer', 'drawAxis', 'drawChart', 'newData', 'update', 'updateAttrs', 'scopeApply', 'destroy', 'animationStartState', 'animationEndState', 'editSelected' )
     _brush = d3.dispatch('draw', 'change')
 
     #--- Getter/Setter Functions ---------------------------------------------------------------------------------------
@@ -59,11 +60,23 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
         _title = val
         return me
 
+    _titleStyle = undefined
+    me.titleStyle = (val) ->
+      if arguments.length is 0 then return _titleStyle
+      _titleStyle = val
+      return me
+
     me.subTitle = (val) ->
       if arguments.length is 0 then return _subTitle
       else
         _subTitle = val
         return me
+
+    _subTitleStyle = undefined
+    me.subTitleStyle = (val) ->
+      if arguments.length is 0 then return _subTitleStyle
+      _subTitleStyle = val
+      return me
 
     me.addLayout = (layout) ->
       if arguments.length is 0 then return _layouts
@@ -84,6 +97,18 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
       else
         _animationDuration = val
         return me #to enable chaining
+
+    #--- Edit Mode ----------------------------------------------------------------------------------------------
+
+    me.editMode = (val) ->
+      if arguments.length is 0 then return _editMode
+      if val isnt _editMode
+        _editMode = val
+        if _editMode
+          me.container().registerEditHooks()
+        else
+          me.container().deregisterEditHooks()
+      return me
 
     #--- Getter Functions ----------------------------------------------------------------------------------------------
 
@@ -130,6 +155,7 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
         _lifeCycle.animationEndState(data)
         _lifeCycle.drawChart(data, noAnimation)     # calls layout
         _lifeCycle.scopeApply()                     # need a digest cycle after the debouce to ensure legend animations execute
+        _container.registerEditHooks()
 
     debounced = _.debounce(lifecycleFull, 100)
 

@@ -53,7 +53,7 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, dataMana
 
 
       if not columns
-        columns = @selectAll('.wk-chart-columns')
+        columns = @selectAll('.wk-chart-layer')
       #$log.log "rendering stacked-bar"
 
       barWidth = x.scale().rangeBand()
@@ -68,7 +68,7 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, dataMana
 
       columns = columns.data(data[0].values, (d) -> d.key)
 
-      enter = columns.enter().append('g').attr('class','wk-chart-columns')
+      enter = columns.enter().append('g').attr('class','wk-chart-layer')
         .attr('transform', (d)-> "translate(#{x.scale()(d.targetKey)})")
 
       enter.append('rect')
@@ -166,6 +166,16 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, dataMana
         host.showDataLabels(false)
       else if val is 'true' or val is ""
         host.showDataLabels('y')
+      host.lifeCycle().update()
+
+    ###*
+    @ngdoc attr
+    @name column#labelStyle
+    @param [labelStyle] {object} defined the font style attributes for the labels.
+###
+    attrs.$observe 'labelStyle', (val) ->
+      if val
+        dataLabels.style(val)
       host.lifeCycle().update()
 
   }

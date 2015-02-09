@@ -78,7 +78,7 @@ angular.module('wk.chart').service 'modelUtils', ($log, $templateCache, modelTyp
             if iModel[deco.name]
               markup += " #{camelToDash(deco.name)}=\"#{iModel[deco.name]}\""
             else
-              markup += ' ' + deco.name
+              markup += ' ' + camelToDash(deco.name)
           markup += this.generateProperties(deco.properties, iModel)
       return markup
     return ''

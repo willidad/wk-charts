@@ -83,7 +83,7 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
         path.attr('d', (d) -> area(d.values))
           .style('stroke', (d) -> color.scale()(d.layerKey))
           .style('opacity', (d) -> if d.added or d.deleted then 0 else 1)
-          .style('pointer-events', 'none')
+          #.style('pointer-events', 'none')
         layers.exit()
           .remove()
 

@@ -34,8 +34,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
     return _.keys(d3.scale).concat('time').concat(_.keys(wkChartScales))
 
   assign = (list) ->
-    ret = {}
-    return _.assign.apply(this, [].concat(list))
+    return _.assign.apply(this, [{}].concat(list))
 
   propertyType = {
     string:'string'
@@ -69,7 +68,6 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
   #--- property Definitions --------------------------------------------------------------------------------------------
 
   markers = {markers:propertyType.bool}
-  labels = {labels:propertyType.bool}
   donat = {donat:propertyType.bool}
   padding = {padding:propertyType.number}
   outerPadding = {outerPadding:propertyType.number}
@@ -77,10 +75,14 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
   areaStackedVertical = {areaStackedVertical:propertyType.enum(['zero', 'silhouette','expand','wiggle'])}
   geojson = {geojson:propertyType.object}
   projection = {projection:propertyType.object}
-  spline = {spline:propertyType.boolean}
+  spline = {spline:propertyType.bool}
 
   property = {
     property:propertyType.list
+  }
+
+  tickRotation = {
+    rotateTickLabels:propertyType.number
   }
   range = {
     lowerProperty:propertyType.string
@@ -93,6 +95,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
     range:propertyType.list
     domainRange:propertyType.enum(['min', 'max', 'extent','total'])
     label:propertyType.string
+    labelStyle:propertyType.object
     exponent:propertyType.number
     reverse:propertyType.bool
   }
@@ -114,7 +117,6 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
     name:'axis'
     clazz:'decorator'
     key:'axis$set'
-    show: propertyType.bool
     value: propertyType.enum(['top', 'bottom','left','right'])
     properties: {
       grid: propertyType.bool
@@ -130,7 +132,6 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
     name:'legend'
     clazz:'decorator'
     key:'legend$set'
-    show: propertyType.bool
     value: propertyType.enum(['top-left','top-right','bottom-left','bottom-right'])
     properties: {
       templateUrl:propertyType.string
@@ -141,7 +142,6 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
     name:'valuesLegend'
     clazz:'decorator'
     key:'valuesLegend$set'
-    show: propertyType.bool
     value: propertyType.enum(['top-left','top-right','bottom-left','bottom-right'])
     properties: {
       templateUrl:propertyType.string
@@ -152,7 +152,6 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
     name:'selection'
     clazz:'decorator'
     key:'selection$set'
-    show: propertyType.bool
     properties: {
       selectedDomain: propertyType.object
       clearSelection: propertyType.callback
@@ -164,7 +163,6 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
     name:'brush'
     key:'brush$set'
     clazz:'decorator'
-    show: propertyType.bool
     value: propertyType.string
     properties: {
       selectedDomain: propertyType.object
@@ -181,8 +179,16 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
     name:'brushed'
     clazz:'decorator'
     key:'brushed$set'
-    show: propertyType.bool
     value:  propertyType.string
+  }
+
+  labels = {
+    name: 'labels',
+    clazz: 'decorator'
+    key: 'labels$set'
+    properties: {
+      labelStyle: propertyType.object
+    }
   }
   
   #---------------------------------------------------------------------------------------------------------------------
@@ -194,10 +200,14 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
     clazz:'chart'
     properties: {
       data: propertyType.objArray
-      title: propertyType.string
-      subtitle: propertyType.string
+      header: propertyType.string
+      headerStyle: propertyType.object
+      subHeader: propertyType.string
+      subHeaderStyle:propertyType.object
       deepWatch: propertyType.bool
       filter: propertyType.string
+      edit: propertyType.bool
+      editSelected: propertyType.event
     }
     decorators: [tooltips]
     dimensions: {} # shared dimension
@@ -208,23 +218,23 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
 
   this.layouts = {
     line:               layout('line','x,y,color',false,'y', [markers, spline])
-    lineVertical:       layout('line-vertical','x,y,color', false,'x', [markers, spline])
+    lineVertical:       layout('lineVertical','x,y,color', false,'x', [markers, spline])
     area:               layout('area','x,y,color', false, 'x', [markers, spline])
-    areaVertical:       layout('area-vertical','x,y,color', false, 'y', [markers, spline])
-    areaStacked:        layout('area-stacked','x,y,color', false, 'y', [areaStacked, markers, spline])
-    areaStackedVertical:layout('area-stacked-vertical','x,y,color', false, 'x', [areaStackedVertical, markers, spline])
-    bars:               layout('bars','x,y,color', false, false, [labels, padding, outerPadding],[selection])
+    areaVertical:       layout('areaVertical','x,y,color', false, 'y', [markers, spline])
+    areaStacked:        layout('areaStacked','x,y,color', false, 'y', [areaStacked, markers, spline])
+    areaStackedVertical:layout('areaStackedVertical','x,y,color', false, 'x', [areaStackedVertical, markers, spline])
+    bars:               layout('bars','x,y,color', false, false, [padding, outerPadding],[labels, selection])
     barStacked:         layout('barStacked','x,y,color', false, 'x', [padding, outerPadding],[selection])
     barClustered:       layout('barClustered','x,y,color', false, 'x', [padding, outerPadding],[selection])
-    column:             layout('column','x,y,color', false, false, [labels, padding, outerPadding],[selection])
+    column:             layout('column','x,y,color', false, false, [padding, outerPadding],[labels, selection])
     columnStacked:      layout('columnStacked','x,y,color', false, 'y', [padding, outerPadding],[selection])
     columnClustered:    layout('columnClustered','x,y,color', false, 'y', [padding, outerPadding],[selection])
-    rangeArea:          layout('range-area','x,rangeY,color', false, false,[],[selection])
-    rangeAreaVertical:  layout('range-area-vertical','x,rangeX,color', false, false,[],[selection])
-    rangeBars:          layout('range-bars','x,rangeX,color', false, false,[labels],[selection])
-    rangeColumn:        layout('range-column','x,rangeY,color', false, false,[labels],[selection])
-    histogram:          layout('histogram','x,rangeX,color', false, false,[labels],[selection])
-    pie:                layout('pie','size,color', false, false,[labels, donat],[selection])
+    rangeArea:          layout('rangeArea','x,y,color', false, false,[],[selection])
+    rangeAreaVertical:  layout('rangeAreaVertical','x,y,color', false, false,[],[selection])
+    rangeBars:          layout('rangeBars','x,y,color', false, false,[],[labels,selection])
+    rangeColumn:        layout('rangeColumn','x,y,color', false, false,[],[labels,selection])
+    histogram:          layout('histogram','x,y,color', false, false,[],[labels,selection])
+    pie:                layout('pie','size,color', false, false,[donat],[labels,selection])
     spider:             layout('spider','x,y,color', false, false,[],[selection])
     bubble:             layout('bubble','x,y,color,size', false, false,[],[selection, brush])
     scatter:            layout('scatter','x,y,color,size,shape', false, false,[],[selection, brush])
@@ -234,10 +244,8 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
   #---------------------------------------------------------------------------------------------------------------------
 
   this.dimension = {
-    x: dim('x', [property, base], [axis, brush, brushed])
+    x: dim('x', [property, base, tickRotation], [axis, brush, brushed])
     y: dim('y', [property, base],[axis, brush, brushed])
-    rangeX : dim('rangeX', [range, base],[axis, brush, brushed])
-    rangeY : dim('rangeY', [range, base],[axis, brush, brushed])
     color: dim('color', [property, base],[legend, valuesLegend])
     size: dim('size', [property, base],[legend, valuesLegend])
     shape: dim('shape', [property, base],[legend, valuesLegend])

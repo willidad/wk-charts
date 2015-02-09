@@ -80,6 +80,29 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
     me.getContainer = () ->
       return _spacedContainer
 
+    #--- Register and de-register edit hooks-----------------------------------------------------------------------------
+
+    me.registerEditHooks = () ->
+      if _chart.editMode()
+        me.chart().behavior().tooltip.active(false)
+        _container.selectAll('.wk-chart-axis-select').each((d) ->
+            size = this.parentElement.getBBox()
+            elem = d3.select(this)
+              .attr(size)
+        )
+        _elementSelection.selectAll('.wk-chart-axis-select, .wk-chart-line, .wk-chart-area-path, .wk-chart-marker, .wk-chart-legend')
+          .style('pointer-events', 'all')
+        _elementSelection.selectAll('.wk-chart-axis-select, .wk-chart-label-text, .wk-chart-data-label, .wk-chart-layer, .wk-chart-innerArc, .wk-chart-legend, .wk-chart-overlay, .wk-chart-bubble, .wk-chart-shape')
+          .style('cursor','pointer')
+          .on('click', (d) ->
+            $log.log 'clicked', d3.select(this).attr('class'), d
+            _chart.lifeCycle().editSelected(d3.select(this).attr('class'), d)
+          )
+      else
+        _container.selectAll('.wk-chart-axis-select, .wk-chart-line, .wk-chart-area-path, .wk-chart-legend')
+          .style('pointer-events', 'none')
+          .style('cursor', 'default')
+
     #--- utility functions ---------------------------------------------------------------------------------------------
     #  Return: text height
     drawAndPositionText = (container, text, selector, fontSize, offset) ->
@@ -99,9 +122,9 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       if area.empty()
         area = _container.append('g').attr('class','wk-chart-title-area wk-center-hor')
       if title
-        _titleHeight = drawAndPositionText(area, title, 'wk-chart-title', '2em')
+        _titleHeight = drawAndPositionText(area, title, 'wk-chart-title wk-chart-label-text', '2em')
       if subTitle
-        drawAndPositionText(area, subTitle, 'wk-chart-subtitle', '1.8em', _titleHeight)
+        drawAndPositionText(area, subTitle, 'wk-chart-subtitle wk-chart-label-text', '1.8em', _titleHeight)
 
       return area.node().getBBox().height
 
@@ -133,7 +156,8 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       axis = _container.select(".wk-chart-axis.wk-chart-#{dim.axisOrient()}")
       if axis.empty()
         axis = _container.append('g').attr('class', 'wk-chart-axis wk-chart-' + dim.axisOrient())
-
+        axis.append('rect').attr('class',"wk-chart-axis-select wk-chart-#{dim.axisOrient()}")
+          .style({opacity: 0, 'pointer-events': 'none'})
       axis.transition().duration(_duration).call(dim.axis())
 
       if dim.rotateTickLabels()
@@ -141,11 +165,14 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
           .attr({dy:'0.35em'})
           .attr('transform',"rotate(#{dim.rotateTickLabels()}, 0, #{if dim.axisOrient() is 'bottom' then 10 else -10})")
           .style('text-anchor', if dim.axisOrient() is 'bottom' then 'end' else 'start')
+          .style('pointer-events', 'none')
       else
-        axis.selectAll(".wk-chart-#{dim.axisOrient()}.wk-chart-axis text").attr('transform', null)
+        axis.selectAll(".wk-chart-#{dim.axisOrient()}.wk-chart-axis text")
+          .attr('transform', null)
+          .style('pointer-events', 'none')
 
     _removeAxis = (orient) ->
-      _container.select(".wk-chart-axis.wk-chart-#{orient}").remove()
+      _container.select(".wk-chart-axis.wk-chart-#{orient}, .wk-chart-axis-select.wk-chart-#{orient}").remove()
 
     _removeLabel = (orient) ->
       _container.select(".wk-chart-label.wk-chart-#{orient}").remove()
@@ -222,7 +249,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
             if s.showLabel()
               if label.empty()
                 label = _container.append('g').attr('class', 'wk-chart-label wk-chart-'  + s.axisOrient())
-              labelHeight[s.axisOrient()] = drawAndPositionText(label, s.axisLabel(), 'wk-chart-label-text', '1.5em');
+              labelHeight[s.axisOrient()] = drawAndPositionText(label, s.axisLabel(), 'wk-chart-label-text wk-chart-' + s.axisOrient(), '1.5em');
             else
               label.remove()
           if s.axisOrientOld() and s.axisOrientOld() isnt s.axisOrient()

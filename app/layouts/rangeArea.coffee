@@ -80,7 +80,7 @@ angular.module('wk.chart').directive 'rangeArea', ($log, utils, dataManagerFacto
       range = this.selectAll('.wk-chart-area-path')
         .data(rangeData, (d) -> d.layerKey)
       range.enter().append('path')
-        .attr('class','wk-chart-area-path')
+        .attr('class','wk-chart-area-path wk-chart-edit-selectable')
         .attr('d', (d) -> area(d.values))
         .style('opacity', _initialOpacity)
         .style('pointer-events', 'none')

@@ -39,34 +39,31 @@ angular.module('wk.chart').directive 'scatter', ($log, utils) ->
 
       #-----------------------------------------------------------------------------------------------------------------
 
-      initialShow = true
+      initialOpacity = 0
 
 
 
       draw = (data, options, x, y, color, size, shape) ->
         #$log.debug 'drawing scatter chart'
-        init = (s) ->
-          if initialShow
-            s.style('fill', color.map)
-            .attr('transform', (d)-> "translate(#{x.map(d)},#{y.map(d)})").style('opacity', 1)
-          initialShow = false
 
-        points = @selectAll('.wk-chart-points')
-          .data(data)
+        points = @selectAll('.wk-chart-shape')
+          .data(data,(d,i) -> i)
         points.enter()
-          .append('path').attr('class', 'wk-chart-points wk-chart-selectable')
-          .attr('transform', (d)-> "translate(#{x.map(d)},#{y.map(d)})")
-          .call(init)
-          .call(_tooltip.tooltip)
-          .call(_selected)
+          .append('path').attr('class', 'wk-chart-shape wk-chart-selectable')
+            .attr('transform', (d)-> "translate(#{x.map(d)},#{y.map(d)})")
+            .style('opacity', initialOpacity)
+            .call(_tooltip.tooltip)
+            .call(_selected)
         points
-          .transition().duration(options.duration)
+          .style('fill', (d) -> color.map (d))
           .attr('d', d3.svg.symbol().type((d) -> shape.map(d)).size((d) -> size.map(d) * size.map(d)))
-          .style('fill', color.map)
-          .attr('transform', (d)-> "translate(#{x.map(d)},#{y.map(d)})").style('opacity', 1)
+          .transition().duration(options.duration)
+            .attr('transform', (d)-> "translate(#{x.map(d)},#{y.map(d)})")
+            .style('opacity', 1)
+
+        initialOpacity = 1
 
         points.exit().remove()
-
 
       #-----------------------------------------------------------------------------------------------------------------
 

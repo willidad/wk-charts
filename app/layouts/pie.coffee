@@ -28,6 +28,7 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
     inner = undefined
     outer = undefined
     labels = undefined
+    _labelStyle = undefined
     pieBox = undefined
     polyline = undefined
     _scaleList = []
@@ -237,6 +238,16 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
       else if val is 'true' or val is ""
         _donat = true
       layout.lifeCycle().update()
+
+    ###*
+    @ngdoc attr
+    @name pie#labelStyle
+    @param [labelStyle] {object} defined the font style attributes for the labels.
+###
+    attrs.$observe 'labelStyle', (val) ->
+      if val
+        _labelStyle = val
+      host.lifeCycle().update()
 
   }
   #TODO verify behavior with custom tooltips
