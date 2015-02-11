@@ -50,4 +50,4 @@ Implemented: da6dcda Chart area background color and borders
 Implemented: 2a19af0 Legends style object
 Implemented: 6532898 tooltips style object
 Implemented: f848d7b Allow to specify just domain minimum or domain maximum
-Allow to specify a tick interval
+Implemented: 715faff Allow to specify a tick interval
