@@ -64,7 +64,10 @@ angular.module('wk.chart').service 'modelUtils', ($log, $templateCache, modelTyp
         if _.has(dProperties[name], 'generator')
           markup += dProperties[name].generator(iModel[name])
         else
-          markup += " #{camelToDash(name)}=\"#{iModel[name]}\""
+          if _.isObject(iModel[name])
+            markup += " #{camelToDash(name)}=\"#{iModel[name].toString()}\""
+          else
+            markup += " #{camelToDash(name)}=\"#{iModel[name]}\""
     return markup
 
   this.generateDecorators = (dDecorators, iModel) ->

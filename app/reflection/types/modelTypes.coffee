@@ -124,6 +124,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
       showLabel: propertyType.bool
       ticks: propertyType.number
       tickFormat: propertyType.string
+      tickLabelStyle: propertyType.object
       axisFormatter: propertyType.object
     }
   }
