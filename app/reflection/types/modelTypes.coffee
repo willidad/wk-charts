@@ -91,6 +91,8 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
   base = {
     type:propertyType.enum(getScaleTypes())
     domain:propertyType.list
+    domainMin:propertyType.string
+    domainMax:propertyType.string
     reset:propertyType.bool
     range:propertyType.list
     domainRange:propertyType.enum(['min', 'max', 'extent','total'])
@@ -120,9 +122,11 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
     value: propertyType.enum(['top', 'bottom','left','right'])
     properties: {
       grid: propertyType.bool
+      gridStyle: propertyType.object
       format: propertyType.string
       showLabel: propertyType.bool
       ticks: propertyType.number
+      tickInterval: propertyType.number
       tickFormat: propertyType.string
       tickLabelStyle: propertyType.object
       axisFormatter: propertyType.object
@@ -136,6 +140,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
     value: propertyType.enum(['top-left','top-right','bottom-left','bottom-right'])
     properties: {
       templateUrl:propertyType.string
+      legendStyle: propertyType.object
     }
   }
 
@@ -146,6 +151,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
     value: propertyType.enum(['top-left','top-right','bottom-left','bottom-right'])
     properties: {
       templateUrl:propertyType.string
+      legendStyle: propertyType.object
     }
   }
 
@@ -210,6 +216,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
       edit: propertyType.bool
       editSelected: propertyType.event
       animationDuration: propertyType.number
+      backgroundStyle: propertyType.object
     }
     decorators: [tooltips]
     dimensions: {} # shared dimension
@@ -247,7 +254,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
 
   this.dimension = {
     x: dim('x', [property, base, tickRotation], [axis, brush, brushed])
-    y: dim('y', [property, base],[axis, brush, brushed])
+    y: dim('y', [property, base, tickRotation],[axis, brush, brushed])
     color: dim('color', [property, base],[legend, valuesLegend])
     size: dim('size', [property, base],[legend, valuesLegend])
     shape: dim('shape', [property, base],[legend, valuesLegend])

@@ -137,6 +137,30 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       measureContainer.remove()
       return bounds
 
+    tickLabelsAnchor = (dim) ->
+      rotation = dim.rotateTickLabels()
+      switch dim.axisOrient()
+        when 'bottom'
+          if rotation < 0 then 'end' else 'start'
+        when 'top'
+          if rotation > 0 then 'end' else 'start'
+        when 'right'
+          if Math.abs(rotation) >= 90 then 'end' else 'start'
+        when 'left'
+          if Math.abs(rotation) <= 90 then 'end' else 'start'
+
+    tickLabelsShift = (dim) ->
+      rotation = dim.rotateTickLabels()
+      switch dim.axisOrient()
+        when 'bottom'
+          return "rotate(#{rotation}, 0, 10)"
+        when 'top'
+          return "rotate(#{rotation}, 0, -10)"
+        when 'right'
+          return "rotate(#{rotation}, 10, 0)"
+        when 'left'
+          return "rotate(#{rotation}, -10, 0)"
+
     getAxisRect = (dim) ->
       axis = _container.append('g')
       dim.range([0,500])
@@ -145,8 +169,8 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       if dim.rotateTickLabels()
         axis.selectAll("text")
         .attr({dy:'0.35em'})
-        .attr('transform',"rotate(#{dim.rotateTickLabels()}, 0, #{if dim.axisOrient() is 'bottom' then 10 else -10})")
-        .style('text-anchor', if dim.axisOrient() is 'bottom' then 'end' else 'start')
+        .attr('transform', tickLabelsShift(dim))
+        .style('text-anchor', tickLabelsAnchor(dim))
       axis.selectAll('text').style(dim.tickLabelStyle())
 
       box = axis.node().getBBox()
@@ -164,8 +188,8 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       if dim.rotateTickLabels()
         axis.selectAll(".wk-chart-#{dim.axisOrient()}.wk-chart-axis text")
           .attr({dy:'0.35em'})
-          .attr('transform',"rotate(#{dim.rotateTickLabels()}, 0, #{if dim.axisOrient() is 'bottom' then 10 else -10})")
-          .style('text-anchor', if dim.axisOrient() is 'bottom' then 'end' else 'start')
+          .attr('transform', (d)-> tickLabelsShift(dim))
+          .style('text-anchor', tickLabelsAnchor(dim))
           .style('pointer-events', 'none')
           .style(dim.tickLabelStyle())
       else

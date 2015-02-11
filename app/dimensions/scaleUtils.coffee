@@ -243,7 +243,19 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
         if val isnt undefined
           me.reverse(val is '' or val is 'true').update()
 
-
+      ###*
+        @ngdoc attr
+        @name rotateTickLabels
+        @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
+        @param [rotateTickLabels] {number}
+        rotates tick labels by ´number´ degrees.
+      ###
+      attrs.$observe 'rotateTickLabels', (val) ->
+        if val and _.isNumber(+val)
+          me.rotateTickLabels(+val)
+        else
+          me.rotateTickLabels(undefined)
+        me.update(true)
 
     #-------------------------------------------------------------------------------------------------------------------
 
