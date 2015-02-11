@@ -54,6 +54,13 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
         _behavior.tooltip.template(path)
         return me
 
+    _tooltipStyle = {}
+    me.tooltipStyle = (val) ->
+      if arguments.length is 0 then return _tooltipStyle
+      if _.isObject(val)
+        _.assign(_tooltipStyle, val)
+      return me
+
     me.title = (val) ->
       if arguments.length is 0 then return _title
       else

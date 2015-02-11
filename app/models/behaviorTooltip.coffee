@@ -32,23 +32,23 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       rect = _compiledTempl[0].getBoundingClientRect()
       clientX = if bodyRect.right - 20 > d3.event.clientX + rect.width + 10 then d3.event.clientX + 10 else d3.event.clientX - rect.width - 10
       clientY = if bodyRect.bottom - 20 > d3.event.clientY + rect.height + 10 then d3.event.clientY + 10 else d3.event.clientY - rect.height - 10
-      _templScope.position = {
+      _.assign(_templScope.tooltipStyle, {
         position: 'absolute'
         left: clientX + 'px'
         top: clientY + 'px'
         'z-index': 1500
         opacity: 1
-      }
+      })
       _templScope.$apply()
 
     positionInitial = () ->
-      _templScope.position = {
+      _.assign(_templScope.tooltipStyle, {
         position: 'absolute'
         left: '0px'
         top: '0px'
         'z-index': 1500
         opacity: 0
-      }
+      })
       _templScope.$apply()  # ensure tooltip gets rendered and size attributes get set correctly
 
       _.throttle positionBox, 200 #wait until it is rendered and then reposition
@@ -57,6 +57,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
 
     tooltipEnter = () ->
       if not _active or _hide then return
+      _templScope.tooltipStyle = me.chart().tooltipStyle()
       # append data div
       body.append(_compiledTempl)
       _templScope.layers = []

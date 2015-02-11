@@ -30,5 +30,9 @@ angular.module('wk.chart').directive 'tooltips', ($log, behavior) ->
           chart.toolTipTemplate(val)
           chart.showTooltip(true)
         else chart.showTooltip(false)
+
+      attrs.$observe 'tooltipStyle', (val) ->
+        if val
+          chart.tooltipStyle(scope.$eval(val))
   }
 
