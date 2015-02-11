@@ -49,4 +49,5 @@ Implemented: 5b20512 Enable grid lines styling via style object
 Implemented: da6dcda Chart area background color and borders
 Implemented: 2a19af0 Legends style object
 Implemented: 6532898 tooltips style object
-Allow to specify just domain minimum or domain maximum
+Implemented: f848d7b Allow to specify just domain minimum or domain maximum
+Allow to specify a tick interval

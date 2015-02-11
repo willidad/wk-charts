@@ -27,6 +27,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
     _axis = undefined
     _ticks = undefined
     _tickFormat = undefined
+    _tickInterval = undefined
     _tickValues = undefined
     _rotateTickLabels = undefined
     _showLabel = false
@@ -118,6 +119,24 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
           step = me.lowerValue(data[1]) - start
           return [0, start + step * (data.length) ]
       }
+
+    generateTickValues = () ->
+      if not _isOrdinal and me.tickInterval()
+        if me.domainMax() isnt undefined and me.domainMin() isnt undefined
+          if _scaleType is 'time'
+            parts = me.tickInterval().split(':')
+            if parts.length is 2 and d3.time.hasOwnProperty(parts[0].toLowerCase())
+              tickValues = d3.time[parts[0]](me.domainMin(), me.domainMax(), +parts[1])
+          else
+            ticks = Math.abs(Math.floor((me.domainMax() - me.domainMin())/ me.tickInterval()))
+            tickValue = Math.floor(1 + me.domainMin() / me.tickInterval()) * me.tickInterval() # calculate the start value
+            tickValues = []
+            i = 0
+            while tickValue < me.domainMax()
+              tickValues[i] = tickValue
+              i++
+              tickValue += me.tickInterval()
+          me.tickValues(tickValues)
 
     #-------------------------------------------------------------------------------------------------------------------
 
@@ -247,13 +266,13 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
 
     _domainMin = undefined
     me.domainMin = (val) ->
-      if arguments.length is 0 then return _domainMin
-      _domainMin = parsedValue(val)
+      if arguments.length is 0 then return _domainMin or _calculatedDomain[0]
+      generateTickValues()
       return me
 
     _domainMax = undefined
     me.domainMax = (val) ->
-      if arguments.length is 0 then return _domainMax
+      if arguments.length is 0 then return _domainMax or _calculatedDomain[1]
       _domainMax = parsedValue(val)
       return me
 
@@ -265,6 +284,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
             _calculatedDomain[0] = _domainMin
           if _domainMax
             _calculatedDomain[1] = _domainMax
+          generateTickValues()
           return _calculatedDomain
         else
           if _domain
@@ -482,6 +502,16 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
         if me.axis()
           me.axis().ticks(_ticks)
         return me #to enable chaining
+
+    me.tickInterval = (val) ->
+      if arguments.length is 0 then return _tickInterval
+      if not _isOrdinal
+        if _scaleType isnt 'time'
+          _tickInterval = parsedValue(val)
+        else
+          if /\w+:\d+/.test(val)
+            _tickInterval = val
+      return me
 
     me.tickFormat = (val) ->
       if arguments.length is 0 then return _tickFormat

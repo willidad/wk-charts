@@ -208,6 +208,22 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
           me.ticks(+val)
           if me.axis()
             me.updateAttrs()
+
+      ###*
+        @ngdoc attr
+        @name tickInterval
+        @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
+        @param [tickInterval] {expression}
+        if specified, sets the interval used to calculate the tick labels. Does not work for ordinal scales. For time scales the values are specified
+        as `<unit>:number`, where unit can be seconds, minutes, hours, days, weeks, years, and sundays .. saturdays
+        so `days:10` means that a tick will be drawn every 10 days, `tuesdays:3` means that the tick will be every 3rd tuesday.
+      ###
+      attrs.$observe 'tickInterval', (val) ->
+        if val isnt undefined
+          me.tickInterval(val)
+          if me.axis()
+            me.updateAttrs()
+
       ###*
           @ngdoc attr
           @name tickLabelStyle
