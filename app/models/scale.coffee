@@ -532,6 +532,13 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
         _showGrid = trueFalse
         return me
 
+    _gridStyle = {stroke:'lightgrey', 'stroke-width': 1}
+    me.gridStyle = (val) ->
+      if arguments.length is 0 then return _gridStyle
+      if _.isObject(val)
+        _.assign(_gridStyle, val)
+      return me
+
     me.reverse = (trueFalse) ->
       if arguments.length is 0 then return _reverse 
       else

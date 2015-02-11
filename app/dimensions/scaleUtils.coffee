@@ -207,6 +207,17 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
           me.showGrid(val is '' or val is 'true').updateAttrs()
 
       ###*
+          @ngdoc attr
+          @name gridStyle
+          @usedBy dimension.x, dimension.y
+          @param [gridStyle] {object}
+      ###
+      attrs.$observe 'gridStyle', (val) ->
+        if val
+          me.gridStyle(scope.$eval(val))
+
+
+      ###*
         @ngdoc attr
         @name showLabel
         @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
