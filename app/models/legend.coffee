@@ -78,6 +78,13 @@ angular.module('wk.chart').factory 'legend', ($log, $compile, $rootScope, $templ
         _parsedTemplate = $compile(_template)(_legendScope)
         return me
 
+    _legendStyle = {}
+    me.legendStyle = (val) ->
+      if arguments.length is 0 then return _legendStyle
+      if _.isObject(val)
+        _.assign(_legendStyle, val)
+      return me
+
     me.draw = (data, options) ->
       _data = data
       _options = options
@@ -101,15 +108,14 @@ angular.module('wk.chart').factory 'legend', ($log, $compile, $rootScope, $templ
           _legendScope.legendRows = layers.map((d) -> {value:d, path:d3.svg.symbol().type(s(d)).size(80)()})
           #$log.log _legendScope.legendRows
         _legendScope.showLegend = true
-        _legendScope.position = {
-          position: if _legendDiv then 'relative' else 'absolute'
-        }
+        _legendScope.legendStyle = me.legendStyle()
+        _legendScope.legendStyle.position = if _legendDiv then 'relative' else 'absolute'
 
         if not _legendDiv
           containerRect = _containerDiv.node().getBoundingClientRect()
           chartAreaRect = _containerDiv.select('.wk-chart-overlay rect').node().getBoundingClientRect()
           for p in _position.split('-')
-              _legendScope.position[p] = "#{Math.abs(containerRect[p] - chartAreaRect[p])}px"
+              _legendScope.legendStyle[p] = "#{Math.abs(containerRect[p] - chartAreaRect[p])}px"
         _legendScope.title = _title
       else
         _parsedTemplate.remove()

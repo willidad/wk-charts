@@ -45,7 +45,7 @@ angular.module('wk.chart').directive 'color', ($log, scale, legend, scaleUtils) 
       #---Directive Attributes handling --------------------------------------------------------------------------------
 
       scaleUtils.observeSharedAttributes(attrs, me)
-      scaleUtils.observeLegendAttributes(attrs, me, layout)
+      scaleUtils.observeLegendAttributes(attrs, me, layout, scope)
 
       scope.$watch 'mapFunction', (fn) ->
         if fn and _.isFunction(fn)

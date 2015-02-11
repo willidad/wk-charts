@@ -270,7 +270,7 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
 
     #-------------------------------------------------------------------------------------------------------------------
 
-    observeLegendAttributes: (attrs, me, layout) ->
+    observeLegendAttributes: (attrs, me, layout, scope) ->
 
       ###*
         @ngdoc attr
@@ -342,6 +342,16 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
       attrs.$observe 'legendTitle', (val) ->
         if val isnt undefined
           me.legend().title(val).redraw()
+
+      ###*
+        @ngdoc attr
+        @name legendStyle
+        @usedBy dimension
+        @param [legendStyle] {object}
+      ###
+      attrs.$observe 'legendStyle', (val) ->
+        if val isnt undefined
+          me.legend().legendStyle(scope.$eval(val)).redraw()
 
     #--- Observe Range attributes --------------------------------------------------------------------------------------
 

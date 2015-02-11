@@ -1,4 +1,4 @@
-.wk-chart-legend(ng-style="position", ng-show="showLegend")
+.wk-chart-legend(ng-style="legendStyle", ng-show="showLegend")
     .legend-title(ng-show="title") {{title}}
     ul.list-unstyled
         li(ng-repeat="legendRow in legendRows track by legendRow.value", class="wk-chart-legend-item")

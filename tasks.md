@@ -46,7 +46,7 @@ Implemented: c711c07 Spline interpolation for line and area charts
 Implemented: 3d981ee Rotate tick labels on y axis
 Implemented: 3d981ee Switch text direction of tick labels instead od drawing them into the chart area
 Implemented: 5b20512 Enable grid lines styling via style object
-Chart area background color and borders
+Implemented: da6dcda Chart area background color and borders
 Legends style object
 tooltips style object
 Allow to specify just domain minimum or domain maximum

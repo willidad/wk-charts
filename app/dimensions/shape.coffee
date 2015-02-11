@@ -44,5 +44,5 @@ angular.module('wk.chart').directive 'shape', ($log, scale, d3Shapes, scaleUtils
       #---Directive Attributes handling --------------------------------------------------------------------------------
 
       scaleUtils.observeSharedAttributes(attrs, me)
-      scaleUtils.observeLegendAttributes(attrs, me, layout)
+      scaleUtils.observeLegendAttributes(attrs, me, layout, scope)
   }

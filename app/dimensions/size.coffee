@@ -44,5 +44,5 @@ angular.module('wk.chart').directive 'size', ($log, scale, scaleUtils) ->
       #---Directive Attributes handling --------------------------------------------------------------------------------
 
       scaleUtils.observeSharedAttributes(attrs, me)
-      scaleUtils.observeLegendAttributes(attrs, me, layout)
+      scaleUtils.observeLegendAttributes(attrs, me, layout, scope)
   }
