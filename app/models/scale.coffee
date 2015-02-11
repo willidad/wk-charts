@@ -245,11 +245,27 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
           $log.error 'illegal domain calculation rule:', rule, " expected", _.keys(calcDomain)
         return me
 
+    _domainMin = undefined
+    me.domainMin = (val) ->
+      if arguments.length is 0 then return _domainMin
+      _domainMin = parsedValue(val)
+      return me
+
+    _domainMax = undefined
+    me.domainMax = (val) ->
+      if arguments.length is 0 then return _domainMax
+      _domainMax = parsedValue(val)
+      return me
+
     me.getDomain = (data) ->
       if arguments.length is 0 then return _scale.domain()
       else
         if not _domain and me.domainCalc()
-            return _calculatedDomain
+          if _domainMin
+            _calculatedDomain[0] = _domainMin
+          if _domainMax
+            _calculatedDomain[1] = _domainMax
+          return _calculatedDomain
         else
           if _domain
             return _domain

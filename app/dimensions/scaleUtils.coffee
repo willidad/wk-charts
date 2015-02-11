@@ -120,6 +120,28 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
 
       ###*
         @ngdoc attr
+        @name domainMin
+        @usedBy dimension
+        @param [domainMin] {expression}
+        Defined the domain minimum
+      ###
+      attrs.$observe 'domainMin', (val) ->
+        if val
+          me.domainMin(val)
+
+      ###*
+        @ngdoc attr
+        @name domainMax
+        @usedBy dimension
+        @param [domainMax] {expression}
+        Defines the domain maximum
+      ###
+      attrs.$observe 'domainMax', (val) ->
+        if val
+          me.domainMax(val)
+
+      ###*
+        @ngdoc attr
         @name label
         @usedBy dimension
         @param [label] {expression}

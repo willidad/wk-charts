@@ -47,6 +47,6 @@ Implemented: 3d981ee Rotate tick labels on y axis
 Implemented: 3d981ee Switch text direction of tick labels instead od drawing them into the chart area
 Implemented: 5b20512 Enable grid lines styling via style object
 Implemented: da6dcda Chart area background color and borders
-implemented: 2a19af0 Legends style object
-tooltips style object
+Implemented: 2a19af0 Legends style object
+Implemented: 6532898 tooltips style object
 Allow to specify just domain minimum or domain maximum
