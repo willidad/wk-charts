@@ -60,7 +60,7 @@ angular.module('wk.chart').service 'modelUtils', ($log, $templateCache, modelTyp
   this.generateProperties = (dProperties, iModel) ->
     markup = ''
     for name, type of dProperties
-      if iModel[name]
+      if iModel[name] isnt undefined and iModel[name] isnt null and iModel[name] isnt ''
         if _.has(dProperties[name], 'generator')
           markup += dProperties[name].generator(iModel[name])
         else

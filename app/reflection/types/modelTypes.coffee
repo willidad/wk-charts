@@ -208,6 +208,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
       filter: propertyType.string
       edit: propertyType.bool
       editSelected: propertyType.event
+      animationDuration: propertyType.number
     }
     decorators: [tooltips]
     dimensions: {} # shared dimension
