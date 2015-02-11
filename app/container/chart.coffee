@@ -75,6 +75,10 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
         if val
           me.subTitleStyle(scope.$eval(val))
 
+      attrs.$observe 'backgroundStyle', (val) ->
+        if val
+          me.backgroundStyle(scope.$eval(val))
+
       scope.$watch 'filter', (val) ->
         if val
           _filter = val # scope.$eval(val)

@@ -12,6 +12,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
     _chart = undefined
     _element = undefined
     _elementSelection = undefined
+    _chartAreaDiv = undefined
     _layouts = []
     _legends = []
     _svg = undefined
@@ -238,7 +239,8 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
     # build generic elements first
 
     _genChartFrame = () ->
-      _svg = _elementSelection.append('div').attr('class', 'wk-chart').append('svg').attr('class', 'wk-chart')
+      _chartAreaDiv = _elementSelection.append('div').attr('class', 'wk-chart')
+      _svg = _chartAreaDiv.append('svg').attr('class', 'wk-chart')
       _svg.append('defs').append('clipPath').attr('id', "wk-chart-clip-#{_containerId}").append('rect')
       _container= _svg.append('g').attr('class','wk-chart-container')
       _overlay = _container.append('g').attr('class', 'wk-chart-overlay').style('pointer-events', 'all')
@@ -352,6 +354,10 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
         for k, s of l.scales().allKinds()
           if s.showAxis() and s.showGrid()
             drawGrid(s)
+
+      #--- and set chart background
+
+      _chartAreaDiv.style(_chart.backgroundStyle())
 
       _chart.behavior().overlay(_overlay)
       _chart.behavior().container(_chartArea)

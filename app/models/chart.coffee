@@ -80,6 +80,14 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
         _.assign(_subTitleStyle, val)
       return me
 
+    _backgroundStyle = {position:'relative'}
+    me.backgroundStyle = (val) ->
+      if arguments.length is 0 then return _backgroundStyle
+      if _.isObject(val)
+        _.assign(_backgroundStyle, val)
+        _backgroundStyle.position = 'relative'
+      return me
+
     me.addLayout = (layout) ->
       if arguments.length is 0 then return _layouts
       else
