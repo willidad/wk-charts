@@ -267,9 +267,10 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
     _domainMin = undefined
     me.domainMin = (val) ->
       if arguments.length is 0 then return _domainMin or _calculatedDomain[0]
-      generateTickValues()
+      _domainMin = parsedValue(val)
       return me
 
+    _domainMax = undefined
     _domainMax = undefined
     me.domainMax = (val) ->
       if arguments.length is 0 then return _domainMax or _calculatedDomain[1]
