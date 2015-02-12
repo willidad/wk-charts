@@ -65,7 +65,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
           .y((d) -> y.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
 
         if _spline
-          line.interpolate('basis')
+          line.interpolate('cardinal')
 
         if x.isOrdinal()
           line.x((d) -> if d.highBorder then options.width + moveOutside else if d.lowBorder then -moveOutside else x.scale()(d.targetKey))

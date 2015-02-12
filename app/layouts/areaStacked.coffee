@@ -86,7 +86,7 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipHelperF
           .y1((d) ->  scaleY(d.y0))
 
         if _spline
-          area.interpolate('basis')
+          area.interpolate('cardinal')
 
         layers = layers
           .data(stackLayout, (d) -> d.layerKey)

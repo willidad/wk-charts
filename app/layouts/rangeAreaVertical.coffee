@@ -64,7 +64,7 @@ angular.module('wk.chart').directive 'rangeAreaVertical', ($log, utils, dataMana
         .y1((d) -> x.scale()(d.value1))
 
       if _spline
-        area.interpolate('basis')
+        area.interpolate('cardinal')
 
       i = 0
       rangeData = [{values:data[1].values, layerKey:data[1].layerKey}]

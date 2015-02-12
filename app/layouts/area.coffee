@@ -64,7 +64,7 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
           .y1((d) ->  y.scale()(0))
 
         if _spline
-          area.interpolate('basis')
+          area.interpolate('cardinal')
 
         layers = this.selectAll(".wk-chart-layer")
           .data(data, (d) -> d.layerKey)
