@@ -7,7 +7,7 @@ fix: 79cd6ee Line charts show orphan lines att he chart border after moving elem
 
 Fix: Elements moving in their position in the data cause an exception in d3
 
-scatter chart shows no color on shapes when brush is enabled (probably CSS problem, verify)
+Fix: scatter chart shows no color on shapes when brush is enabled (probably CSS problem, verify)
 
 Fix: column chart does not show tooltip correctly
 
@@ -42,12 +42,12 @@ Finish removal of range dimension
 Verify animation change impact on bubble and Scatter charts
 - new method does not add value, just complicates things there
 
-Implemented: c711c07 Spline interpolation for line and area charts
-Implemented: 3d981ee Rotate tick labels on y axis
-Implemented: 3d981ee Switch text direction of tick labels instead od drawing them into the chart area
-Implemented: 5b20512 Enable grid lines styling via style object
-Implemented: da6dcda Chart area background color and borders
-Implemented: 2a19af0 Legends style object
-Implemented: 6532898 tooltips style object
-Implemented: f848d7b Allow to specify just domain minimum or domain maximum
-Implemented: 715faff Allow to specify a tick interval
+Implemented: c711c07 Spline interpolation for line and area charts : layout attribute `spline`
+Implemented: 3d981ee Rotate tick labels on y axis : axis attribute `rotate-tick-labels`
+Implemented: 3d981ee Switch text direction of tick labels instead of drawing them into the chart area
+Implemented: 5b20512 Enable grid lines styling via style object: axis attribute `grid-style`
+Implemented: da6dcda Chart area background color and borders: chart attribute `background-style`
+Implemented: 2a19af0 Legends style object: legend attribute `legend-style`
+Implemented: 6532898 tooltips style object: tooltips attribute `tooltip-style`
+Implemented: f848d7b Allow to specify just domain minimum or domain maximum: dimension attributes `domain-min`, `domain-max`
+Implemented: 715faff Allow to specify a tick interval: axis attribute `tick-interval`. See docu pages for how to specify the interval for time scales
