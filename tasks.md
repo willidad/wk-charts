@@ -51,3 +51,5 @@ Implemented: 2a19af0 Legends style object: legend attribute `legend-style`
 Implemented: 6532898 tooltips style object: tooltips attribute `tooltip-style`
 Implemented: f848d7b Allow to specify just domain minimum or domain maximum: dimension attributes `domain-min`, `domain-max`
 Implemented: 715faff Allow to specify a tick interval: axis attribute `tick-interval`. See docu pages for how to specify the interval for time scales
+enable to show marker line independent of tooltips in line and area chart
+separate axis definition from dimension property to allow axis and domain sharing between layouts while allowing separate properties for each layout
