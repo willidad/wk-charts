@@ -51,6 +51,9 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
 
     drawPath = (doAnimate, data, options, x, y, color) ->
 
+      _colorByKey = not color.property() and color.isOrdinal()
+      ttHelper.colorByKey(_colorByKey)
+
       if not bars
         bars = @selectAll('.wk-chart-layer')
       #$log.log "rendering stacked-bar"
@@ -82,8 +85,8 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
           .attr('transform', (d) -> "translate(0, #{y.scale()(d.targetKey) + offset(d)}) scale(1,1)")
 
       rect = bars.select('rect')
-        .style('fill', (d) -> color.scale()(d.key))
-        .style('stroke', (d) -> color.scale()(d.key))
+        .style('fill', (d) ->  if _colorByKey then color.scale()(d.key) else color.map(d.data))
+        .style('stroke', (d) ->  if _colorByKey then color.scale()(d.key) else color.map(d.data))
       (if doAnimate then rect.transition().duration(options.duration) else rect)
           .attr('height', (d) -> if d.added or d.deleted then 0 else barHeight)
           .attr('width', (d) -> Math.abs(x.scale()(0) - x.scale()(d.targetValue)))
@@ -113,7 +116,6 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
         .keyScale(_scaleList.y)
         .valueScale(_scaleList.x)
         .colorScale(_scaleList.color)
-        .colorByKey(true)
         .value((d) -> d.value)
       _tooltip.on "enter.#{_id}", ttHelper.enter
       dataLabels
