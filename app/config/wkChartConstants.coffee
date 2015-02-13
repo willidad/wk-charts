@@ -98,6 +98,8 @@ angular.module('wk.chart').constant 'd3Animation', {
   duration:500
 }
 
+angular.module('wk.chart').constant 'maxTicks', 200
+
 angular.module('wk.chart').constant 'templateDir', 'templates/'
 
 angular.module('wk.chart').constant 'formatDefaults', {

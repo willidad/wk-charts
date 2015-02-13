@@ -1,4 +1,4 @@
-angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkChartScales, wkChartLocale) ->
+angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkChartScales, wkChartLocale, maxTicks) ->
 
   scale = () ->
     _id = ''
@@ -120,16 +120,48 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
           return [0, start + step * (data.length) ]
       }
 
+    verifyAndLimitTimeInterval = (unit, interv) ->
+      unitMap = [
+        1000,
+        1000*60,
+        1000*60*60,
+        1000*60*60*24,
+        1000*60*60*24*7,
+        1000*60*60*24*30,
+        1000*60*60*24*365,
+      ]
+      sequence = ['seconds', 'minutes', 'hours', 'days', 'weeks', 'months', 'years']
+      seqIdx = sequence.indexOf(unit)
+      if seqIdx is -1
+        seqIdx = 3 # handle sundays through saturdays intervals as week
+      duration = +me.domainMax() - me.domainMin() # returns duration in ms
+      loop
+        durationUnit = duration / unitMap[seqIdx]
+        ticks = durationUnit / interv
+
+        if seqIdx >= sequence.length or ticks <= maxTicks
+          break
+        seqIdx++
+
+      if sequence[seqIdx] isnt unit
+        return d3.time[sequence[seqIdx]](me.domainMin(), me.domainMax())
+      else
+        return d3.time[sequence[seqIdx]](me.domainMin(), me.domainMax(), interv)
+
     generateTickValues = () ->
       if not _isOrdinal and me.tickInterval()
         if me.domainMax() isnt undefined and me.domainMin() isnt undefined
           if _scaleType is 'time'
             parts = me.tickInterval().split(':')
-            if parts.length is 2 and d3.time.hasOwnProperty(parts[0].toLowerCase())
-              tickValues = d3.time[parts[0]](me.domainMin(), me.domainMax(), +parts[1])
+            if parts.length is 2 and d3.time.hasOwnProperty(parts[0])
+              tickValues = verifyAndLimitTimeInterval(parts[0], parts[1])
+            else
+              tickValues = undefined # not a valid tickvalue definition
           else
             ticks = Math.abs(Math.floor((me.domainMax() - me.domainMin())/ me.tickInterval()))
-            tickValue = Math.floor(1 + me.domainMin() / me.tickInterval()) * me.tickInterval() # calculate the start value
+            if ticks > maxTicks
+              me.tickInterval(Math.floor(me.domainMax() - me.domainMin())/maxTicks)
+            tickValue = Math.ceil(1 + me.domainMin() / me.tickInterval()) * me.tickInterval() # calculate the start value
             tickValues = []
             i = 0
             while tickValue < me.domainMax()

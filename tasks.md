@@ -26,6 +26,8 @@ Fix: acecfab Tooltip range-area, area, line does not display left-most value (ra
 
 Fix: 19bce28 tooltips cause page to jump - tt reaches outside the viewport and causes scroll bar to appear
 
+Fix: browser crashes if interval is too small limit interval to some reasonable number
+
 TODO
 
 change charts to new animation method
