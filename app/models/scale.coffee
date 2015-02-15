@@ -38,6 +38,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
     _isVertical = false
     _kind = undefined
     _parent = undefined
+    _parentScale = undefined
     _chart = undefined
     _layout = undefined
     _legend = legend()
@@ -198,6 +199,11 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
       else
         _layout = val
         return me #to enable chaining
+
+    me.parentScale = (val) ->
+      if arguments.length is 0 then return _parentScale
+      _parentScale = val
+      return me
 
     #-------------------------------------------------------------------------------------------------------------------
 
@@ -628,14 +634,18 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
 
     me.register = () ->
       me.chart().lifeCycle().on "scaleDomains.#{me.id()}", (data) ->
-        # set the domain if required
-        if me.resetOnNewData()
-          # ensure robust behavior in case of problematic definitions
-          domain = me.getDomain(data)
-          if _scaleType is 'linear' and _.some(domain, isNaN)
-            throw "Scale #{me.kind()}, Type '#{_scaleType}': cannot compute domain for property '#{_property}' . Possible reasons: property not set, data not compatible with defined type. Domain:#{domain}"
+        if _parentScale
+          #set the scale to the parents scales
+          _scale = _parentScale.scale()
+        else
+          # set the domain if required
+          if me.resetOnNewData()
+            # ensure robust behavior in case of problematic definitions
+            domain = me.getDomain(data)
+            if _scaleType is 'linear' and _.some(domain, isNaN)
+              throw "Scale #{me.kind()}, Type '#{_scaleType}': cannot compute domain for property '#{_property}' . Possible reasons: property not set, data not compatible with defined type. Domain:#{domain}"
 
-          _scale.domain(domain)
+            _scale.domain(domain)
 
       me.chart().lifeCycle().on "prepareData.#{me.id()}", (data) ->
         # compute the domain range calculation if required

@@ -105,6 +105,8 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
       _allScales.add(scale)
       if layout
         layout.scales().add(scale)
+        if _ownedScales.hasKind(scale.kind())
+          scale.parentScale(_ownedScales.getKind(scale.kind()))
       else
         _ownedScales.add(scale)
       return me
