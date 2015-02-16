@@ -10,7 +10,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
     _domainCalc = undefined
     _calculatedDomain = undefined
     _resetOnNewData = false
-    _property = ''
+    _property = d3.set()
     _layerProp = ''
     _layerExclude = []
     _lowerProperty = ''
@@ -203,6 +203,13 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
     me.parentScale = (val) ->
       if arguments.length is 0 then return _parentScale
       _parentScale = val
+      _parentScale.isParentScale(true)
+      return me
+
+    _isParentScale = false
+    me.isParentScale = (val) ->
+      if arguments.length is 0 then return _isParentScale
+      _isParentScale = val
       return me
 
     #-------------------------------------------------------------------------------------------------------------------
@@ -359,10 +366,18 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
     #--- property related attributes -----------------------------------------------------------------------------------
 
     me.property = (name) ->
-      if arguments.length is 0 then return _property
+      if arguments.length is 0 then return _property.values()
       else
-        _property = name
+        if name
+          me.addProperty(name)
         return me
+
+    me.addProperty = (name) ->
+      if _.isArray(name)
+        for n in name
+          _property.add(n)
+      else
+        _property.add(name)
 
     me.layerProperty = (name) ->
       if arguments.length is 0 then return _layerProp
@@ -377,11 +392,8 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
         return me
 
     me.layerKeys = (data) ->
-      if _property
-        if _.isArray(_property)
-          return _.intersection(_property, keys(data)) # ensure only keys also in the data are returned and $$hashKey is not returned
-        else
-          return [_property] #always return an array !!!
+      if _property.size() > 0
+          return _.intersection(_property.values(), keys(data)) # ensure only keys also in the data are returned and $$hashKey is not returned
       else
         _.reject(keys(data), (d) -> d in _layerExclude)
 
@@ -412,22 +424,17 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
     #--- Core data transformation interface ----------------------------------------------------------------------------
 
     me.value = (data) ->
+      propName = _property.values()[0]
       if _layerProp
-        if _.isArray(data) then data.map((d) -> parsedValue(d[_property][_layerProp])) else parsedValue(data[_property][_layerProp])
+        if _.isArray(data) then data.map((d) -> parsedValue(d[propName][_layerProp])) else parsedValue(data[propName][_layerProp])
       else
-        if _.isArray(data) then data.map((d) -> parsedValue(d[_property])) else parsedValue(data[_property])
+        if _.isArray(data) then data.map((d) -> parsedValue(d[propName])) else parsedValue(data[propName])
 
     me.layerValue = (data, layerKey) ->
       if _layerProp
         parsedValue(data[layerKey][_layerProp])
       else
         parsedValue(data[layerKey])
-
-    me.lowerValue = (data) ->
-      if _.isArray(data) then data.map((d) -> parsedValue(d[_lowerProperty])) else parsedValue(data[_lowerProperty])
-
-    me.upperValue = (data) ->
-      if _.isArray(data) then data.map((d) -> parsedValue(d[_upperProperty])) else parsedValue(data[_upperProperty])
 
     me.formattedValue = (data) ->
       if _.isArray(data) then data.map((d) -> me.formatValue(me.value(d))) else me.formatValue(me.value(data))
@@ -583,7 +590,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
 
     me.axisLabel = (text) ->
       if arguments.length is 0
-        return if _axisLabel then _axisLabel else me.property()
+        return if _axisLabel then _axisLabel else me.property()[0]
       else
         _axisLabel = text
         return me
@@ -634,24 +641,42 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
 
     me.register = () ->
       me.chart().lifeCycle().on "scaleDomains.#{me.id()}", (data) ->
-        if _parentScale
-          #set the scale to the parents scales
-          _scale = _parentScale.scale()
+        if me.parentScale()
+          _scale = me.parentScale().scale()
         else
-          # set the domain if required
           if me.resetOnNewData()
             # ensure robust behavior in case of problematic definitions
             domain = me.getDomain(data)
             if _scaleType is 'linear' and _.some(domain, isNaN)
               throw "Scale #{me.kind()}, Type '#{_scaleType}': cannot compute domain for property '#{_property}' . Possible reasons: property not set, data not compatible with defined type. Domain:#{domain}"
-
             _scale.domain(domain)
 
       me.chart().lifeCycle().on "prepareData.#{me.id()}", (data) ->
         # compute the domain range calculation if required
+        ###
+        ----------------------------------------------------------------------------------------------------------------
+        This is the first life cycle step called when new data is relieved. in this step three steps are performed:
+        - consolidate the property names from child dimensions into the appropriate master
+        - determine the layer keys for the layer dimensions
+        - calculate the domain ranges
+        ----------------------------------------------------------------------------------------------------------------
+        ###
+        # consolidate the properties into the parent dimensions
+        for id, s of me.chart().allScales().getOwned()
+          if s.parentScale()
+            s.parentScale().addProperty(s.property())
+        # determine the layer keys for layer the layer scales
+        # this is done by excluding all properties form other defined scales
+
+        exclude = d3.set()
+        for id, s of me.chart().allScales().getOwned()
+          if s isnt me and s.parentScale() isnt me
+            for p in s.property()
+              exclude.add(p)
+        me.layerExclude(exclude.values())
+        $log.debug me.id(), me.layerExclude()
+
         calcRule =  me.domainCalc()
-        if me.parent().scaleProperties
-          me.layerExclude(me.parent().scaleProperties())
         if calcRule and calcDomain[calcRule]
           _calculatedDomain = calcDomain[calcRule](data)
 

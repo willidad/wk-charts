@@ -84,8 +84,9 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
         duration: if notAnimated then 0 else me.chart().animationDuration()
       }
       args = [data, options]
-      for kind in ['x','y', 'color', 'size', 'shape', 'rangeX', 'rangeY']
-        args.push(_scaleList.getKind(kind))
+      for kind in ['x','y', 'color', 'size', 'shape']
+        scale = _scaleList.getKind(kind)
+        args.push(scale)
       return args
 
     #-------------------------------------------------------------------------------------------------------------------

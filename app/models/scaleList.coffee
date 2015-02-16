@@ -80,11 +80,8 @@ angular.module('wk.chart').factory 'scaleList', ($log) ->
       l = []
       for k,s of me.allKinds()
         prop = s.property()
-        if prop
-          if Array.isArray(prop)
-            l.concat(prop)
-          else
-            l.push(prop)
+        if prop.length > 0
+          l.concat(prop)
       return l
 
     me.layerScale = (kind) ->

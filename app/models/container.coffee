@@ -265,11 +265,16 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       axisRect = {top:{height:0, width:0},bottom:{height:0, width:0},left:{height:0, width:0},right:{height:0, width:0}}
       labelHeight = {top:0 ,bottom:0, left:0, right:0}
       dataLabelRect = {width:0, height:0}
-
+      dataLabels = {}
       for l in _layouts
-        dataLabelHeight = dataLabelWidth = 0
+        if l.showDataLabels()
+          dataLabels[l.showDataLabels()] = true
 
-        for k, s of l.scales().allKinds()
+      #for l in _layouts
+      #  dataLabelHeight = dataLabelWidth = 0
+      for k, s of _chart.allScales().getOwned()
+        if not s.parentScale()
+      #  for k, s of l.scales().allKinds()
           if s.showAxis()
             s.axis().scale(s.scale()).orient(s.axisOrient())  # ensure the axis works on the right scale
             axis = _container.select(".wk-chart-axis.wk-chart-#{s.axisOrient()}")
@@ -288,9 +293,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
 
           # calculate space required for data labels
 
-
-
-          if l.showDataLabels() is k
+          if dataLabels[s.kind()]
             if s.isHorizontal()
               dataLabelWidth = wkChartMargins.dataLabelPadding.hor + measureText(s.formattedValue(data),  _container, 'wk-chart-data-label', l.dataLabelStyle()).width
             else
@@ -313,15 +316,18 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
 
       #--- reset scale ranges and redraw axis with adjusted range ------------------------------------------------------
 
-      for l in _layouts
-        for k, s of l.scales().allKinds()
-          if k is 'x' or k is 'rangeX'
-            if l.showDataLabels() is 'x'
+      for k, s of _chart.allScales().getOwned()
+        if not s.parentScale()
+
+      ##for l in _layouts
+        #for k, s of l.scales().allKinds()
+          if s.kind() is 'x'
+            if dataLabels.x
               s.range(if s.reverse() then  [_innerWidth - dataLabelWidth, 0] else [0, _innerWidth - dataLabelWidth])
             else
               s.range(if s.reverse() then  [_innerWidth, 0] else [0, _innerWidth])
-          else if k is 'y' or k is 'rangeY'
-            if l.showDataLabels() is 'y'
+          else if s.kind() is 'y'
+            if dataLabels.y
               s.range(if s.reverse() then  [dataLabelHeight, _innerHeight ] else [_innerHeight ,dataLabelHeight ])
             else
               s.range(if s.reverse() then  [0, _innerHeight] else [_innerHeight, 0])
