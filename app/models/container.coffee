@@ -274,7 +274,6 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       #  dataLabelHeight = dataLabelWidth = 0
       for k, s of _chart.allScales().getOwned()
         if not s.parentScale()
-      #  for k, s of l.scales().allKinds()
           if s.showAxis()
             s.axis().scale(s.scale()).orient(s.axisOrient())  # ensure the axis works on the right scale
             axis = _container.select(".wk-chart-axis.wk-chart-#{s.axisOrient()}")
@@ -318,9 +317,6 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
 
       for k, s of _chart.allScales().getOwned()
         if not s.parentScale()
-
-      ##for l in _layouts
-        #for k, s of l.scales().allKinds()
           if s.kind() is 'x'
             if dataLabels.x
               s.range(if s.reverse() then  [_innerWidth - dataLabelWidth, 0] else [0, _innerWidth - dataLabelWidth])
@@ -356,8 +352,8 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
 
       #--- finally, draw grid lines
 
-      for l in _layouts
-        for k, s of l.scales().allKinds()
+      for k, s of _chart.allScales().getOwned()
+        if not s.parentScale()
           if s.showAxis() and s.showGrid()
             drawGrid(s)
 
