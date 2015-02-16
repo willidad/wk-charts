@@ -24,7 +24,7 @@ angular.module('wk.chart').factory 'scaleList', ($log) ->
 
     me.hasScale = (scale) ->
       s = me.getKind(scale.kind())
-      return s.id() is scale.id()
+      return s and s.id() is scale.id()
 
     me.getKind = (kind) ->
       if _kindList[kind] then _kindList[kind] else if _parentList.getKind then _parentList.getKind(kind) else undefined

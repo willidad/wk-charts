@@ -105,11 +105,15 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
       _allScales.add(scale)
       if layout
         layout.scales().add(scale)
-        if _ownedScales.hasKind(scale.kind())
-          scale.parentScale(_ownedScales.getKind(scale.kind()))
       else
         _ownedScales.add(scale)
       return me
+
+    me.prepareScaleHierarchy = () ->
+      for id, s of _allScales.getOwned()
+        if not _ownedScales.hasScale(s) and _ownedScales.hasKind(s.kind())
+          if s.axisOrient() is _ownedScales.getKind(s.kind()).axisOrient()
+            s.parentScale(_ownedScales.getKind(s.kind()))
 
     me.animationDuration = (val) ->
       if arguments.length is 0 then return _animationDuration
@@ -166,6 +170,7 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
         _data = data
         _scope.filteredData = data                    # put data on scope so tooltip and legend can access it
         _scope.scales = _allScales
+        me.prepareScaleHierarchy()
         _lifeCycle.prepareData(data, noAnimation)    # calls the registered layout types
         _lifeCycle.animationStartState(data)         # call after prepareData to ensure scales are set up correctly
         _lifeCycle.scaleDomains(data, noAnimation)   # calls registered the scales

@@ -38,7 +38,6 @@ angular.module('wk.chart').directive 'x', ($log, scale, scaleUtils) ->
       me.isHorizontal(true)
       me.register()
       element.addClass(me.id())
-
       chart.addScale(me, layout)
 
       #$log.log "linking scale #{name} id:", me.id(), 'layout:', (if layout then layout.id() else '') , 'chart:', chart.id()
