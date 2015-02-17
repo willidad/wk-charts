@@ -4,22 +4,16 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
   
   #----Setup helpers ---------------------------------------------------------------------------------------------------
 
-  layout = (name, dimensionList, value, layerDimension, properties, decorators) ->
+  layout = (name, layerDimension, properties, decorators) ->
     # generate the layout descriptor object
 
     ret =  {
       name: name
       clazz: 'layout'
-      value: value
       layerDimension: layerDimension
       properties: assign(properties)
       decorators: decorators
-      dimensions:{}
     }
-    dims = dimensionList.trim().split(',')
-    for d in dims
-      ret.dimensions[d.trim()] = {}
-
     return ret
 
   dim = (name, properties, decorators) ->
@@ -105,12 +99,22 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
   
   #---- Decorators -----------------------------------------------------------------------------------------------------
 
+  right = {
+    name: 'right'
+    clazz: 'decorator'
+    key: 'right'
+  }
+
+  top = {
+    name: 'top'
+    clazz: 'decorator'
+    key: 'top'
+  }
+
   tooltips = {
     name: 'tooltips'
     clazz:'decorator'
-    key:'tooltips$set'
-    show: propertyType.bool
-    value: propertyType.bool
+    key:'tooltips'
     properties: {
       tooltipsTemplate:propertyType.string # templateUrl
     }
@@ -119,8 +123,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
   axis = {
     name:'axis'
     clazz:'decorator'
-    key:'axis$set'
-    value: propertyType.enum(['top', 'bottom','left','right'])
+    key:'axis'
     properties: {
       grid: propertyType.bool
       gridStyle: propertyType.object
@@ -159,7 +162,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
   selection = {
     name:'selection'
     clazz:'decorator'
-    key:'selection$set'
+    key:'selection'
     properties: {
       selectedDomain: propertyType.object
       clearSelection: propertyType.callback
@@ -227,35 +230,37 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
   #---------------------------------------------------------------------------------------------------------------------
 
   this.layouts = {
-    line:               layout('line','x,y,color',false,'y', [markers, spline])
-    lineVertical:       layout('lineVertical','x,y,color', false,'x', [markers, spline])
-    area:               layout('area','x,y,color', false, 'x', [markers, spline])
-    areaVertical:       layout('areaVertical','x,y,color', false, 'y', [markers, spline])
-    areaStacked:        layout('areaStacked','x,y,color', false, 'y', [areaStacked, markers, spline])
-    areaStackedVertical:layout('areaStackedVertical','x,y,color', false, 'x', [areaStackedVertical, markers, spline])
-    bars:               layout('bars','x,y,color', false, false, [padding, outerPadding],[labels, selection])
-    barStacked:         layout('barStacked','x,y,color', false, 'x', [padding, outerPadding],[selection])
-    barClustered:       layout('barClustered','x,y,color', false, 'x', [padding, outerPadding],[selection])
-    column:             layout('column','x,y,color', false, false, [padding, outerPadding],[labels, selection])
-    columnStacked:      layout('columnStacked','x,y,color', false, 'y', [padding, outerPadding],[selection])
-    columnClustered:    layout('columnClustered','x,y,color', false, 'y', [padding, outerPadding],[selection])
-    rangeArea:          layout('rangeArea','x,y,color', false, false,[],[selection])
-    rangeAreaVertical:  layout('rangeAreaVertical','x,y,color', false, false,[],[selection])
-    rangeBars:          layout('rangeBars','x,y,color', false, false,[],[labels,selection])
-    rangeColumn:        layout('rangeColumn','x,y,color', false, false,[],[labels,selection])
-    histogram:          layout('histogram','x,y,color', false, false,[],[labels,selection])
-    pie:                layout('pie','size,color', false, false,[donat],[labels,selection])
-    spider:             layout('spider','x,y,color', false, false,[],[selection])
-    bubble:             layout('bubble','x,y,color,size', false, false,[],[selection, brush])
-    scatter:            layout('scatter','x,y,color,size,shape', false, false,[],[selection, brush])
-    geoMap:             layout('geo-map','color',false,false,[geojson,projection],[selection])
+    line:               layout('line','y', [markers, spline])
+    lineVertical:       layout('lineVertical','x', [markers, spline])
+    area:               layout('area', 'x', [markers, spline])
+    areaVertical:       layout('areaVertical', 'y', [markers, spline])
+    areaStacked:        layout('areaStacked', false, 'y', [areaStacked, markers, spline])
+    areaStackedVertical:layout('areaStackedVertical', false, 'x', [areaStackedVertical, markers, spline])
+    bars:               layout('bars', false, [padding, outerPadding],[labels, selection])
+    barStacked:         layout('barStacked', 'x', [padding, outerPadding],[selection])
+    barClustered:       layout('barClustered', 'x', [padding, outerPadding],[selection])
+    column:             layout('column', false, [padding, outerPadding],[labels, selection])
+    columnStacked:      layout('columnStacked', 'y', [padding, outerPadding],[selection])
+    columnClustered:    layout('columnClustered', 'y', [padding, outerPadding],[selection])
+    rangeArea:          layout('rangeArea', false,[],[selection])
+    rangeAreaVertical:  layout('rangeAreaVertical', false,[],[selection])
+    rangeBars:          layout('rangeBars', false,[],[labels,selection])
+    rangeColumn:        layout('rangeColumn', false,[],[labels,selection])
+    histogram:          layout('histogram', false,[],[labels,selection])
+    pie:                layout('pie', false,[donat],[labels,selection])
+    spider:             layout('spider', false,[],[selection])
+    bubble:             layout('bubble', false,[],[selection, brush])
+    scatter:            layout('scatter', false,[],[selection, brush])
+    geoMap:             layout('geo-map',false,[geojson,projection],[selection])
   }
    
   #---------------------------------------------------------------------------------------------------------------------
 
   this.dimension = {
     x: dim('x', [property, base, tickRotation], [axis, brush, brushed])
+    'x top': dim('x top', [property, base, tickRotation], [axis, brush, brushed])
     y: dim('y', [property, base, tickRotation],[axis, brush, brushed])
+    'y right': dim('y right', [property, base, tickRotation],[axis, brush, brushed])
     color: dim('color', [property, base],[legend, valuesLegend])
     size: dim('size', [property, base],[legend, valuesLegend])
     shape: dim('shape', [property, base],[legend, valuesLegend])

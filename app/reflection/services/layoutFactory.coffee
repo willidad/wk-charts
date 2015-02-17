@@ -41,7 +41,7 @@ angular.module('wk.chart').service 'layoutFactory', ($log, dimensionFactory, mod
   ###
   this.generateMarkup = (layoutModel) ->
     markup = ''
-    for layout in layoutModel
+    for name, layout of layoutModel
       dModel = layout.getDescriptor()
       markup += "\n\t<layout"
       if not layout[modelUtils.dashToCamel(dModel.name)]

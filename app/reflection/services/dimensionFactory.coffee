@@ -23,7 +23,7 @@ angular.module('wk.chart').service 'dimensionFactory', ($log, modelUtils, modelT
     markup = ''
     for name, dim of iDimensions
       dModel = dim.getDescriptor()
-      markup += "\n\t\t<#{modelUtils.camelToDash(dModel.name)}"
+      markup += "\n\t\t<#{dModel.name}"
       markup += modelUtils.generateProperties(dModel.properties, dim)
       markup += modelUtils.generateDecorators(dModel.decorators, dim)
       markup += ' />'

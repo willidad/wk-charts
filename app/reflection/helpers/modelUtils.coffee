@@ -39,8 +39,8 @@ angular.module('wk.chart').service 'modelUtils', ($log, $templateCache, modelTyp
 
   this.addDecorator = (deco, _data, me) ->
     _data[deco.name] = {}
-    _data[deco.name + '$set'] = {}
-    this.addProperty(me, _data, deco.name + '$set')
+    _data[deco.key] = {}
+    this.addProperty(me, _data, deco.key)
     if _.has(deco, 'value')
       this.addProperty(me, _data, deco.name)
       if _.isString(deco.value)
@@ -74,7 +74,7 @@ angular.module('wk.chart').service 'modelUtils', ($log, $templateCache, modelTyp
     markup = ''
     if dDecorators
       for deco in dDecorators
-        if iModel[deco.name + '$set']
+        if iModel[deco.key]
           if _.has(deco, 'generator')
             markup += deco.generator(iModel[deco.name])
           else
