@@ -28,7 +28,9 @@ Fix: 19bce28 tooltips cause page to jump - tt reaches outside the viewport and c
 
 Fix: browser crashes if interval is too small limit interval to some reasonable number
 
-Fix: adjust grid when tickInterval is specified
+Fix: d57a198 adjust grid when tickInterval is specified
+
+Fix: Domain not set correctly for y in case y right is specified
 
 TODO
 

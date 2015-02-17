@@ -23,13 +23,22 @@ angular.module('wk.chart').factory 'scaleList', ($log) ->
       return me
 
     me.hasScale = (scale) ->
-      s = me.getKind(scale.kind())
-      return s and s.id() is scale.id()
+      return _list.hasOwnProperty(scale.id())
 
-    me.getKind = (kind) ->
+    me.getKind = (kind, orientation) ->
+      if orientation
+        for id, s of _list
+          if s.kind() is kind and s.orientation() is orientation
+            return s
+        return undefined
       if _kindList[kind] then _kindList[kind] else if _parentList.getKind then _parentList.getKind(kind) else undefined
 
-    me.hasKind = (kind) ->
+    me.hasKind = (kind, orientation) ->
+      if orientation
+        for id, s of _list
+          if s.kind() is kind and s.orientation() is orientation
+            return true
+        return false
       return !!me.getKind(kind)
 
     me.remove = (scale) ->

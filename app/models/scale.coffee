@@ -206,18 +206,17 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
         _layout = val
         return me #to enable chaining
 
-    me.parentScale = (val) ->
-      if arguments.length is 0 then return _parentScale
-      _parentScale = val
-      _parentScale.isParentScale(true)
-      return me
-
     _isParentScale = false
     me.isParentScale = (val) ->
       if arguments.length is 0 then return _isParentScale
       _isParentScale = val
       return me
 
+    me.parentScale = (val) ->
+      if arguments.length is 0 then return _parentScale
+      _parentScale = val
+      _parentScale.isParentScale(true)
+      return me
     #-------------------------------------------------------------------------------------------------------------------
 
     me.scale = () ->
@@ -657,6 +656,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
           if me.resetOnNewData()
             # ensure robust behavior in case of problematic definitions
             domain = me.getDomain(data)
+            $log.log me.id(), domain
             if _scaleType is 'linear' and _.some(domain, isNaN)
               $log.error "Scale #{me.kind()}, Type '#{_scaleType}': cannot compute domain for property '#{_property}' . Possible reasons: property not set, data not compatible with defined type. Domain:#{domain}"
              else
