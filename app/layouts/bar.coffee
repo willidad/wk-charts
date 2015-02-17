@@ -61,11 +61,12 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
       barHeight = y.scale().rangeBand()
       barPadding = barHeight / (1 - config.padding) * config.padding
       barOuterPadding = barHeight / (1 - config.outerPadding) * config.outerPadding
+      $log.log 'barPadding', barPadding, data
 
       offset = (d) ->
         if d.deleted and d.atBorder then return -barPadding / 2
         if d.deleted then return barHeight + barPadding / 2
-        if d.added and d.atBorder then return barHeight + barPadding / 2
+        if d.added and d.atBorder then return -barPadding / 2
         if d.added then return barHeight + barPadding / 2
         return 0
 
@@ -74,7 +75,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
       bars = bars.data(data[0].values, (d, i) -> d.key)
 
       enter = bars.enter().append('g').attr('class','wk-chart-layer')
-        .attr('transform', (d)-> "translate(0, #{y.scale()(d.targetKey)})")
+        .attr('transform', (d)-> "translate(0, #{y.scale()(d.targetKey) + offset(d)})")
 
       enter.append('rect')
         .attr('class', 'wk-chart-rect wk-chart-selectable')

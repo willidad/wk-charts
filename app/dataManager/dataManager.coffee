@@ -40,14 +40,14 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
         else
           # old is not in new, i.e. deleted
           # aOld[iOld is deleted
-          result.push({deleted: true, iOld: iOld, key: aOld[iOld], atBorder: iNew is 0, lowBorder: iNew is 0})
+          result.push({deleted: true, iOld: iOld, key: aOld[iOld], atBorder: true, highBorder: true})
           # console.log('deleted', aOld[iOld]);
           iOld++
 
       while iNew <= lNewMax
         if aOld.indexOf(aNew[iNew]) < 0 # new is not in old
           # aNew[iNew] is added
-          result.push({added: true, iPred: iPred, predKey: aOld[iPred], iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:iOld is 0, lowBorder:iOld is 0})
+          result.push({added: true, iPred: iPred, predKey: aOld[iPred], iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:true, highBorder:true})
           # console.log('added', aNew[iNew]);
           iNew++
         else
@@ -161,7 +161,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
         else
           ret.push({
             added:true,
-            atBorder: atBorder,
+            atBorder: cur.atBorder,
             lowBorder: cur.lowBorder,
             highBorder: cur.highBorder
             targetKey: (if cur.atBorder and not _isOrdinal then cur.key else lastKey),

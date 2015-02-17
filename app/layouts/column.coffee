@@ -64,7 +64,7 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, dataMana
         if d.deleted and d.atBorder then return barWidth
         if d.deleted then return -barPadding / 2
         if d.added and d.atBorder then return  barWidth + barPadding / 2
-        if d.added then return barPadding / 2
+        if d.added then return -barPadding / 2
         return 0
 
       columns = columns.data(data[0].values, (d) -> d.key)
