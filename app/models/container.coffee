@@ -286,9 +286,6 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
               labelHeight[s.axisOrient()] = drawAndPositionText(label, s.axisLabel(), 'wk-chart-label-text wk-chart-' + s.axisOrient(), s.axisLabelStyle());
             else
               label.remove()
-          if s.axisOrientOld() and s.axisOrientOld() isnt s.axisOrient()
-            _removeAxis(s.axisOrientOld())
-            _removeLabel(s.axisOrientOld())
 
           # calculate space required for data labels
 

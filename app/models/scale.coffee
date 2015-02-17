@@ -2,6 +2,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
 
   scale = () ->
     _id = ''
+    _orientation = undefined
     _scale = d3.scale.linear()
     _scaleType = 'linear'
     _exponent = 1
@@ -174,7 +175,12 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
     #-------------------------------------------------------------------------------------------------------------------
 
     me.id = () ->
-      return _kind + '.' + _parent.id()
+      return _kind + '.' + _orientation + '.' + _parent.id()
+
+    me.orientation = (val) ->
+      if arguments.length is 0 then return _orientation
+      _orientation = val
+      return me
 
     me.kind = (kind) ->
       if arguments.length is 0 then return _kind

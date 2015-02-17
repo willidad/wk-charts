@@ -29,6 +29,11 @@ angular.module('wk.chart').directive 'x', ($log, scale, scaleUtils) ->
         $log.error 'scale needs to be contained in a chart or layout directive '
         return
 
+      if attrs.hasOwnProperty('top')
+        me.orientation('top')
+      else
+        me.orientation('bottom')
+
       name = 'x'
       me.kind(name)
       me.parent(layout or chart)
@@ -45,18 +50,6 @@ angular.module('wk.chart').directive 'x', ($log, scale, scaleUtils) ->
       #---Directive Attributes handling --------------------------------------------------------------------------------
 
       scaleUtils.observeSharedAttributes(attrs, me)
-
-      attrs.$observe 'axis', (val) ->
-        if val isnt undefined
-          if val isnt 'false'
-            if val in ['top', 'bottom']
-              me.axisOrient(val).showAxis(true)
-            else
-              me.axisOrient('bottom').showAxis(true)
-          else
-            me.showAxis(false).axisOrient(undefined)
-          me.update(true)
-
       scaleUtils.observeAxisAttributes(attrs, me, scope)
       scaleUtils.observeLegendAttributes(attrs, me, layout)
 

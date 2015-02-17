@@ -90,6 +90,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
   }
   base = {
     type:propertyType.enum(getScaleTypes())
+    dateFormat:propertyType.string
     domain:propertyType.list
     domainMin:propertyType.string
     domainMax:propertyType.string
