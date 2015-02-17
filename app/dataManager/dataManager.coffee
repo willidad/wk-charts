@@ -222,7 +222,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
             highBorder: cur.highBorder
             targetKey: (if cur.atBorder and not _isOrdinal then cur.key else lastKey),
             key:cur.key,
-            data: if cur.atBorder then _dataOld[cur.iOld] else _dataNew[lastNew],
+            data: if cur.deleted then _dataOld[cur.iOld] else _dataNew[lastNew],
             targetData: _dataOld[cur.iOld]
           })
         i--

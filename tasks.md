@@ -34,9 +34,9 @@ Fix: c57e2f8 Domain not set correctly for y in case y right is specified
 
 Fix: a67d0da Chart is not updated on data change
 
-Fix: bar and column chart enter/exit animations wrong
+Fix: 5218efb bar and column chart enter/exit animations wrong
 
-bar and colum: bar switched color on exit animation
+Fix: bar and colum: bar switched color on exit animation
 
 TODO / Features
 
