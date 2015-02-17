@@ -30,6 +30,29 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
           iNew++
         else
           iNew++ # this item exists in aOld, it will be handled with the old-side tests. Just skip it
+
+      while iOld <= lOldMax
+        if (idx = aNew.indexOf(aOld[iOld])) >= 0 # old is also in new (start at iNew since items before have ben considered already
+          result.push({iOld: iOld, iNew: idx,key: aOld[iOld]});
+          iPred = iOld
+          #console.log('same', aOld[iOld]);
+          iOld++
+        else
+          # old is not in new, i.e. deleted
+          # aOld[iOld is deleted
+          result.push({deleted: true, iOld: iOld, key: aOld[iOld], atBorder: iNew is 0, lowBorder: iNew is 0})
+          # console.log('deleted', aOld[iOld]);
+          iOld++
+
+      while iNew <= lNewMax
+        if aOld.indexOf(aNew[iNew]) < 0 # new is not in old
+          # aNew[iNew] is added
+          result.push({added: true, iPred: iPred, predKey: aOld[iPred], iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:iOld is 0, lowBorder:iOld is 0})
+          # console.log('added', aNew[iNew]);
+          iNew++
+        else
+          iNew++ # this item exists in aOld, it will be handled with the old-side tests. Just skip it
+
     else
       while iOld <= lOldMax and iNew <= lNewMax
         if aOld[iOld] is aNew[iNew] # old is also in new
@@ -50,17 +73,17 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
           # console.log('added', aNew[iNew]);
           iNew++
 
-    while iOld <= lOldMax
-      # if there is more old items, mark them as deleted
-      result.push({deleted: true, iOld: iOld, key: aOld[iOld], atBorder:true, highBorder: true});
-      # console.log('deleted', aOld[iOld]);
-      iOld++;
+      while iOld <= lOldMax
+        # if there is more old items, mark them as deleted
+        result.push({deleted: true, iOld: iOld, key: aOld[iOld], atBorder:true, highBorder: true});
+        # console.log('deleted', aOld[iOld]);
+        iOld++;
 
-    while iNew <= lNewMax
-      # if there is more new items, mark them as added
-      result.push({added: true, iPred: iPred, predKey: aOld[iPred], iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:true, highBorder: true });
-      # console.log('added', aNew[iNew]);
-      iNew++;
+      while iNew <= lNewMax
+        # if there is more new items, mark them as added
+        result.push({added: true, iPred: iPred, predKey: aOld[iPred], iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:true, highBorder: true });
+        # console.log('added', aNew[iNew]);
+        iNew++;
 
     # set the deleteSuccessor by traversing form the end
 
@@ -163,7 +186,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
           atBorder: d.atBorder,
           lowBorder: d.lowBorder,
           highBorder: d.highBorder
-          value: if not _isRangeScale then _valueScale.layerValue(d.data, layerKey.key) else {upper:_valueScale.upperValue(d.data), lower:_valueScale.lowerValue(d.data)}
+          value: _valueScale.layerValue(d.data, layerKey.key)
           targetValue: _valueScale.layerValue(d.targetData, layerKey.key)
           data:d.data
       })})
@@ -220,7 +243,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
           atBorder: d.atBorder,
           lowBorder: d.lowBorder,
           highBorder: d.highBorder
-          value: if not _isRangeScale then _valueScale.layerValue(d.data, layerKey.key) else {upper:_valueScale.upperValue(d.data), lower:_valueScale.lowerValue(d.data)}
+          value: if d.deleted then _valueScale.layerValue(d.targetData, layerKey.key) else _valueScale.layerValue(d.data, layerKey.key)
           targetValue: _valueScale.layerValue(d.targetData, layerKey.key)
           data:d.data
         })})

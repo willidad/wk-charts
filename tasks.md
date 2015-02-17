@@ -32,9 +32,11 @@ Fix: d57a198 adjust grid when tickInterval is specified
 
 Fix: c57e2f8 Domain not set correctly for y in case y right is specified
 
-Fix: Chart is not updated on data change
+Fix: a67d0da Chart is not updated on data change
 
-TODO
+bar and column chart enter/exit animations wrong
+
+TODO / Features
 
 change charts to new animation method
 
@@ -60,4 +62,5 @@ Implemented: 6532898 tooltips style object: tooltips attribute `tooltip-style`
 Implemented: f848d7b Allow to specify just domain minimum or domain maximum: dimension attributes `domain-min`, `domain-max`
 Implemented: 715faff Allow to specify a tick interval: axis attribute `tick-interval`. See docu pages for how to specify the interval for time scales
 enable to show marker line independent of tooltips in line and area chart
-implemented: d49f70b separate axis definition from dimension property to allow axis and domain sharing between layouts while allowing separate properties for each layout
+Implemented: d49f70b separate axis definition from dimension property to allow axis and domain sharing between layouts while allowing separate properties for each layout
+enable line chart line styling (dashed lines)

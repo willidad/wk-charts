@@ -66,8 +66,10 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
         if d.deleted and d.atBorder then return -barPadding / 2
         if d.deleted then return barHeight + barPadding / 2
         if d.added and d.atBorder then return barHeight + barPadding / 2
-        if d.added then return -barPadding / 2
+        if d.added then return barHeight + barPadding / 2
         return 0
+
+      $log.debug data[0].values
 
       bars = bars.data(data[0].values, (d, i) -> d.key)
 
@@ -88,9 +90,9 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
         .style('fill', (d) ->  if _colorByKey then color.scale()(d.key) else color.map(d.data))
         .style('stroke', (d) ->  if _colorByKey then color.scale()(d.key) else color.map(d.data))
       (if doAnimate then rect.transition().duration(options.duration) else rect)
-          .attr('height', (d) -> if d.added or d.deleted then 0 else barHeight)
-          .attr('width', (d) -> Math.abs(x.scale()(0) - x.scale()(d.targetValue)))
-          .style('opacity', 1)
+        .attr('height', (d) -> if d.added or d.deleted then 0 else barHeight)
+        .attr('width', (d) -> Math.abs(x.scale()(0) - x.scale()(d.targetValue)))
+        .style('opacity', 1)
 
       bars.exit()
         .remove()
