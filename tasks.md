@@ -30,7 +30,9 @@ Fix: browser crashes if interval is too small limit interval to some reasonable 
 
 Fix: d57a198 adjust grid when tickInterval is specified
 
-Fix: Domain not set correctly for y in case y right is specified
+Fix: c57e2f8 Domain not set correctly for y in case y right is specified
+
+Fix: Chart is not updated on data change
 
 TODO
 
