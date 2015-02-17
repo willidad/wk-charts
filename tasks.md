@@ -28,6 +28,8 @@ Fix: 19bce28 tooltips cause page to jump - tt reaches outside the viewport and c
 
 Fix: browser crashes if interval is too small limit interval to some reasonable number
 
+Fix: adjust grid when tickInterval is specified
+
 TODO
 
 change charts to new animation method

@@ -208,7 +208,11 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
     drawGrid = (s, noAnimation) ->
       duration = if noAnimation then 0 else _duration
       kind = s.kind()
-      ticks = if s.isOrdinal() then s.scale().range() else s.scale().ticks()
+      tickValues = s.axis().tickValues()
+      if not tickValues
+        ticks = if s.isOrdinal() then s.scale().range() else s.scale().ticks()
+      else
+        ticks = tickValues
       offset = if s.isOrdinal() then s.scale().rangeBand() / 2 else 0
       gridLines = _gridArea.selectAll(".wk-chart-grid.wk-chart-#{kind}").data(ticks, (d) -> d)
       gridLines.enter().append('line').attr('class', "wk-chart-grid wk-chart-#{kind}")
