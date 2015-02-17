@@ -59,7 +59,7 @@ angular.module('wk.chart').service 'chartFactory', ($log, modelTypes, dimensionF
         layoutDim = l.dimensions[dimName]
         prop = layoutDim.property
         props = prop.split(',')
-        props.splice(props.indexOf(property))
+        props.splice(props.indexOf(property), 1)
         if props.length > 0
           layoutDim.property = props.join(',')
         else
