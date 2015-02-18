@@ -36,7 +36,15 @@ Fix: a67d0da Chart is not updated on data change
 
 Fix: 5218efb bar and column chart enter/exit animations wrong
 
-Fix: bar and colum: bar switched color on exit animation
+Fix: 10629bf bar and column: bar switched color on exit animation
+
+Fix: stacked bar / column x enter animation wrong
+
+clustered bar category enter animations wrong
+
+clustered bar shuffle animation wrong
+
+range Bars/Columns shuffle wrong
 
 TODO / Features
 

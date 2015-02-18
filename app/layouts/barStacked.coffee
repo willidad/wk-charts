@@ -71,8 +71,8 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig, data
         offset = (d) ->
           if d.deleted and d.atBorder then return -barPadding / 2
           if d.deleted then return barHeight + barPadding / 2
-          if d.added and d.atBorder then return barHeight + barPadding / 2
-          if d.added then return -barPadding / 2
+          if d.added and d.atBorder then return -barPadding / 2
+          if d.added then return barHeight + barPadding / 2
           return 0
 
         layers.enter().append('g').attr('class', "wk-chart-layer")

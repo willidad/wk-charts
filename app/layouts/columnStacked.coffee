@@ -57,12 +57,19 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig, d
 
         barWidth = x.scale().rangeBand()
         barPadding = barWidth / (1 - config.padding) * config.padding
-
+        ###
         offset = (d) ->
           if d.deleted and d.atBorder then return barWidth
           if d.deleted then return -barPadding / 2
           if d.added and d.atBorder then return  barPadding / 2
           if d.added then return barWidth + barPadding / 2
+          return 0
+        ###
+        offset = (d) ->
+          if d.deleted and d.atBorder then return barWidth
+          if d.deleted then return -barPadding / 2
+          if d.added and d.atBorder then return  barWidth + barPadding / 2
+          if d.added then return -barPadding / 2
           return 0
 
         if not layers
