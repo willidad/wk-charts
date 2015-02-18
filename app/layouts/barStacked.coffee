@@ -86,6 +86,7 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig, data
         bars.enter().append('rect').attr('class','wk-chart-rect wk-chart-selectable')
           .style('opacity', 0)
           .attr('fill', (d) -> color.scale()(d.layerKey))
+          .style('opacity', 0)
           .call(_tooltip.tooltip)
           .call(_selected)
 

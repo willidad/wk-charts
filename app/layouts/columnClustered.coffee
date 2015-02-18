@@ -49,6 +49,7 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig,
       #-----------------------------------------------------------------------------------------------------------------
 
       _tooltip = undefined
+      _selected = undefined
       _scaleList = {}
 
       #-----------------------------------------------------------------------------------------------------------------
@@ -103,12 +104,16 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig,
 
         bars.enter().append('rect')
           .attr('class', 'wk-chart-rect wk-chart-selectable')
-          .style('fill', (d) -> color.scale()(d.layerKey)).call(_tooltip.tooltip)
+          .style('fill', (d) -> color.scale()(d.layerKey))
+          .style('opacity', 0)
+          .call(_tooltip.tooltip)
+          .call(_selected)
         (if doAnimate then bars.transition().duration(options.duration) else bars)
           .attr('x', (d) -> x.scale()(d.targetKey) + d.y0 + offset(d))
           .attr('width', (d) -> d.y)
           .attr('height', (d) -> Math.abs(y.scale()(0) - y.scale()(d.targetValue)))
           .attr('y', (d) -> Math.min(y.scale()(0), y.scale()(d.targetValue)))
+          .style('opacity', 1)
 
         bars.exit()
           .remove()
@@ -135,6 +140,7 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig,
         @layerScale('color')
         _tooltip = host.behavior().tooltip
         _tooltip.on "enter.#{_id}", ttHelper.enter
+        _selected = host.behavior().selected
         ttHelper
           .keyScale(_scaleList.x)
           .valueScale(_scaleList.y)
