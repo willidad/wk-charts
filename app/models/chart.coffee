@@ -113,6 +113,14 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
       for id, s of _allScales.getOwned()
         if not _ownedScales.hasScale(s) and ps = _ownedScales.getKind(s.kind(), s.orientation())
           s.parentScale(ps)
+          ps.rangePadding(s.rangePadding())
+          if s.reverse()
+            ps.reverse(true)
+          else
+            if ps.reverse()
+              s.reverse(true)
+
+
 
     me.animationDuration = (val) ->
       if arguments.length is 0 then return _animationDuration

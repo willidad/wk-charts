@@ -359,7 +359,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
       if arguments.length is 0 then return _scale.range()
       else
         _range = range
-        if _isOrdinal and me.kind() in ['x','y', 'rangeX', 'rangeY']
+        if _isOrdinal and me.kind() in ['x','y']
             _scale.rangeBands(range, _rangePadding, _rangeOuterPadding)  # if ordinal, set range only for horizontal and vertical dimensions
         else if not (_scaleType in ['category10', 'category20', 'category20b', 'category20c']) #ordinal scales with pre-et range
           _scale.range(range)
