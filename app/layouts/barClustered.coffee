@@ -35,12 +35,19 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig, da
 
       barPaddingOld = 0
       barOuterPaddingOld = 0
+      barHeight = 0
       config = _.clone(barConfig, true)
 
       xData = dataManagerFactory()
       ttHelper = tooltipHelperFactory()
 
       initial = true
+
+      stack = d3.layout.stack()
+      stack
+        .values((d)-> d.values)
+        .y((d) -> if d.layerDeleted or d.layerAdded or d.deleted or d.added then 0 else barHeight)
+        .x((d) -> d.layerKey)
 
       #-----------------------------------------------------------------------------------------------------------------
 
@@ -56,7 +63,7 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig, da
       #-----------------------------------------------------------------------------------------------------------------
 
       setAnimationStart = (data, options, x, y, color) ->
-        xData.keyScale(y).valueScale(x).data(data)
+        xData.keyScale(y).valueScale(x).data(data, true)
         if not xData.isInitial()
           layoutData = xData.animationStartLayers()
           drawPath.apply(this, [false, layoutData, options, x, y, color])
@@ -71,27 +78,31 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig, da
         barPadding = y.scale().rangeBand() / (1 - config.padding) * config.padding
         barOuterPadding = y.scale().rangeBand() / (1 - config.outerPadding) * config.outerPadding
 
+
+
+
         # map data to the right format for rendering
         layerKeys = data.filter((d) -> not d.added and not d.deleted).map((d) -> d.layerKey)
         clusterHeight = y.scale().rangeBand()
         clusterY = d3.scale.ordinal().domain(layerKeys).rangeBands([0, clusterHeight], 0, 0)
+        barHeight = clusterY.rangeBand()
 
         offset = (d) ->
           if d.deleted and d.atBorder then return -barPadding / 2
           if d.deleted then return clusterHeight + barPadding / 2
-          if d.added and d.atBorder then return clusterHeight + barPadding / 2
-          if d.added then return -barPadding / 2
+          if d.added and d.atBorder then return -barPadding / 2
+          if d.added then return clusterHeight + barPadding / 2
           return 0
 
+        stackLayout = stack(data)
+        $log.log stackLayout
         if not layers
           layers = @selectAll('.wk-chart-layer')
 
-        layers = layers.data(data, (d) -> d.layerKey)
+        layers = layers.data(stackLayout, (d) -> d.layerKey)
 
         layers.enter().append('g')
           .attr('class', 'wk-chart-layer')
-        #(if doAnimate then layers.transition().duration(options.duration) else layers)
-        #  .attr('transform', (d)-> "translate(1,#{clusterY(d.layerKey)})scale(1,#{if d.added or d.deleted then 0 else 1})")
 
         layers.exit()
           .remove()
@@ -106,11 +117,12 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig, da
           .attr('class', 'wk-chart-rect wk-chart-selectable')
           .style('fill', (d) -> color.scale()(d.layerKey)).call(_tooltip.tooltip)
         (if doAnimate then bars.transition().duration(options.duration) else bars)
-          .attr('y', (d) -> y.scale()(d.targetKey) + (if d.added or d.deleted then 0 else clusterY(d.layerKey)) + offset(d))
-          .attr('height', (d) -> if d.layerAdded or d.layerDeleted or d.added or d.deleted then 0 else clusterY.rangeBand())
-          .attr('width', (d) -> Math.abs(x.scale()(d.targetValue or 0 )))
-          .attr('x', (d) -> Math.min(x.scale()(0), x.scale()(d.targetValue or 0)))
-
+          .attr('y', (d) -> y.scale()(d.targetKey) + d.y0 + offset(d))
+          .attr('height', (d) -> d.y)
+          .attr('width', (d) -> Math.abs(x.scale()(d.targetValue) or 0))
+          .attr('x', (d) ->
+            #$log.info d
+            Math.min(x.scale()(0), x.scale()(d.targetValue)))
 
         bars.exit()
           .remove()

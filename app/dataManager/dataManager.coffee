@@ -154,6 +154,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
             targetKey: cur.key,
             data:_dataOld[cur.iOld]
             targetData :_dataOld[cur.iOld]
+            newData:_dataNew[cur.iNew]
           })
           lastKey = cur.key
           lastOld = cur.iOld
@@ -174,20 +175,20 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
 
     me.animationStartLayers = () ->
       series =getMergedStart()
-      return _mergedLayerKeys.map((layerKey) -> {
-        layerKey: if layerKey.iOld is undefined then _layerKeysNew[layerKey.iNew] else layerKey.key,
-        added: layerKey.iOld is undefined,
+      return _mergedLayerKeys.map((layer) -> {
+        layerKey: if layer.iOld is undefined then _layerKeysNew[layer.iNew] else layer.key,
+        added: layer.added,
         values: series.map((d) -> {
           key: d.key,
           targetKey: d.targetKey,
-          layerKey: layerKey.key,
-          layerAdded: layerKey.iOld is undefined,
+          layerKey: layer.key,
+          layerAdded: layer.added,
           added: d.added,
           atBorder: d.atBorder,
           lowBorder: d.lowBorder,
           highBorder: d.highBorder
-          value: _valueScale.layerValue(d.data, layerKey.key)
-          targetValue: _valueScale.layerValue(d.targetData, layerKey.key)
+          value: _valueScale.layerValue(d.data, layer.key)
+          targetValue: if layer.added then _valueScale.layerValue(d.newData, layer.key) else _valueScale.layerValue(d.targetData, layer.key)
           data:d.data
       })})
 
@@ -210,6 +211,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
             targetKey: cur.key,
             data:_dataNew[cur.iNew]
             targetData: _dataNew[cur.iNew]
+            oldData: _dataOld[cur.iOld]
           })
           lastKey = cur.key
           lastNew = cur.iNew
@@ -231,21 +233,23 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
 
     me.animationEndLayers = () ->
       series = getMergedEnd()
-      return _mergedLayerKeys.map((layerKey) -> {
-        layerKey: if layerKey.iNew is undefined then _layerKeysOld[layerKey.iOld] else layerKey.key,
-        deleted:layerKey.iNew is undefined,
-        values: series.map((d) -> {
-          key: d.key,
-          targetKey: d.targetKey,
-          layerKey: layerKey.key,
-          layerDeleted: layerKey.iNew is undefined,
-          deleted:d.deleted,
-          atBorder: d.atBorder,
-          lowBorder: d.lowBorder,
-          highBorder: d.highBorder
-          value: if d.deleted then _valueScale.layerValue(d.targetData, layerKey.key) else _valueScale.layerValue(d.data, layerKey.key)
-          targetValue: _valueScale.layerValue(d.targetData, layerKey.key)
-          data:d.data
+      return _mergedLayerKeys.map((layer) ->
+        return {
+          layerKey: layer.key,
+          deleted:layer.iNew is undefined,
+          values: series.map((d) ->
+            return {
+              key: d.key,
+              targetKey: d.targetKey,
+              layerKey: layer.key,
+              layerDeleted: layer.deleted,
+              deleted:d.deleted,
+              atBorder: d.atBorder,
+              lowBorder: d.lowBorder,
+              highBorder: d.highBorder
+              value: if d.deleted then _valueScale.layerValue(d.targetData, layer.key) else _valueScale.layerValue(d.data, layer.key)
+              targetValue: if layer.deleted then _valueScale.layerValue(d.oldData, layer.key) else _valueScale.layerValue(d.targetData, layer.key)
+              data:d.data
         })})
 
     me.keyScale = (scale) ->

@@ -40,11 +40,11 @@ Fix: 10629bf bar and column: bar switched color on exit animation
 
 Fix: fb2ccda stacked bar / column x enter animation wrong
 
-clustered bar category enter animations wrong
+Fix: clustered bar category enter animations wrong
 
-clustered bar shuffle animation wrong
+Fix: clustered bar shuffle animation wrong
 
-Fix: range Bars/Columns shuffle wrong
+Fix: 08a60d9 range Bars/Columns shuffle wrong
 
 TODO / Features
 

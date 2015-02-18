@@ -79,8 +79,8 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig, data
         layers.exit().remove()
 
         bars = layers.selectAll('.wk-chart-rect')
-        bars = bars.data((d) -> d.values
-          ,
+        bars = bars.data(
+          (d) -> d.values,
           (d) -> d.key.toString() + '|' + d.layerKey.toString()
           )
         bars.enter().append('rect').attr('class','wk-chart-rect wk-chart-selectable')
