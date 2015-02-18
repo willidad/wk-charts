@@ -656,7 +656,6 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
           if me.resetOnNewData()
             # ensure robust behavior in case of problematic definitions
             domain = me.getDomain(data)
-            $log.log me.id(), domain
             if _scaleType is 'linear' and _.some(domain, isNaN)
               $log.error "Scale #{me.kind()}, Type '#{_scaleType}': cannot compute domain for property '#{_property}' . Possible reasons: property not set, data not compatible with defined type. Domain:#{domain}"
              else
@@ -685,7 +684,6 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
             for p in s.property()
               exclude.add(p)
         me.layerExclude(exclude.values())
-        $log.debug me.id(), me.layerExclude()
 
         calcRule =  me.domainCalc()
         if calcRule and calcDomain[calcRule]

@@ -23,13 +23,12 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
           result.push({deleted: true, iOld: iOld, key: aOld[iOld], atBorder: iNew is 0, lowBorder: iNew is 0})
           # console.log('deleted', aOld[iOld]);
           iOld++
-        if aOld.indexOf(aNew[iNew]) < 0 # new is not in old
+        while aOld.indexOf(aNew[iNew]) < 0 and iNew <= lNewMax # new is not in old
           # aNew[iNew] is added
           result.push({added: true, iPred: iPred, predKey: aOld[iPred], iNew: Math.min(iNew,lNewMax), key: aNew[iNew], atBorder:iOld is 0, lowBorder:iOld is 0})
           # console.log('added', aNew[iNew]);
           iNew++
-        else
-          iNew++ # this item exists in aOld, it will be handled with the old-side tests. Just skip it
+        iNew++ # this item exists in aOld, it will be handled with the old-side tests. Just skip it
 
       while iOld <= lOldMax
         if (idx = aNew.indexOf(aOld[iOld])) >= 0 # old is also in new (start at iNew since items before have ben considered already
@@ -99,7 +98,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
         iSucc = cur.iNew
         atBorder = false
       i--
-
+    $log.debug result
     return result
 
   merge = () ->
@@ -236,7 +235,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
       return _mergedLayerKeys.map((layer) ->
         return {
           layerKey: layer.key,
-          deleted:layer.iNew is undefined,
+          deleted:layer.deleted,
           values: series.map((d) ->
             return {
               key: d.key,

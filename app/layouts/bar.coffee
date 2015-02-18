@@ -42,6 +42,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
       xData.keyScale(y).valueScale(x).data(data, true)
       if not xData.isInitial()
         layoutData = xData.animationStartLayers()
+        #$log.debug layoutData
         drawPath.apply(this, [false, layoutData, options, x, y, color])
 
     setAnimationEnd = (data, options, x, y, color) ->
@@ -61,16 +62,22 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
       barHeight = y.scale().rangeBand()
       barPadding = barHeight / (1 - config.padding) * config.padding
       barOuterPadding = barHeight / (1 - config.outerPadding) * config.outerPadding
-      $log.log 'barPadding', barPadding, data
+      #$log.log 'barPadding', barPadding, data
 
       offset = (d) ->
-        if d.deleted and d.atBorder then return -barPadding / 2
-        if d.deleted then return barHeight + barPadding / 2
-        if d.added and d.atBorder then return -barPadding / 2
-        if d.added then return barHeight + barPadding / 2
+        if y.reverse()
+          if d.deleted and d.atBorder then return barHeight + barPadding / 2
+          if d.deleted then return -barPadding / 2
+          if d.added and d.atBorder then return barHeight + barPadding / 2
+          if d.added then return -barPadding / 2
+        else
+          if d.deleted and d.atBorder then return -barPadding / 2
+          if d.deleted then return barHeight + barPadding / 2
+          if d.added and d.atBorder then return -barPadding / 2
+          if d.added then return barHeight + barPadding / 2
         return 0
 
-      $log.debug data[0].values
+      #$log.debug data[0].values
 
       bars = bars.data(data[0].values, (d, i) -> d.key)
 

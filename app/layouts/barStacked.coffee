@@ -39,7 +39,7 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig, data
       stack = d3.layout.stack()
       stack
         .values((d)->d.values)
-        .y((d) -> d.targetValue or 0)
+        .y((d) -> if d.layerAdded or d.layerDeleted then 0 else d.targetValue)
         .x((d) -> d.targetKey)
 
       #-----------------------------------------------------------------------------------------------------------------
