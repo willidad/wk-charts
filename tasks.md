@@ -46,7 +46,7 @@ Fix: eb00f0e clustered bar shuffle animation wrong
 
 Fix: 08a60d9 range Bars/Columns shuffle wrong
 
-Fix: ColumnCluster various, finalize change to new animation method
+Fix: 0ab4151 ColumnCluster various, finalize change to new animation method
 
 TODO / Features
 
