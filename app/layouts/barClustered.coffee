@@ -30,9 +30,6 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig, da
       layers = null
       clusterY = undefined
 
-      _merge = utils.mergeData().key((d) -> d.key)
-      _mergeLayers = utils.mergeData().key((d) -> d.layerKey)
-
       barPaddingOld = 0
       barOuterPaddingOld = 0
       barHeight = 0
@@ -71,9 +68,6 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig, da
 
         barPadding = y.scale().rangeBand() / (1 - config.padding) * config.padding
         barOuterPadding = y.scale().rangeBand() / (1 - config.outerPadding) * config.outerPadding
-
-
-
 
         # map data to the right format for rendering
         layerKeys = data.filter((d) -> not d.added and not d.deleted).map((d) -> d.layerKey)
@@ -114,9 +108,7 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig, da
           .attr('y', (d) -> y.scale()(d.targetKey) + d.y0 + offset(d))
           .attr('height', (d) -> d.y)
           .attr('width', (d) -> Math.abs(x.scale()(d.targetValue) or 0))
-          .attr('x', (d) ->
-            #$log.info d
-            Math.min(x.scale()(0), x.scale()(d.targetValue)))
+          .attr('x', (d) -> Math.min(x.scale()(0), x.scale()(d.targetValue)))
 
         bars.exit()
           .remove()

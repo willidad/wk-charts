@@ -95,7 +95,7 @@ angular.module('wk.chart').constant 'axisConfig', {
 }
 
 angular.module('wk.chart').constant 'd3Animation', {
-  duration:400
+  duration:2000
 }
 
 angular.module('wk.chart').constant 'maxTicks', 200
