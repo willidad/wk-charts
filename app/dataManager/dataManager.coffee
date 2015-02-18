@@ -168,6 +168,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
             key:cur.key,
             data: if cur.atBorder then _dataNew[cur.iNew] else _dataOld[lastOld],
             targetData: _dataNew[cur.iNew]
+            newData:_dataNew[cur.iNew]
           })
         i++
       return ret
@@ -187,7 +188,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
           lowBorder: d.lowBorder,
           highBorder: d.highBorder
           value: _valueScale.layerValue(d.data, layer.key)
-          targetValue: if layer.added then _valueScale.layerValue(d.newData, layer.key) else _valueScale.layerValue(d.targetData, layer.key)
+          targetValue: if layer.added then _valueScale.layerValue(d.newData, layer.key) or 0 else _valueScale.layerValue(d.targetData, layer.key) or 0
           data:d.data
       })})
 
@@ -225,6 +226,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
             key:cur.key,
             data: if cur.deleted then _dataOld[cur.iOld] else _dataNew[lastNew],
             targetData: _dataOld[cur.iOld]
+            oldData: _dataOld[cur.iOld]
           })
         i--
       return ret
@@ -247,7 +249,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
               lowBorder: d.lowBorder,
               highBorder: d.highBorder
               value: if d.deleted then _valueScale.layerValue(d.targetData, layer.key) else _valueScale.layerValue(d.data, layer.key)
-              targetValue: if layer.deleted then _valueScale.layerValue(d.oldData, layer.key) else _valueScale.layerValue(d.targetData, layer.key)
+              targetValue: if layer.deleted then _valueScale.layerValue(d.oldData, layer.key) or 0 else _valueScale.layerValue(d.targetData, layer.key) or 0
               data:d.data
         })})
 

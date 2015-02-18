@@ -28,12 +28,13 @@ Fix: 78b8566 Area Stacked Vertical Brushed: Markers do not move when brushed
 Fix: 78b8566 Area Stacked Vertical Brushed silhouette: Markers do not mve when brushed
 Fix: ce47c91 Bar Clustered Brushed Padding no bars shown when brushing
 Fix: ce47c91 Column Clustered Brushed Padding no bars shown when brushing
+Fix:  Bar w Reverse Y Axis Legend: enter / exit animations start / end at wrong target
 
 
 Open
 ----
 
-Bar w Reverse Y Axis Legend: enter / exit animations start / end at wrong target
+
 Bar Axis New: looks like enter / exit animations do not honor paddings
 Line Ordinal Marker Bug: Line does not interpolate correctly when exit
 Line Scale Bug: Legend does not display correct list (only from left axis

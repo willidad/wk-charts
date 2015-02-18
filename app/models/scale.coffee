@@ -434,12 +434,14 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
 
     me.value = (data) ->
       propName = _property.values()[0]
+      if not data then return undefined
       if _layerProp
         if _.isArray(data) then data.map((d) -> parsedValue(d[propName][_layerProp])) else parsedValue(data[propName][_layerProp])
       else
         if _.isArray(data) then data.map((d) -> parsedValue(d[propName])) else parsedValue(data[propName])
 
     me.layerValue = (data, layerKey) ->
+      if not data then return undefined
       if _layerProp
         parsedValue(data[layerKey][_layerProp])
       else

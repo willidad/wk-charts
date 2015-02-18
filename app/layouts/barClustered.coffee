@@ -67,20 +67,25 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig, da
       drawPath = (doAnimate, data, options, x, y, color) ->
         #$log.info "rendering clustered-bar"
 
-        barPadding = y.scale().rangeBand() / (1 - config.padding) * config.padding
-        barOuterPadding = y.scale().rangeBand() / (1 - config.outerPadding) * config.outerPadding
-
         # map data to the right format for rendering
         layerKeys = data.filter((d) -> not d.added and not d.deleted).map((d) -> d.layerKey)
         clusterHeight = y.scale().rangeBand()
         clusterY = d3.scale.ordinal().domain(layerKeys).rangeBands([0, clusterHeight], 0, 0)
         barHeight = clusterY.rangeBand()
+        barPadding = barHeight / (1 - config.padding) * config.padding
+        barOuterPadding = barHeight / (1 - config.outerPadding) * config.outerPadding
 
         offset = (d) ->
-          if d.deleted and d.atBorder then return -barPadding / 2
-          if d.deleted then return clusterHeight + barPadding / 2
-          if d.added and d.atBorder then return -barPadding / 2
-          if d.added then return clusterHeight + barPadding / 2
+          if y.reverse()
+            if d.deleted and d.atBorder then return clusterHeight + barPadding / 2
+            if d.deleted then return -barPadding / 2
+            if d.added and d.atBorder then return clusterHeight + barPadding / 2
+            if d.added then return -barPadding / 2
+          else
+            if d.deleted and d.atBorder then return -barPadding / 2
+            if d.deleted then return clusterHeight + barPadding / 2
+            if d.added and d.atBorder then return -barPadding / 2
+            if d.added then return clusterHeight + barPadding / 2
           return 0
 
         stackLayout = stack(data)
