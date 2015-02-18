@@ -125,11 +125,12 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig,
       drawBrush = (axis, idxRange) ->
         clusterX.rangeBands([0,axis.scale().rangeBand()], 0, 0)
         height = clusterX.rangeBand()
-        layers
-          .attr('transform',(d) -> "translate(0, #{if (y = axis.scale()(d.key)) >= 0 then x else -1000})")
-          .selectAll('.wk-chart-bar')
-            .attr('height', height)
-            .attr('x', (d) -> clusterX(d.layerKey))
+        bars = this.selectAll(".wk-chart-rect")
+        if axis.isOrdinal()
+          bars
+            .attr('x', (d) -> if (val = axis.scale()(d.targetKey)) >= 0 then val + clusterX(d.layerKey) else -1000)
+            .attr('width', (d) -> height)
+          ttHelper.brushRange(idxRange)
 
       #-------------------------------------------------------------------------------------------------------------------
 

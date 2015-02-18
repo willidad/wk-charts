@@ -107,8 +107,6 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig, d
           .attr('x', (d) -> if (val = axis.scale()(d.key)) >= 0 then val else -1000)
           .attr('width', (d) -> axis.scale().rangeBand())
           ttHelper.brushRange(idxRange)
-        else
-          layers.attr('d', (d) -> area(d.values))
 
       #-----------------------------------------------------------------------------------------------------------------
 
