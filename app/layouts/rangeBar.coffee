@@ -39,7 +39,7 @@ angular.module('wk.chart').directive 'rangeBars', ($log, utils, barConfig, dataM
     #-----------------------------------------------------------------------------------------------------------------
 
     setAnimationStart = (data, options, x, y, color, size) ->
-      xData.keyScale(y).valueScale(x).data(data)
+      xData.keyScale(y).valueScale(x).data(data, true)
       if not xData.isInitial()
         layoutData = xData.animationStartLayers()
         drawPath.apply(this, [false, layoutData, options, x, y, color])
@@ -61,8 +61,8 @@ angular.module('wk.chart').directive 'rangeBars', ($log, utils, barConfig, dataM
       offset = (d) ->
         if d.deleted and d.atBorder then return -barPadding / 2
         if d.deleted then return barHeight + barPadding / 2
-        if d.added and d.atBorder then return barHeight + barPadding / 2
-        if d.added then return -barPadding / 2
+        if d.added and d.atBorder then return -barPadding / 2
+        if d.added then return barHeight + barPadding / 2
         return 0
 
       i = 0
@@ -92,7 +92,7 @@ angular.module('wk.chart').directive 'rangeBars', ($log, utils, barConfig, dataM
         .attr('width', (d) -> Math.abs(x.scale()(d.targetValue) - x.scale()(d.value1)))
         .attr('x', (d) -> x.scale()(d.value1))
         .style('stroke', (d) -> color.scale()(d.layerKey))
-        .style('opacity', (d) -> if d.added or d.deleted then 0 else 1)
+        .style('opacity', 1)
 
       range.exit().remove()
 

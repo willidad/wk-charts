@@ -39,7 +39,7 @@ angular.module('wk.chart').directive 'rangeColumn', ($log, utils, barConfig, dat
     #-----------------------------------------------------------------------------------------------------------------
 
     setAnimationStart = (data, options, x, y, color, size) ->
-      xData.keyScale(x).valueScale(y).data(data)
+      xData.keyScale(x).valueScale(y).data(data, true)
       if not xData.isInitial()
         layoutData = xData.animationStartLayers()
         drawPath.apply(this, [false, layoutData, options, x, y, color])
@@ -61,8 +61,8 @@ angular.module('wk.chart').directive 'rangeColumn', ($log, utils, barConfig, dat
       offset = (d) ->
         if d.deleted and d.atBorder then return barHeight
         if d.deleted then return -barPadding / 2
-        if d.added and d.atBorder then return  barPadding / 2
-        if d.added then return barHeight + barPadding / 2
+        if d.added and d.atBorder then return  barHeight + barPadding / 2
+        if d.added then return -barPadding / 2
         return 0
 
       i = 0
@@ -72,27 +72,27 @@ angular.module('wk.chart').directive 'rangeColumn', ($log, utils, barConfig, dat
         i++
 
       layers = this.selectAll(".wk-chart-layer")
-      .data(data, (d) -> d.layerKey)
+        .data(data, (d) -> d.layerKey)
       layers.enter()
-      .append('g').attr('class','wk-chart-layer')
+        .append('g').attr('class','wk-chart-layer')
 
       range = this.selectAll('.wk-chart-rect')
-      .data(rangeData[0].values, (d) -> d.key)
+        .data(rangeData[0].values, (d) -> d.key)
       range.enter().append('rect')
-      .attr('class','wk-chart-rect')
-      .style('opacity', 0)
-      .style('fill', color.scale()(range[0].layerKey))
-      .call(_tooltip.tooltip)
-      .call(_selected)
-      .attr('transform',(d) -> "translate(#{x.scale()(d.targetKey)})")
+        .attr('class','wk-chart-rect')
+        .style('opacity', 0)
+        .style('fill', color.scale()(range[0].layerKey))
+        .call(_tooltip.tooltip)
+        .call(_selected)
+        .attr('transform',(d) -> "translate(#{x.scale()(d.targetKey)})")
 
       (if doAnimate then range.transition().duration( options.duration) else range)
-      .attr('transform',(d) -> "translate(#{x.scale()(d.targetKey) + offset(d)})")
-      .attr('width', (d) -> if d.added or d.deleted then 0 else barHeight)
-      .attr('height', (d) -> Math.abs(y.scale()(d.targetValue) - y.scale()(d.value1)))
-      .attr('y', (d) -> y.scale()(d.targetValue))
-      .style('stroke', (d) -> color.scale()(d.layerKey))
-      .style('opacity', (d) -> if d.added or d.deleted then 0 else 1)
+        .attr('transform',(d) -> "translate(#{x.scale()(d.targetKey) + offset(d)})")
+        .attr('width', (d) -> if d.added or d.deleted then 0 else barHeight)
+        .attr('height', (d) -> Math.abs(y.scale()(d.targetValue) - y.scale()(d.value1)))
+        .attr('y', (d) -> y.scale()(d.targetValue))
+        .style('stroke', (d) -> color.scale()(d.layerKey))
+        .style('opacity', 1)
 
       range.exit().remove()
 
@@ -101,9 +101,9 @@ angular.module('wk.chart').directive 'rangeColumn', ($log, utils, barConfig, dat
 
     brush = (axis, idxRange) ->
       this.selectAll('.wk-chart-rect')
-      .attr('transform',(d) -> "translate(0, #{if (x = axis.scale()(d.targetKey)) >= 0 then x else -1000})")
-      .selectAll('.wk-chart-rect')
-      .attr('height', (d) -> axis.scale().rangeBand())
+          .attr('transform',(d) -> "translate(0, #{if (x = axis.scale()(d.targetKey)) >= 0 then x else -1000})")
+        .selectAll('.wk-chart-rect')
+          .attr('height', (d) -> axis.scale().rangeBand())
 
     #--- Configuration and registration ------------------------------------------------------------------------------
 
@@ -113,10 +113,10 @@ angular.module('wk.chart').directive 'rangeColumn', ($log, utils, barConfig, dat
       @getKind('x').resetOnNewData(true).rangePadding(config).scaleType('ordinal')
       _tooltip = host.behavior().tooltip
       ttHelper
-      .keyScale(_scaleList.x)
-      .valueScale(_scaleList.y)
-      .colorScale(_scaleList.color)
-      .value((d) -> d.value)
+        .keyScale(_scaleList.x)
+        .valueScale(_scaleList.y)
+        .colorScale(_scaleList.color)
+        .value((d) -> d.value)
       _selected = host.behavior().selected
       _tooltip.on "enter.#{_id}", ttHelper.enter
 

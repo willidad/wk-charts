@@ -38,13 +38,13 @@ Fix: 5218efb bar and column chart enter/exit animations wrong
 
 Fix: 10629bf bar and column: bar switched color on exit animation
 
-Fix: stacked bar / column x enter animation wrong
+Fix: fb2ccda stacked bar / column x enter animation wrong
 
 clustered bar category enter animations wrong
 
 clustered bar shuffle animation wrong
 
-range Bars/Columns shuffle wrong
+Fix: range Bars/Columns shuffle wrong
 
 TODO / Features
 
