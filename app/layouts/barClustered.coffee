@@ -54,12 +54,6 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig, da
       _tooltip = undefined
       _scaleList = {}
 
-      ttEnter = (data) ->
-        ttLayers = data.layers.map((l) -> {name:l.layerKey, value:_scaleList.x.formatValue(l.value), color: {'background-color': l.color}})
-        @headerName = _scaleList.y.axisLabel()
-        @headerValue = _scaleList.y.formatValue(data.key)
-        @layers = @layers.concat(ttLayers)
-
       #-----------------------------------------------------------------------------------------------------------------
 
       setAnimationStart = (data, options, x, y, color) ->
