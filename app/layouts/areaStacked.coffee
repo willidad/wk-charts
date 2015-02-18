@@ -111,7 +111,7 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipHelperF
           .remove()
 
         markers
-          .x((d) -> x.scale()(d.targetKey))
+          .x((d) -> x.scale()(d.targetKey) + if x.isOrdinal() then x.scale().rangeBand() / 2 else 0)
           .y((d) -> scaleY(d.y + d.y0))
           .color((d) -> color.scale()(d.layerKey))
 

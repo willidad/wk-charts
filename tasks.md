@@ -48,6 +48,17 @@ Fix: 08a60d9 range Bars/Columns shuffle wrong
 
 Fix: 0ab4151 ColumnCluster various, finalize change to new animation method
 
+Fix: Area Stacked markers ordinal: Marker offset after brushing incorrect
+Fix: Area Stacked Vertical Brushed: Markers do not move when brushed
+Fix: Area Stacked Vertical Brushed silhouette: Markers do not mve when brushed
+Area Stacked Vertical Brushed silhouette: Tooltip markers are not positioned correctly
+Bar Clustered Brushed Padding no bars shown when brushing
+Column Clustered Brushed Padding no bars shown when brushing
+Bar w Reverse Y Axis Legend: enter / exit animations start / end at wrong target
+Bar Axis New: looks like enter / exit animations do not honor paddings
+Line Ordinal Marker Bug: Line does not interpolate correctly when exit
+Line Scale Bug: Legend does not display correct list (only from left axis
+Custom Template does not work
 TODO / Features
 
 change charts to new animation method
