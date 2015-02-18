@@ -28,8 +28,10 @@ Fix: 78b8566 Area Stacked Vertical Brushed: Markers do not move when brushed
 Fix: 78b8566 Area Stacked Vertical Brushed silhouette: Markers do not mve when brushed
 Fix: ce47c91 Bar Clustered Brushed Padding no bars shown when brushing
 Fix: ce47c91 Column Clustered Brushed Padding no bars shown when brushing
-Fix: 4a9f6ab Bar w Reverse Y Axis Legend: enter / exit animations start / end at wrong target
-Fix:  Bar Axis New: looks like enter / exit animations do not honor paddings / charts w global key axis ignore padding definition
+Fix: 4a9f6ab Bar w Reverse Y Axis Legend: enter / exit animations start / end at wrong target enter / exit animations on reverse charts do not work correctly
+                                                                                                  -> animate to/from wrong target
+
+Fix: 66577ab Bar Axis New: looks like enter / exit animations do not honor paddings / charts w global key axis ignore padding definition
 
 Open
 ----
@@ -39,8 +41,6 @@ Line Scale Bug: Legend does not display correct list (only from left axis
 Area Stacked Vertical Brushed silhouette: Tooltip markers are not positioned correctly
 Dup: Tooltip on non-zero stacked area chart positions markers wrong
 Custom Template does not work
-enter / exit animations on reverse charts do not work correctly
-    -> animate to/from wrong target
 Applying a brush does not work under certain conditions:
     - an entry / exit animation has removed / added entries on the key scale
 
