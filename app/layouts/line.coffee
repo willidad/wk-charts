@@ -27,6 +27,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
       _tooltip = undefined
       _showMarkers = false
       _spline = false
+      _lineStyle = {'stroke-width':1}
       _scaleList = {}
       offset = 0
       _id = 'line' + lineCntr++
@@ -86,6 +87,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
           .attr('d', (d) -> line(d.values))
           .style('opacity', 0)
           .style('pointer-events', 'none')
+          .style(_lineStyle)
           .style('stroke', (d) -> color.scale()(d.layerKey))
 
         if doAnimate
@@ -172,5 +174,14 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
         else
           _spline = false
         host.lifeCycle().update()
+
+      ###*
+        @ngdoc attr
+        @name line#lineStyle
+        @param [lineStyle] {object} - Set the line style for all lines in the layout
+      ###
+      attrs.$observe 'lineStyle', (val) ->
+        if val
+          _lineStyle = scope.$eval(val)
 
   }
