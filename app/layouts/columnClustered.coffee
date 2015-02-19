@@ -77,12 +77,12 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig,
 
         offset = (d) ->
           if x.reverse()
-            if d.deleted and d.atBorder then return barPadding / 2
+            if d.deleted and d.highBorder then return barPadding / 2
             if d.deleted then return clusterWidth + barPadding / 2
             if d.added and d.atBorder then return barPadding / 2
             if d.added then return clusterWidth + barPadding / 2
           else
-            if d.deleted and d.atBorder then return clusterWidth
+            if d.deleted and d.highBorder then return clusterWidth
             if d.deleted then return 0 -barPadding / 2
             if d.added and d.atBorder then return  clusterWidth + barPadding / 2
             if d.added then return 0 -barPadding / 2

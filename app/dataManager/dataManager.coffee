@@ -219,12 +219,12 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
         else
           ret.unshift({
             deleted:true,
-            atBorder: atBorder,
+            atBorder: cur.atBorder,
             lowBorder: cur.lowBorder,
             highBorder: cur.highBorder
             targetKey: (if cur.atBorder and not _isOrdinal then cur.key else lastKey),
             key:cur.key,
-            data: if cur.deleted then _dataOld[cur.iOld] else _dataNew[lastNew],
+            data: _dataNew[lastNew],
             targetData: _dataOld[cur.iOld]
             oldData: _dataOld[cur.iOld]
           })
@@ -248,9 +248,9 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
               atBorder: d.atBorder,
               lowBorder: d.lowBorder,
               highBorder: d.highBorder
-              value: if d.deleted then _valueScale.layerValue(d.targetData, layer.key) else _valueScale.layerValue(d.data, layer.key)
+              value: if d.deleted and d.atBorder then _valueScale.layerValue(d.targetData, layer.key) else _valueScale.layerValue(d.data, layer.key) #if d.deleted then _valueScale.layerValue(d.targetData, layer.key) else _valueScale.layerValue(d.data, layer.key)
               targetValue: if layer.deleted then _valueScale.layerValue(d.oldData, layer.key) or 0 else _valueScale.layerValue(d.targetData, layer.key) or 0
-              data:d.data
+              data:d.targetData
         })})
 
     me.keyScale = (scale) ->

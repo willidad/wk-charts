@@ -66,18 +66,18 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
 
       offset = (d) ->
         if y.reverse()
-          if d.deleted and d.atBorder then return barHeight + barPadding / 2
+          if d.deleted and d.highBorder then return barHeight + barPadding / 2
           if d.deleted then return -barPadding / 2
           if d.added and d.atBorder then return barHeight + barPadding / 2
           if d.added then return -barPadding / 2
         else
-          if d.deleted and d.atBorder then return -barPadding / 2
+          if d.deleted and d.highBorder then return -barPadding / 2
           if d.deleted then return barHeight + barPadding / 2
           if d.added and d.atBorder then return -barPadding / 2
           if d.added then return barHeight + barPadding / 2
         return 0
 
-      #$log.debug data[0].values
+      $log.debug data[0].values
 
       bars = bars.data(data[0].values, (d, i) -> d.key)
 

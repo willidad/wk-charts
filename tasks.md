@@ -31,7 +31,7 @@ Fix: ce47c91 Column Clustered Brushed Padding no bars shown when brushing
 Fix: 4a9f6ab Bar w Reverse Y Axis Legend: enter / exit animations start / end at wrong target enter / exit animations on reverse charts do not work correctly                                                                                                  -> animate to/from wrong target
 Fix: 66577ab Bar Axis New: looks like enter / exit animations do not honor paddings / charts w global key axis ignore padding definition
 Fix: d02ee2b Custom Template does not work
-
+Fix:  Line Ordinal Marker Bug: Line does not interpolate correctly when exit
 
 
 Features Implemented
@@ -52,7 +52,7 @@ Implemented: e06442a enable line chart line styling (dashed lines)
 Open
 ----
 
-Line Ordinal Marker Bug: Line does not interpolate correctly when exit
+
 Line Scale Bug: Legend does not display correct list (only from left axis) Is this a bug or a feature ????
 Area Stacked Vertical Brushed silhouette: Tooltip markers are not positioned correctly
 Dup: Tooltip on non-zero stacked area chart positions markers wrong

@@ -54,6 +54,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
 
       drawPath = (doAnimate, data, options, x, y, color) ->
 
+        $log.debug 'data', data
         offset = if x.isOrdinal() then x.scale().rangeBand() / 2 else 0
         if _tooltip
           _tooltip.data(data)
