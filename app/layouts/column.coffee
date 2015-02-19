@@ -34,6 +34,7 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, dataMana
     ttHelper = tooltipHelperFactory()
     dataLabels = dataLabelFactory()
     _tooltip = undefined
+    _columnStyle = {'stroke-width':1}
 
     #--- Draw --------------------------------------------------------------------------------------------------------
 
@@ -96,6 +97,7 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, dataMana
         .attr('height', (d) -> Math.abs(y.scale()(0) - y.scale()(d.targetValue)))
         .attr('y', (d) -> Math.min(y.scale()(0), y.scale()(d.targetValue)))
         .style('opacity', 1)
+        .style(_columnStyle)
 
       columns.call(dataLabels, doAnimate, host.dataLabelStyle())
 
@@ -183,5 +185,14 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, dataMana
       if val
         host.dataLabelStyle(scope.$eval(val))
       host.lifeCycle().update()
+
+    ###*
+        @ngdoc attr
+        @name column#columnStyle
+        @param [columnStyle] {object} - Set the line style for columns lines in the layout
+      ###
+    attrs.$observe 'columnStyle', (val) ->
+      if val
+        _columnStyle = scope.$eval(val)
 
   }

@@ -245,7 +245,12 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
     _genChartFrame = () ->
       _chartAreaDiv = _elementSelection.append('div').attr('class', 'wk-chart')
       _svg = _chartAreaDiv.append('svg').attr('class', 'wk-chart')
-      _svg.append('defs').append('clipPath').attr('id', "wk-chart-clip-#{_containerId}").append('rect')
+      _defs = _svg.append('defs')
+      _defs.append('clipPath').attr('id', "wk-chart-clip-#{_containerId}").append('rect')
+      _defs.append('pattern').attr({id:'smallDotsPattern', x:0, y:0, width:4, height:4, patternUnits:'userSpaceOnUse'})
+        .append('circle').attr({cx:1, xy:1, r:2, fill:'#ffffff'})
+      _defs.append('mask').attr({id:'smallDots'})
+        .append('rect').attr({x:0, y:0, width:'100%', height:'100%', fill:'url(#smallDotsPattern)'})
       _container= _svg.append('g').attr('class','wk-chart-container')
       _overlay = _container.append('g').attr('class', 'wk-chart-overlay').style('pointer-events', 'all')
       _overlay.append('rect').style('visibility', 'hidden').attr('class', 'wk-chart-background').datum({name:'background'})
