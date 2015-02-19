@@ -30,7 +30,7 @@ Fix: ce47c91 Bar Clustered Brushed Padding no bars shown when brushing
 Fix: ce47c91 Column Clustered Brushed Padding no bars shown when brushing
 Fix: 4a9f6ab Bar w Reverse Y Axis Legend: enter / exit animations start / end at wrong target enter / exit animations on reverse charts do not work correctly                                                                                                  -> animate to/from wrong target
 Fix: 66577ab Bar Axis New: looks like enter / exit animations do not honor paddings / charts w global key axis ignore padding definition
-
+Fix:  Custom Template does not work
 
 
 
@@ -47,16 +47,16 @@ Implemented: 6532898 tooltips style object: tooltips attribute `tooltip-style`
 Implemented: f848d7b Allow to specify just domain minimum or domain maximum: dimension attributes `domain-min`, `domain-max`
 Implemented: 715faff Allow to specify a tick interval: axis attribute `tick-interval`. See docu pages for how to specify the interval for time scales
 Implemented: d49f70b separate axis definition from dimension property to allow axis and domain sharing between layouts while allowing separate properties for each layout
-Implemented:  enable line chart line styling (dashed lines)
+Implemented: e06442a enable line chart line styling (dashed lines)
 
 Open
 ----
 
 Line Ordinal Marker Bug: Line does not interpolate correctly when exit
-Line Scale Bug: Legend does not display correct list (only from left axis
+Line Scale Bug: Legend does not display correct list (only from left axis) Is this a bug or a feature ????
 Area Stacked Vertical Brushed silhouette: Tooltip markers are not positioned correctly
 Dup: Tooltip on non-zero stacked area chart positions markers wrong
-Custom Template does not work
+
 Applying a brush does not work under certain conditions:
     - an entry / exit animation has removed / added entries on the key scale
 

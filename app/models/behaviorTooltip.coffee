@@ -51,7 +51,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       })
       _templScope.$apply()  # ensure tooltip gets rendered and size attributes get set correctly
 
-      _.throttle positionBox, 200 #wait until it is rendered and then reposition
+      #_.throttle positionBox, 200 #wait until it is rendered and then reposition
 
     #--- TooltipStart Event Handler ------------------------------------------------------------------------------------
 
@@ -102,15 +102,16 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
     tooltipMove = () ->
       if not _active or _hide then return
       _pos = d3.mouse(_area)
-      positionBox()
+
       if _showMarkerLine
         keyValue = _markerScale.invert(if _markerScale.isHorizontal() then _pos[0] else _pos[1])
         dataObj = _markerScale.find(keyValue)
         _tooltipDispatch.moveMarker.apply(_markerG, [keyValue, dataObj])
         _templScope.layers = []
-        _templScope.ttData = me.data()[dataObj]
+        _templScope.ttData = dataObj
         _tooltipDispatch.moveData.apply(_templScope, [keyValue, dataObj])
-      _templScope.$apply()
+      #_templScope.$apply()
+      positionBox()
 
     #--- TooltipLeave Event Handler ------------------------------------------------------------------------------------
 
@@ -169,7 +170,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         if _path.length > 0
           _customTempl = $templateCache.get(_path)
           # wrap template into positioning div
-          _templ = "<div class=\"wk-chart-tooltip\" ng-style=\"position\">#{_customTempl}</div>"
+          _templ = "<div class=\"wk-chart-tooltip\" ng-style=\"tooltipStyle\">#{_customTempl}</div>"
 
         return me
 
