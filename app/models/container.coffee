@@ -247,10 +247,22 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       _svg = _chartAreaDiv.append('svg').attr('class', 'wk-chart')
       _defs = _svg.append('defs')
       _defs.append('clipPath').attr('id', "wk-chart-clip-#{_containerId}").append('rect')
-      _defs.append('pattern').attr({id:'smallDotsPattern', x:0, y:0, width:4, height:4, patternUnits:'userSpaceOnUse'})
-        .append('circle').attr({cx:1, xy:1, r:2, fill:'#ffffff'})
+
+      _defs.append('pattern').attr({id:'largeDotsPattern', x:0, y:0, width:12, height:12, patternUnits:'userSpaceOnUse'})
+        .append('circle').attr({cx:5, cy:5, r:5, fill:'#ffffff'})
+      _defs.append('mask').attr({id:'largeDots'})
+        .append('rect').attr({x:0, y:0, width:'100%', height:'100%', fill:'url(#largeDotsPattern)'})
+
+      _defs.append('pattern').attr({id:'smallDotsPattern', x:0, y:0, width:5, height:5, patternUnits:'userSpaceOnUse'})
+        .append('circle').attr({cx:2, cy:2, r:2, fill:'#ffffff'})
       _defs.append('mask').attr({id:'smallDots'})
         .append('rect').attr({x:0, y:0, width:'100%', height:'100%', fill:'url(#smallDotsPattern)'})
+
+      _defs.append('pattern').attr({id:'stripesPattern', x:0, y:0, width:4, height:4, patternTransform:'rotate(45)', patternUnits:'userSpaceOnUse'})
+        .append('rect').attr({width:2, height:4, fill:'#ffffff'})
+      _defs.append('mask').attr({id:'stripes'})
+        .append('rect').attr({x:0, y:0, width:'100%', height:'100%', fill:'url(#stripesPattern)'})
+
       _container= _svg.append('g').attr('class','wk-chart-container')
       _overlay = _container.append('g').attr('class', 'wk-chart-overlay').style('pointer-events', 'all')
       _overlay.append('rect').style('visibility', 'hidden').attr('class', 'wk-chart-background').datum({name:'background'})
