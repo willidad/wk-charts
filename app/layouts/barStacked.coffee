@@ -31,6 +31,7 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig, data
       _tooltip = undefined
       _scaleList = {}
       _selected = undefined
+      _barStyle = {}
 
       config = _.clone(barConfig, true)
 
@@ -95,6 +96,9 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig, data
           .style('opacity', 0)
           .call(_tooltip.tooltip)
           .call(_selected)
+
+        bars
+          .style(_barStyle)
 
         (if doAnimate then bars.transition().duration(options.duration) else bars)
           .attr('x', (d) -> x.scale()(d.y0))
@@ -165,4 +169,13 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig, data
               config.outerPadding = values[1]/100
         _scaleList.y.rangePadding(config)
         host.lifeCycle().update()
+
+      ###*
+        @ngdoc attr
+        @name barStacked#barStyle
+        @param [barsStyle] {object} - Set the line style for columns lines in the layout
+      ###
+      attrs.$observe 'barStyle', (val) ->
+        if val
+          _barStyle = scope.$eval(val)
   }

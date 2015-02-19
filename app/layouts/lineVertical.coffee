@@ -34,6 +34,7 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelper
 
       layoutData = undefined
       line = undefined
+      _lineStyle = {}
 
       xData = dataManagerFactory()
       markers = markerFactory()
@@ -90,10 +91,12 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelper
 
         if doAnimate
           layers.select('.wk-chart-line').attr('transform', "translate(0,#{offset})")
+          .style(_lineStyle)
           .transition().duration( options.duration)
           .call(drawLines)
         else
           layers.select('.wk-chart-line').attr('transform', "translate(0,#{offset})")
+          .style(_lineStyle)
           .call(drawLines)
 
         layers.exit()
@@ -172,4 +175,13 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelper
         else
           _spline = false
         host.lifeCycle().update()
+
+      ###*
+        @ngdoc attr
+        @name lineVertical#lineStyle
+        @param [lineStyle] {object} - Set the line style for all lines in the layout
+      ###
+      attrs.$observe 'lineStyle', (val) ->
+        if val
+          _lineStyle = scope.$eval(val)
   }

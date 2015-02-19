@@ -26,6 +26,7 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig, d
       _id = "stackedColumn#{stackedColumnCntr++}"
 
       layers = null
+      _columnStyle = {}
 
       _tooltip = undefined
       _scaleList = {}
@@ -89,6 +90,9 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig, d
           .attr('fill', (d) -> color.scale()(d.layerKey))
           .call(_tooltip.tooltip)
           .call(_selected)
+
+        bars
+          .style(_columnStyle)
 
         (if doAnimate then bars.transition().duration(options.duration) else bars)
           .attr('y', (d) -> y.scale()(d.y0  + d.y))
@@ -159,4 +163,13 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig, d
               config.outerPadding = values[1]/100
         _scaleList.x.rangePadding(config)
         host.lifeCycle().update()
+
+      ###*
+        @ngdoc attr
+        @name columnStacked#columnStyle
+        @param [columnStyle] {object} - Set the line style for columns lines in the layout
+      ###
+      attrs.$observe 'columnStyle', (val) ->
+        if val
+          _columnStyle = scope.$eval(val)
   }

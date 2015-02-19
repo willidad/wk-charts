@@ -28,6 +28,7 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig, da
       _id = "clusteredBar#{clusteredBarCntr++}"
 
       layers = null
+      _barStyle = {}
       clusterY = undefined
 
       barPaddingOld = 0
@@ -114,6 +115,9 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig, da
           .call(_tooltip.tooltip)
           .call(_selected)
 
+        bars
+          .style(_barStyle)
+
         (if doAnimate then bars.transition().duration(options.duration) else bars)
           .attr('y', (d) -> y.scale()(d.targetKey) + d.y0 + offset(d))
           .attr('height', (d) -> d.y)
@@ -189,5 +193,14 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig, da
               config.outerPadding = values[1]/100
         _scaleList.y.rangePadding(config)
         host.lifeCycle().update()
+
+      ###*
+        @ngdoc attr
+        @name barClustered#barsStyle
+        @param [barStyle] {object} - Set the line style for columns lines in the layout
+      ###
+      attrs.$observe 'barStyle', (val) ->
+        if val
+          _barStyle = scope.$eval(val)
   }
 

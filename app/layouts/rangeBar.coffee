@@ -24,6 +24,8 @@ angular.module('wk.chart').directive 'rangeBars', ($log, utils, barConfig, dataM
 
     _id = "rangebars#{sBarCntr++}"
 
+    _barStyle = {}
+
     _tooltip = undefined
     _selected = undefined
     _scaleList = {}
@@ -85,6 +87,9 @@ angular.module('wk.chart').directive 'rangeBars', ($log, utils, barConfig, dataM
         .call(_tooltip.tooltip)
         .call(_selected)
         .attr('transform',(d) -> "translate(0, #{y.scale()(d.targetKey)})")
+
+      range
+        .style(_barStyle)
 
       (if doAnimate then range.transition().duration( options.duration) else range)
         .attr('transform',(d) -> "translate(0, #{y.scale()(d.targetKey) + offset(d)})")
@@ -170,4 +175,13 @@ angular.module('wk.chart').directive 'rangeBars', ($log, utils, barConfig, dataM
       else if val is 'true' or val is ""
         host.showDataLabels('x')
       host.lifeCycle().update()
+
+    ###*
+      @ngdoc attr
+      @name rangeBars#barStyle
+      @param [barStyle] {object} - Set the line style for columns lines in the layout
+    ###
+    attrs.$observe 'barStyle', (val) ->
+      if val
+        _barStyle = scope.$eval(val)
   }

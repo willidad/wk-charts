@@ -29,6 +29,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
     barOuterPaddingOld = 0
     _scaleList = {}
     _selected = undefined
+    _barStyle = {}
     config = _.clone(barConfig, true)
 
     xData = dataManagerFactory()
@@ -97,6 +98,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
       rect = bars.select('rect')
         .style('fill', (d) ->  if _colorByKey then color.scale()(d.key) else color.map(d.data))
         .style('stroke', (d) ->  if _colorByKey then color.scale()(d.key) else color.map(d.data))
+        .style(_barStyle)
       (if doAnimate then rect.transition().duration(options.duration) else rect)
         .attr('height', (d) -> if d.added or d.deleted then 0 else barHeight)
         .attr('width', (d) -> Math.abs(x.scale()(0) - x.scale()(d.targetValue)))
@@ -189,4 +191,13 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
       if val
         host.dataLabelStyle(scope.$eval(val))
       host.lifeCycle().update()
+
+    ###*
+        @ngdoc attr
+        @name bars#barStyle
+        @param [barsStyle] {object} - Set the line style for columns lines in the layout
+      ###
+    attrs.$observe 'barStyle', (val) ->
+      if val
+        _barStyle = scope.$eval(val)
   }

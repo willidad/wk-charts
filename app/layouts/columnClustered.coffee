@@ -27,6 +27,8 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig,
 
       _id = "clusteredColumn#{clusteredColumnCntr++}"
 
+      _columnStyle = {}
+
       layers = null
       clusterX = undefined
 
@@ -113,6 +115,10 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig,
           .style('opacity', 0)
           .call(_tooltip.tooltip)
           .call(_selected)
+
+        bars
+          .style(_columnStyle)
+
         (if doAnimate then bars.transition().duration(options.duration) else bars)
           .attr('x', (d) -> x.scale()(d.targetKey) + d.y0 + offset(d))
           .attr('width', (d) -> d.y)
@@ -160,12 +166,12 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig,
 
       ###*
         @ngdoc attr
-        @name barClustered#padding
+        @name columnClustered#padding
         @values true, false, [padding, outerPadding]
         @param [padding=true] {boolean | list}
-      * Defines the inner and outer padding between the bars.
+      * Defines the inner and outer padding between the columns.
       *
-      * `padding` and `outerPadding` are measured in % of the total bar space occupied, i.e. a padding of 20 implies a bar height of 80%, padding 50 implies bar and space have the same size.
+      * `padding` and `outerPadding` are measured in % of the total column space occupied, i.e. a padding of 20 implies a bar height of 80%, padding 50 implies bar and space have the same size.
       *
       * `padding` is 10, `outerPadding` is 0 unless explicitly specified differently.
       *
@@ -188,5 +194,14 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig,
               config.outerPadding = values[1]/100
         _scaleList.y.rangePadding(config)
         host.lifeCycle().update()
+
+      ###*
+        @ngdoc attr
+        @name columnClustered#columnStyle
+        @param [columnStyle] {object} - Set the line style for columns lines in the layout
+      ###
+      attrs.$observe 'columnStyle', (val) ->
+        if val
+          _columnStyle = scope.$eval(val)
   }
 

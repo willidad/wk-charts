@@ -88,15 +88,16 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
           .attr('d', (d) -> line(d.values))
           .style('opacity', 0)
           .style('pointer-events', 'none')
-          .style(_lineStyle)
           .style('stroke', (d) -> color.scale()(d.layerKey))
 
         if doAnimate
           layers.select('.wk-chart-line').attr('transform', "translate(#{offset})")
+            .style(_lineStyle)
             .transition().duration( options.duration)
             .call(drawLines)
         else
           layers.select('.wk-chart-line').attr('transform', "translate(#{offset})")
+            .style(_lineStyle)
             .call(drawLines)
 
         layers.exit()
