@@ -32,7 +32,7 @@ Fix: 4a9f6ab Bar w Reverse Y Axis Legend: enter / exit animations start / end at
 Fix: 66577ab Bar Axis New: looks like enter / exit animations do not honor paddings / charts w global key axis ignore padding definition
 Fix: d02ee2b Custom Template does not work
 Fix: 2114aba Line Ordinal Marker Bug: Line does not interpolate correctly when exit
-
+Fix: line vertical does not show markers with time scale (non-ordinal scale)
 
 Features Implemented
 --------------------
@@ -49,6 +49,7 @@ Implemented: 715faff Allow to specify a tick interval: axis attribute `tick-inte
 Implemented: d49f70b separate axis definition from dimension property to allow axis and domain sharing between layouts while allowing separate properties for each layout
 Implemented: e06442a enable line chart line styling (dashed lines)
 Implemented: 4f14cf2 Patterns for line, bar, column and range(bar/column) charts
+Implemented: a9bc925 Patterns for pie, range area charts
 
 Open
 ----
