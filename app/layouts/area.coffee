@@ -27,6 +27,7 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
       _tooltip = undefined
       _scaleList = {}
       _showMarkers = false
+      _areaStyle = false
       _spline = false
       offset = 0
       _id = 'area' + lineCntr++
@@ -79,9 +80,10 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
 
         path = layers.select('.wk-chart-area-path')
           .attr('transform', "translate(#{offset})")
+          .style(_areaStyle)
+          .style('stroke', (d) -> color.scale()(d.layerKey))
         path = if doAnimate then path.transition().duration( options.duration) else path
         path.attr('d', (d) -> area(d.values))
-          .style('stroke', (d) -> color.scale()(d.layerKey))
           .style('opacity', (d) -> if d.added or d.deleted then 0 else 1)
           #.style('pointer-events', 'none')
         layers.exit()
@@ -153,5 +155,14 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
         else
           _spline = false
         host.lifeCycle().update()
+
+      ###*
+        @ngdoc attr
+        @name area#areaStyle
+        @param [areaStyle] {object} - Set the pie style for columns lines in the layout
+      ###
+      attrs.$observe 'areaStyle', (val) ->
+        if val
+          _areaStyle = scope.$eval(val)
 
   }

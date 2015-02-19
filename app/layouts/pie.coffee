@@ -29,6 +29,7 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
     outer = undefined
     labels = undefined
     _labelStyle = undefined
+    _pieStyle = undefined
     pieBox = undefined
     polyline = undefined
     _scaleList = []
@@ -111,6 +112,7 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
         #.attr('transform', "translate(#{options.width / 2},#{options.height / 2})")
         .transition().duration(options.duration)
           .style('opacity', 1)
+          .style(_pieStyle)
           .attrTween('d',arcTween)
 
       inner.exit().datum((d) ->  {startAngle:_merge.deletedSucc(d).startAngle, endAngle:_merge.deletedSucc(d).startAngle})
@@ -151,7 +153,7 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
               d2 = interpolate(t)
               return if midAngle(d2) < Math.PI then  "start" else "end"
             )
-          
+
         labels.exit()
           .transition().duration(options.duration).style('opacity',0).remove()
 
@@ -249,5 +251,13 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
         layout.dataLabelStyle(scope.$eval(val))
       layout.lifeCycle().update()
 
+    ###*
+      @ngdoc attr
+      @name pie#pieStyle
+      @param [pieStyle] {object} - Set the pie style for columns lines in the layout
+    ###
+    attrs.$observe 'pieStyle', (val) ->
+      if val
+        _pieStyle = scope.$eval(val)
+
   }
-  #TODO verify behavior with custom tooltips

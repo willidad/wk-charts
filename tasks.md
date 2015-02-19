@@ -48,6 +48,7 @@ Implemented: f848d7b Allow to specify just domain minimum or domain maximum: dim
 Implemented: 715faff Allow to specify a tick interval: axis attribute `tick-interval`. See docu pages for how to specify the interval for time scales
 Implemented: d49f70b separate axis definition from dimension property to allow axis and domain sharing between layouts while allowing separate properties for each layout
 Implemented: e06442a enable line chart line styling (dashed lines)
+Implemented: 4f14cf2 Patterns for line, bar, column and range(bar/column) charts
 
 Open
 ----

@@ -29,6 +29,7 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelper
       _scaleList = {}
       _spline = false
       _showMarkers = false
+      _areaStyle = {}
       offset = 0
       area = undefined
       _id = 'areaVertical' + lineCntr++
@@ -81,12 +82,14 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelper
 
         path = layers.select('.wk-chart-area-path')
           .attr('transform', "translate(0,#{offset})rotate(-90)") #rotate and position chart
-
-        path = if doAnimate then path.transition().duration( options.duration) else path
-        path.attr('d', (d) -> area(d.values))
+          .style(_areaStyle)
           .style('stroke', (d) -> color.scale()(d.layerKey))
-          .style('opacity', (d) -> if d.added or d.deleted then 0 else 1)
+          .style('fill', (d) -> color.scale()(d.layerKey))
           .style('pointer-events', 'none')
+        path = if doAnimate then path.transition().duration( options.duration) else path
+        path
+          .attr('d', (d) -> area(d.values))
+          .style('opacity', (d) -> if d.added or d.deleted then 0 else 1)
 
         layers.exit()
           .remove()
@@ -159,4 +162,13 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelper
         else
           _spline = false
         host.lifeCycle().update()
+
+      ###*
+        @ngdoc attr
+        @name areaVertical#areaStyle
+        @param [areaStyle] {object} - Set the pie style for columns lines in the layout
+      ###
+      attrs.$observe 'areaStyle', (val) ->
+        if val
+          _areaStyle = scope.$eval(val)
     }

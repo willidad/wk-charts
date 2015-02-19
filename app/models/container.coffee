@@ -355,6 +355,8 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
 
       _spacedContainer = _container.attr('transform', "translate(#{leftMargin}, #{topMargin})")
       _svg.select("#wk-chart-clip-#{_containerId} rect").attr('width', _innerWidth).attr('height', _innerHeight)
+      _maxDim = Math.max(_innerWidth, _innerHeight)
+      _svg.selectAll('defs>mask>rect').attr({'x':-_maxDim, y:-_maxDim, height:_maxDim * 2, width: _maxDim * 2}) # tricky. need to ensure that mask is big enough to cover area vertical before translation
       _spacedContainer.select('.wk-chart-overlay>.wk-chart-background').attr('width', _innerWidth).attr('height', _innerHeight)
       _spacedContainer.select('.wk-chart-area').style('clip-path', "url(#wk-chart-clip-#{_containerId})")
 

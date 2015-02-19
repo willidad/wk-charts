@@ -33,6 +33,7 @@ angular.module('wk.chart').directive 'rangeArea', ($log, utils, dataManagerFacto
     area = undefined
     layoutData = undefined
     _initialOpacity = 0
+    _areaStyle = {}
 
     xData = dataManagerFactory()
     markers = markerFactory()
@@ -88,11 +89,13 @@ angular.module('wk.chart').directive 'rangeArea', ($log, utils, dataManagerFacto
         .style('fill', (d) -> color.scale()(d.layerKey))
         .attr('transform', "translate(#{offset})")
 
+      range
+        .style('stroke', (d) -> color.scale()(d.layerKey))
+        .style('pointer-events', 'none')
+        .style(_areaStyle)
       (if doAnimate then range.transition().duration( options.duration) else range)
         .attr('d', (d) -> area(d.values))
-        .style('stroke', (d) -> color.scale()(d.layerKey))
         .style('opacity', (d) -> if d.added or d.deleted then 0 else 1)
-        .style('pointer-events', 'none')
 
       range.exit().remove()
 
@@ -165,4 +168,13 @@ angular.module('wk.chart').directive 'rangeArea', ($log, utils, dataManagerFacto
       else
         _spline = false
       host.lifeCycle().update()
+
+    ###*
+        @ngdoc attr
+        @name rangeArea#areaStyle
+        @param [areaStyle] {object} - Set the pie style for columns lines in the layout
+      ###
+    attrs.$observe 'areaStyle', (val) ->
+      if val
+        _areaStyle = scope.$eval(val)
   }

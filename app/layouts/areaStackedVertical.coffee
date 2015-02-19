@@ -26,6 +26,7 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
       offset = 'zero'
       layers = null
       _showMarkers = false
+      _areaStyle = {}
       _spline = false
       stackLayout = []
       area = undefined
@@ -96,6 +97,7 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
         pathLayers = layers.select('.wk-chart-area-path')
           .style('fill', (d, i) -> color.scale()(d.layerKey))
           .style('stroke', (d, i) -> color.scale()(d.layerKey))
+          .style(_areaStyle)
           .attr('transform', "translate(#{offs})rotate(-90)")
 
         updLayers = if doAnimate then pathLayers.transition().duration(options.duration) else pathLayers
@@ -193,4 +195,13 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
         else
           _spline = false
         host.lifeCycle().update()
+
+      ###*
+        @ngdoc attr
+        @name areaStackedVertical#areaStyle
+        @param [areaStyle] {object} - Set the pie style for columns lines in the layout
+      ###
+      attrs.$observe 'areaStyle', (val) ->
+        if val
+          _areaStyle = scope.$eval(val)
   }
