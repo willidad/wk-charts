@@ -31,7 +31,7 @@ Fix: ce47c91 Column Clustered Brushed Padding no bars shown when brushing
 Fix: 4a9f6ab Bar w Reverse Y Axis Legend: enter / exit animations start / end at wrong target enter / exit animations on reverse charts do not work correctly                                                                                                  -> animate to/from wrong target
 Fix: 66577ab Bar Axis New: looks like enter / exit animations do not honor paddings / charts w global key axis ignore padding definition
 Fix: d02ee2b Custom Template does not work
-Fix:  Line Ordinal Marker Bug: Line does not interpolate correctly when exit
+Fix: 2114aba Line Ordinal Marker Bug: Line does not interpolate correctly when exit
 
 
 Features Implemented
