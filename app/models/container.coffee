@@ -28,6 +28,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
     _overlay = undefined
     _behavior = undefined
     _duration = 0
+    drawPadding = 5
 
     #--- Getter/Setter Functions ---------------------------------------------------------------------------------------
 
@@ -222,8 +223,8 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       if kind is 'y'
         gridLines.transition().duration(duration)
           .attr({
-            x1:0,
-            x2: _innerWidth,
+            x1: drawPadding,
+            x2: _innerWidth - drawPadding * 2,
             y1:(d) -> if s.isOrdinal() then d + offset else s.scale()(d),
             y2:(d) -> if s.isOrdinal() then d + offset else s.scale()(d)
           })
@@ -231,8 +232,8 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       else
         gridLines.transition().duration(duration)
           .attr({
-            y1:0,
-            y2: _innerHeight,
+            y1: drawPadding,
+            y2: _innerHeight - drawPadding * 2,
             x1:(d) -> if s.isOrdinal() then d + offset else s.scale()(d),
             x2:(d) -> if s.isOrdinal() then d + offset else s.scale()(d)
           })
@@ -332,19 +333,20 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
         _innerWidth = 0
 
       #--- reset scale ranges and redraw axis with adjusted range ------------------------------------------------------
+      # adjust with ahd hight with padding required for markers
 
       for k, s of _chart.allScales().getOwned()
         if not s.parentScale()
           if s.kind() is 'x'
             if dataLabels.x
-              s.range(if s.reverse() then  [_innerWidth - dataLabelWidth, 0] else [0, _innerWidth - dataLabelWidth])
+              s.range(if s.reverse() then  [_innerWidth - drawPadding - dataLabelWidth, drawPadding] else [drawPadding, _innerWidth - drawPadding- dataLabelWidth])
             else
-              s.range(if s.reverse() then  [_innerWidth, 0] else [0, _innerWidth])
+              s.range(if s.reverse() then  [_innerWidth - drawPadding, drawPadding] else [drawPadding, _innerWidth - drawPadding])
           else if s.kind() is 'y'
             if dataLabels.y
-              s.range(if s.reverse() then  [dataLabelHeight, _innerHeight ] else [_innerHeight ,dataLabelHeight ])
+              s.range(if s.reverse() then  [dataLabelHeight + drawPadding, _innerHeight - drawPadding] else [_innerHeight - drawPadding ,dataLabelHeight + drawPadding])
             else
-              s.range(if s.reverse() then  [0, _innerHeight] else [_innerHeight, 0])
+              s.range(if s.reverse() then  [drawPadding, _innerHeight - drawPadding ] else [_innerHeight - drawPadding, drawPadding])
           if s.showAxis()
             drawAxis(s)
 

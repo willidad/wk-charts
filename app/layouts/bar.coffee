@@ -78,12 +78,10 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
           if d.added then return barHeight + barPadding / 2
         return 0
 
-      $log.debug data[0].values
-
       bars = bars.data(data[0].values, (d, i) -> d.key)
 
       enter = bars.enter().append('g').attr('class','wk-chart-layer')
-        .attr('transform', (d)-> "translate(0, #{y.scale()(d.targetKey) + offset(d)})")
+        .attr('transform', (d)-> "translate(#{x.scale()(0)}, #{y.scale()(d.targetKey) + offset(d)})")
 
       enter.append('rect')
         .attr('class', 'wk-chart-rect wk-chart-selectable')
@@ -93,7 +91,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
         .call(_selected)
 
       (if doAnimate then bars.transition().duration(options.duration) else bars)
-          .attr('transform', (d) -> "translate(0, #{y.scale()(d.targetKey) + offset(d)}) scale(1,1)")
+          .attr('transform', (d) -> "translate(#{x.scale()(0)}, #{y.scale()(d.targetKey) + offset(d)}) scale(1,1)")
 
       rect = bars.select('rect')
         .style('fill', (d) ->  if _colorByKey then color.scale()(d.key) else color.map(d.data))

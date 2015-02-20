@@ -32,7 +32,9 @@ Fix: 4a9f6ab Bar w Reverse Y Axis Legend: enter / exit animations start / end at
 Fix: 66577ab Bar Axis New: looks like enter / exit animations do not honor paddings / charts w global key axis ignore padding definition
 Fix: d02ee2b Custom Template does not work
 Fix: 2114aba Line Ordinal Marker Bug: Line does not interpolate correctly when exit
-Fix: line vertical does not show markers with time scale (non-ordinal scale)
+Fix: 501f813 line vertical does not show markers with time scale (non-ordinal scale)
+Fix: data markers are cut at chart borders
+
 
 Features Implemented
 --------------------
@@ -55,6 +57,7 @@ Open
 ----
 
 
+tooltip w mixed format charts(line and column): tooltip box position jumps up and down when cursor moves over column borders
 Line Scale Bug: Legend does not display correct list (only from left axis) Is this a bug or a feature ????
 Area Stacked Vertical Brushed silhouette: Tooltip markers are not positioned correctly
 Dup: Tooltip on non-zero stacked area chart positions markers wrong
