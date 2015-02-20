@@ -78,6 +78,8 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
       me.enter.apply(this, [data])
 
     me.moveMarkers = (key, data) ->
+      if not key or not data
+        return # required as consequence of range padding. Avoid exceptions for events w. mouse positioned in padding area.
       markerKey = _keyScale.value(data) # use the data objects key instead of the inversion result to ensure marker snaps to data.
       layerKeys = _valueScale.layerKeys(data)
       cData = layerKeys.map((key) -> {key: key, value: _valueScale.layerValue(data, key)})
@@ -111,6 +113,8 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
         .remove()
       offset = if _keyScale.isOrdinal() then _keyScale.scale().rangeBand() / 2 else 0
       if _keyScale.isHorizontal()
+        if isNaN(_keyScale.scale()(markerKey) + offset)
+          debugger
         this.attr('transform', "translate(#{_keyScale.scale()(markerKey) + offset})") # need to compute from scale because of brushing
       else
         this.attr('transform', "translate(0,#{_keyScale.scale()(markerKey) + offset})")  # need to compute from scale because of brushing + offset

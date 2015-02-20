@@ -33,8 +33,8 @@ Fix: 66577ab Bar Axis New: looks like enter / exit animations do not honor paddi
 Fix: d02ee2b Custom Template does not work
 Fix: 2114aba Line Ordinal Marker Bug: Line does not interpolate correctly when exit
 Fix: 501f813 line vertical does not show markers with time scale (non-ordinal scale)
-Fix: data markers are cut at chart borders
-
+Fix: 8a8b59b data markers are cut at chart borders
+Fix: tooltip w mixed format charts(line and column): tooltip box position jumps up and down when cursor moves over column borders
 
 Features Implemented
 --------------------
@@ -57,7 +57,7 @@ Open
 ----
 
 
-tooltip w mixed format charts(line and column): tooltip box position jumps up and down when cursor moves over column borders
+
 Line Scale Bug: Legend does not display correct list (only from left axis) Is this a bug or a feature ????
 Area Stacked Vertical Brushed silhouette: Tooltip markers are not positioned correctly
 Dup: Tooltip on non-zero stacked area chart positions markers wrong
@@ -65,6 +65,22 @@ Dup: Tooltip on non-zero stacked area chart positions markers wrong
 Line / area carts w ordinal scales: brush selection corrupted after data update
 bars / columns carts: data update shows incorrect bars at borders after data update
 Line / area carts w time scale: brush selection not updated after data change
+
+Brush on global axis does not work 'Controller layout required by directive brush not found'
+area markers brushed ordinal produces d3 invalid path errors when brush area contains only a single data point (displays correctly through)
+line markers brushed ordinal produces d3 invalid path errors when brush area contains only a single data point (displays correctly through)
+area stacked time brushed produces d3 invalid path errors when brushed (displays correctly though)
+line w time scale u markers brushed: if empty brush selection shows many marker bubbles at left axis
+Tab 'Applying brush to chart' does not work
+Tab 'Brushing Multiple Charts' does not brush upper chart (lower chart is brushed)
+Brush highlighting does not honor range paddings
+
+
+Resizing page does not trigger chart resizing
+Browser Zooming does not resize chart
+
+
+
 
 TODO / Features
 ---------------

@@ -15,6 +15,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
     _scales = undefined
     _markerScale = undefined
     _data = undefined
+    _reEntered = false
     _tooltipDispatch = d3.dispatch('enter', 'moveData', 'moveMarker', 'leave')
 
     _templ = wkChartTemplates.tooltipTemplate()
@@ -57,13 +58,11 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
 
     tooltipEnter = () ->
       if not _active or _hide then return
-      _templScope.tooltipStyle = me.chart().tooltipStyle()
       # append data div
-      body.append(_compiledTempl)
+
       _templScope.layers = []
 
-      # get tooltip data value
-
+      # get tooltip data value depending on the scenario
       if _showMarkerLine # show tooltip based on mouse position. Invert the position and find the corresponding data value #TODO Better name for the indicator value
         _pos = d3.mouse(this)
         keyValue = _markerScale.invert(if _markerScale.isHorizontal() then _pos[0] else _pos[1])
@@ -72,30 +71,32 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       else # show tooltip from element the mouse is over. Get the linked datum of the object
         value = d3.select(this).datum()
         dataObj = _templScope.ttData = if value.data then value.data else value
-
       _tooltipDispatch.enter.apply(_templScope, [dataObj, dataObj]) # get the data so the TT can be positioned correctly
 
-      positionInitial() #position in upper left corner to compute the space requirements. positionBox() will the move it to the right
-                        # place and deal with ensure that box does not move outside the borders
+      # append and position the tooltp box
+      ttElem = d3.select('.wk-chart-tooltip')
+      if ttElem.empty()
+        body.append(_compiledTempl)
+        _templScope.tooltipStyle = me.chart().tooltipStyle()
+        positionInitial() #position in upper left corner to compute the space requirements. positionBox() will the move it to the right
+                        # place and ensure that box does not move outside the borders
 
       # create a marker line if required
       if _showMarkerLine
-        #_area = this
-        _areaBox = _areaSelection.select('.wk-chart-background').node().getBBox()
-        _pos = d3.mouse(_area)
-        _markerG = _areaSelection.append('g')  # need to append marker to chart area to ensure it is on top of the chart elements Fix 10
-          .attr('class', 'wk-chart-tooltip-marker')
-        _markerLine = _markerG.append('line')
-        if _markerScale.isHorizontal()
-          _markerLine.attr({class:'wk-chart-marker-line', x0:0, x1:0, y0:0,y1:_areaBox.height})
-        else
-          _markerLine.attr({class:'wk-chart-marker-line', x0:0, x1:_areaBox.width, y0:0,y1:0})
+        _markerG = _areaSelection.select('.wk-chart-tooltip-marker')
+        if _markerG.empty()
+          _areaBox = _areaSelection.select('.wk-chart-background').node().getBBox()
+          _markerG = _areaSelection.append('g')  # need to append marker to chart area to ensure it is on top of the chart elements Fix 10
+            .attr('class', 'wk-chart-tooltip-marker')
+          _markerLine = _markerG.append('line')
+          if _markerScale.isHorizontal()
+            _markerLine.attr({class:'wk-chart-marker-line', x0:0, x1:0, y0:0,y1:_areaBox.height})
+          else
+            _markerLine.attr({class:'wk-chart-marker-line', x0:0, x1:_areaBox.width, y0:0,y1:0})
 
-        _markerLine.style({stroke: 'darkgrey', 'pointer-events': 'none'})
+          _markerLine.style({stroke: 'darkgrey', 'pointer-events': 'none'})
 
         _tooltipDispatch.moveMarker.apply(_markerG, [keyValue, dataObj])
-
-
 
     #--- TooltipMove  Event Handler ------------------------------------------------------------------------------------
 
@@ -116,11 +117,11 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
     #--- TooltipLeave Event Handler ------------------------------------------------------------------------------------
 
     tooltipLeave = () ->
-      #$log.debug 'tooltipLeave', _area
       if _markerG
         _markerG.remove()
       _markerG = undefined
       _compiledTempl.remove()
+
 
 
     #--- Interface to brush --------------------------------------------------------------------------------------------
@@ -128,7 +129,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
     forwardToBrush = (e) ->
       # forward the mousdown event to the brush overlay to ensure that brushing can start at any point in the drawing area
 
-      brush_elm = d3.select(_container.node().parentElement).select(".wk-chart-overlay").node();
+      brush_elm = _container.node();
       if d3.event.target isnt brush_elm #do not dispatch if target is overlay
         new_click_event = new Event('mousedown');
         new_click_event.pageX = d3.event.pageX;
@@ -136,6 +137,10 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         new_click_event.pageY = d3.event.pageY;
         new_click_event.clientY = d3.event.clientY;
         brush_elm.dispatchEvent(new_click_event);
+
+    forwardToSelection = (e) ->
+      # forward click event to selection module
+      $log.debug e, d3.event
 
 
     me.hide = (val) ->
@@ -179,14 +184,16 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       else
         _areaSelection = val
         _area = _areaSelection.node()
-        if _showMarkerLine
-          me.tooltip(_areaSelection)
+        #if _showMarkerLine
+        #  me.tooltip(_container)
         return me #to enable chaining
 
     me.container = (val) ->
       if arguments.length is 0 then return _container
       else
         _container = val
+        if _showMarkerLine
+          me.tooltip(_container)
         return me #to enable chaining
 
     me.markerScale = (val) ->
@@ -239,14 +246,16 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
     me.tooltip = (s) -> # register the tooltip events with the selection
       if arguments.length is 0 then return me
       else  # set tooltip for an objects selection
-        compileTemplate _templ # set up tooltip template
+        compileTemplate(_templ) # set up tooltip template
         me.chart().lifeCycle().on 'destroy.tooltip', tooltipLeave
 
-        s.on 'mouseenter.tooltip', tooltipEnter
-          .on 'mousemove.tooltip', tooltipMove
-          .on 'mouseleave.tooltip', tooltipLeave
-        if not s.empty() and not s.classed('wk-chart-overlay')
-          s.on 'mousedown.tooltip', forwardToBrush
+        if not _showMarkerLine or s.classed('wk-chart-area')
+          s.on 'mouseenter.tooltip', tooltipEnter
+            .on 'mousemove.tooltip', tooltipMove
+            .on 'mouseleave.tooltip', tooltipLeave
+
+        #if not s.empty() and not s.classed('wk-chart-area')
+        #  s.on 'mousedown.tooltip', forwardToBrush
 
     return me
 

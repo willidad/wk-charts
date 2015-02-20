@@ -114,7 +114,7 @@ angular.module('wk.chart').factory 'legend', ($log, $compile, $rootScope, $templ
 
         if not _legendDiv
           containerRect = _containerDiv.node().getBoundingClientRect()
-          chartAreaRect = _containerDiv.select('.wk-chart-overlay rect').node().getBoundingClientRect()
+          chartAreaRect = _containerDiv.select('.wk-chart-area .wk-chart-background').node().getBoundingClientRect()
           for p in _position.split('-')
               _legendScope.legendStyle[p] = "#{Math.abs(containerRect[p] - chartAreaRect[p])}px"
         _legendScope.title = _title

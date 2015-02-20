@@ -265,10 +265,11 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
         .append('rect').attr({x:0, y:0, width:'100%', height:'100%', fill:'url(#stripesPattern)'})
 
       _container= _svg.append('g').attr('class','wk-chart-container')
-      _overlay = _container.append('g').attr('class', 'wk-chart-overlay').style('pointer-events', 'all')
-      _overlay.append('rect').style('visibility', 'hidden').attr('class', 'wk-chart-background').datum({name:'background'})
+      #_overlay = _container.append('g').attr('class', 'wk-chart-overlay').style('pointer-events', 'all')
+      #_overlay.append('rect').style('visibility', 'hidden').attr('class', 'wk-chart-background').datum({name:'background'})
       _gridArea = _container.append('g').attr('class', 'wk-chart-grid-lines')
       _chartArea = _container.append('g').attr('class', 'wk-chart-area')
+      _chartArea.append('rect').style('visibility', 'hidden').attr('class', 'wk-chart-background').datum({name:'background'})
 
 
     # start to build and size the elements from top to bottom
@@ -359,7 +360,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       _svg.select("#wk-chart-clip-#{_containerId} rect").attr('width', _innerWidth).attr('height', _innerHeight)
       _maxDim = Math.max(_innerWidth, _innerHeight)
       _svg.selectAll('defs>mask>rect').attr({'x':-_maxDim, y:-_maxDim, height:_maxDim * 2, width: _maxDim * 2}) # tricky. need to ensure that mask is big enough to cover area vertical before translation
-      _spacedContainer.select('.wk-chart-overlay>.wk-chart-background').attr('width', _innerWidth).attr('height', _innerHeight)
+      _spacedContainer.select('.wk-chart-area>.wk-chart-background').attr('width', _innerWidth).attr('height', _innerHeight)
       _spacedContainer.select('.wk-chart-area').style('clip-path', "url(#wk-chart-clip-#{_containerId})")
 
       _container.selectAll('.wk-chart-axis.wk-chart-right').attr('transform', "translate(#{_innerWidth}, 0)")
@@ -383,7 +384,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
 
       _chartAreaDiv.style(_chart.backgroundStyle())
 
-      _chart.behavior().overlay(_overlay)
+      _chart.behavior().overlay(_chartArea)
       _chart.behavior().container(_chartArea)
 
     #--- Brush Accelerator ---------------------------------------------------------------------------------------------
