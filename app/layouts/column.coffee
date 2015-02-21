@@ -90,8 +90,8 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, dataMana
         .attr('transform', (d) -> "translate(#{x.scale()(d.targetKey) + offset(d)})")
 
       rect = columns.select('rect')
-        .style('fill', (d) -> if _colorByKey then color.scale()(d.key) else color.map(d.data))
-        .style('stroke', (d) ->if _colorByKey then color.scale()(d.key) else color.map(d.data))
+        .style('fill', (d) -> if color.property().length is 0 then color.scale()(d.layerKey) else color.map(d.data))
+        .style('stroke', (d) -> if color.property().length is 0 then color.scale()(d.layerKey)  else color.map(d.data))
       (if doAnimate then rect.transition().duration(options.duration) else rect)
         .attr('width', (d) -> if d.added or d.deleted then 0 else barWidth)
         .attr('height', (d) -> Math.abs(y.scale()(0) - y.scale()(d.targetValue)))

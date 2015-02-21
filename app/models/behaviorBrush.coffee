@@ -150,8 +150,9 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
     brushStart = () ->
       #register a mouse handlers for the brush
       d3.event.preventDefault()
-      _evTargetData = d3.select(d3.event.target).datum()
-      _ if not _evTargetData
+      _eventTarget = d3.select(d3.event.target)
+      _evTargetData = _eventTarget.datum()
+      if _eventTarget.classed('wk-chart-selectable')
         _evTargetData = {name:'forwarded'}
       _areaBox = _area.getBBox()
       _startPos = d3.mouse(_area)
@@ -159,7 +160,8 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       startLeft = left
       startRight = right
       startBottom = bottom
-      d3.select(_area).style('pointer-events','none').selectAll(".wk-chart-resize").style("display", null)
+      d3.select(_area).selectAll(".wk-chart-resize").style("display", null)
+      d3.select(_area).select('.wk-chart-selectable').style('pointer-events','none')
       _extent.style('display',null)
       d3.select('body').style('cursor', d3.select(d3.event.target).style('cursor'))
 
@@ -181,6 +183,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       d3.select($window).on 'mousemove.brush', null
       d3.select($window).on 'mouseup.brush', null
       d3.select(_area).style('pointer-events','all').selectAll('.wk-chart-resize').style('display', null) # show the resize handles
+      d3.select(_area).select('.wk-chart-selectable').style('pointer-events',null)
       d3.select('body').style('cursor', null)
       _tooltip.hide(false)
       _brushEvents.brushEnd(_boundsIdx, _boundsValues, _boundsDomain)
@@ -294,7 +297,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
         _brushY = me.y() and not me.x()
         # create the handler elements and register the handlers
         s.style({'pointer-events': 'all', cursor: 'crosshair'})
-        _extent = s.append('rect').attr({class:'wk-chart-extent', x:0, y:0, width:0, height:0}).style('cursor','move').datum({name:'extent'})
+        _extent = s.append('rect').attr({class:'wk-chart-extent', x:0, y:0, width:0, height:0}).style({'cursor':'move'}).datum({name:'extent'})
         # resize handles for the sides
         if _brushY or _brushXY
           s.append('g').attr('class', 'wk-chart-resize wk-chart-n').style({cursor:'ns-resize', display:'none'})
@@ -318,6 +321,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
           .append('rect').attr({x: -3, y: -3, width:6, height:6}).datum({name:'se'})
         #register handler. Please note, brush wants the mouse down exclusively !!!
         s.on 'mousedown.brush', brushStart
+
         return me
 
     #--- Extent resize handler -----------------------------------------------------------------------------------------

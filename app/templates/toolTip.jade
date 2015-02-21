@@ -1,12 +1,12 @@
-.wk-chart-tooltip(ng-style="tooltipStyle")
+.wk-chart-tooltip(ng-style="tooltipStyle", ng-hide="ttHide")
     table.table.table-condensed.table-bordered
         thead(ng-show="headerValue")
             tr
                 th(colspan="2") {{headerName}}
                 th {{headerValue}}
         tbody
-            tr(ng-repeat="ttRow in layers track by ttRow.name")
-                td(ng-style="ttRow.color", ng-class="ttRow.class")
-                    svg-icon(ng-if="ttRow.path", path="ttRow.path", width="15")
-                td {{ttRow.name}}
-                td {{ttRow.value}}
+            tr(ng-repeat="(name,value) in layers track by name")
+                td(ng-style="value.color", ng-class="ttRow.class")
+                    svg-icon(ng-if="ttRow.path", path="value.path", width="15")
+                td {{name}}
+                td {{value.value}}

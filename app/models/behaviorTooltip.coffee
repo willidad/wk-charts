@@ -60,7 +60,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       if not _active or _hide then return
       # append data div
 
-      _templScope.layers = []
+      _templScope.layers = {}
 
       # get tooltip data value depending on the scenario
       if _showMarkerLine # show tooltip based on mouse position. Invert the position and find the corresponding data value #TODO Better name for the indicator value
@@ -108,7 +108,6 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         keyValue = _markerScale.invert(if _markerScale.isHorizontal() then _pos[0] else _pos[1])
         dataObj = _markerScale.find(keyValue)
         _tooltipDispatch.moveMarker.apply(_markerG, [keyValue, dataObj])
-        _templScope.layers = []
         _templScope.ttData = dataObj
         _tooltipDispatch.moveData.apply(_templScope, [keyValue, dataObj])
       #_templScope.$apply()
@@ -149,7 +148,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         _hide = val
         if _markerG
           _markerG.style('visibility', if _hide then 'hidden' else 'visible')
-        _templScope.ttShow = not _hide
+        _templScope.ttHide = _hide
         _templScope.$apply()
         return me #to enable chaining
 
@@ -175,7 +174,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         if _path.length > 0
           _customTempl = $templateCache.get(_path)
           # wrap template into positioning div
-          _templ = "<div class=\"wk-chart-tooltip\" ng-style=\"tooltipStyle\">#{_customTempl}</div>"
+          _templ = "<div class=\"wk-chart-tooltip\" ng-style=\"tooltipStyle\" ng-hide=\"ttHide\">#{_customTempl}</div>"
 
         return me
 
@@ -221,7 +220,6 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       return () ->
         if _templScope.ttData then scaleFn(_templScope.ttData)
 
-
     compileTemplate = (template) ->
       if not _templScope
         _templScope = _chart.scope().$parent.$new(true)   ## create the template scope as child of the chart's scope
@@ -231,6 +229,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         _templScope.scale = {}
         _templScope.label = {}
         _templScope.value = {}
+        _templScope.ttHide = false
         for name, scale of _chart.allScales().allKinds()
           _templScope.map[name] = createClosure(scale.map)
           _templScope.scale[name] = scale.scale()

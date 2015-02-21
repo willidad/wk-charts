@@ -94,8 +94,8 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
           .attr('transform', (d) -> "translate(#{x.scale()(0)}, #{y.scale()(d.targetKey) + offset(d)}) scale(1,1)")
 
       rect = bars.select('rect')
-        .style('fill', (d) ->  if _colorByKey then color.scale()(d.key) else color.map(d.data))
-        .style('stroke', (d) ->  if _colorByKey then color.scale()(d.key) else color.map(d.data))
+        .style('fill', (d) -> if color.property().length is 0 then color.scale()(d.layerKey) else color.map(d.data))
+        .style('stroke', (d) -> if color.property().length is 0 then color.scale()(d.layerKey) else color.map(d.data))
         .style(_barStyle)
       (if doAnimate then rect.transition().duration(options.duration) else rect)
         .attr('height', (d) -> if d.added or d.deleted then 0 else barHeight)

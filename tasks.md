@@ -34,8 +34,8 @@ Fix: d02ee2b Custom Template does not work
 Fix: 2114aba Line Ordinal Marker Bug: Line does not interpolate correctly when exit
 Fix: 501f813 line vertical does not show markers with time scale (non-ordinal scale)
 Fix: 8a8b59b data markers are cut at chart borders
-Fix: tooltip w mixed format charts(line and column): tooltip box position jumps up and down when cursor moves over column borders
-
+Fix: 939319d tooltip w mixed format charts(line and column): tooltip box position jumps up and down when cursor moves over column borders
+Fix: Tooltips: Does not show values from column / bar charts if mixed w. line/area
 Features Implemented
 --------------------
 
@@ -56,8 +56,6 @@ Implemented: a9bc925 Patterns for pie, range area charts
 Open
 ----
 
-
-
 Line Scale Bug: Legend does not display correct list (only from left axis) Is this a bug or a feature ????
 Area Stacked Vertical Brushed silhouette: Tooltip markers are not positioned correctly
 Dup: Tooltip on non-zero stacked area chart positions markers wrong
@@ -76,10 +74,11 @@ Tab 'Brushing Multiple Charts' does not brush upper chart (lower chart is brushe
 Brush highlighting does not honor range paddings
 
 
+Tooltips / Brush: Tooltips are not shown when brush extend covers an item
+Brush: when mousedown over an object, crosshair cursor is displayed but brush extent dragging is not triggered
+Brush: when mousedown over brushExtent crosshair cursor is displayed (should be move cursor) - draggs correctly though
 Resizing page does not trigger chart resizing
 Browser Zooming does not resize chart
-
-
 
 
 TODO / Features
