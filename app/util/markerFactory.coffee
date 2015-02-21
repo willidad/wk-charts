@@ -41,22 +41,22 @@ angular.module('wk.chart').factory 'markerFactory', ($log, d3Animation) ->
           .style('opacity', 0).remove()
 
     me.brush = (selection, idxRange) ->
-
-      if _isVertical
-        c = 'cy'
-        v = _y
-      else
-        c = 'cx'
-        v = _x
-      if idxRange
-        _markerSelection.selectAll(".wk-chart-marker-#{_id}").each((d, i) ->
-          if idxRange[0] <= i and i <= idxRange[1]
-            d3.select(this).attr(c,v).style('opacity', 1)
-          else
-            d3.select(this).style('opacity', 0)
-        )
-      else
-        _markerSelection.selectAll(".wk-chart-marker-#{_id}").attr(c, v)
+      if _active
+        if _isVertical
+          c = 'cy'
+          v = _y
+        else
+          c = 'cx'
+          v = _x
+        if idxRange
+          _markerSelection.selectAll(".wk-chart-marker-#{_id}").each((d, i) ->
+            if idxRange[0] <= i and i <= idxRange[1]
+              d3.select(this).attr(c,v).style('opacity', 1)
+            else
+              d3.select(this).style('opacity', 0)
+          )
+        else
+          _markerSelection.selectAll(".wk-chart-marker-#{_id}").attr(c, v)
 
     me.active = (trueFalse) ->
       if arguments.length is 0 then return _active

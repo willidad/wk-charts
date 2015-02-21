@@ -161,6 +161,10 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       if arguments.length is 0 then return _chart
       else
         _chart = chart
+        _chart.lifeCycle().on 'destroy', () ->
+          if _templScope
+            $log.log 'destroying scope', _templScope.$id
+          _templScope.$destroy()
         return me
 
     me.active = (val) ->
@@ -224,7 +228,9 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
 
     compileTemplate = (template) ->
       if not _templScope
+
         _templScope = _chart.scope().$parent.$new(true)   ## create the template scope as child of the chart's scope
+        $log.log 'creating tooltip scope' + _templScope.$id
         # add scale access functions to scope
         _templScope.properties = {}
         _templScope.map = {}

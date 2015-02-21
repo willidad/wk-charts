@@ -387,6 +387,13 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       _chart.behavior().overlay(_chartArea)
       _chart.behavior().container(_chartArea)
 
+      # register destroy event listener
+
+      angular.element(_chartArea.node()).on '$destroy', ()->
+        $log.log 'removeing event listeners'
+        _chartArea.on '.tooltip', null
+        _chartArea.on '.brush', null
+
     #--- Brush Accelerator ---------------------------------------------------------------------------------------------
 
     me.drawSingleAxis = (scale) ->

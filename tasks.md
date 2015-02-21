@@ -38,9 +38,12 @@ Fix: 939319d tooltip w mixed format charts(line and column): tooltip box positio
 Fix: cd7692d Tooltips: Does not show values from column / bar charts if mixed w. line/area
 Fix: a481674 Tab 'Applying brush to chart' does not work
 Fix: a481674 Tab 'Brushing Multiple Charts' does not brush upper chart (lower chart is brushed)
-Fix:  Brush on global axis does not work 'Controller layout required by directive brush not found'
+Fix: b21cd9e Brush on global axis does not work 'Controller layout required by directive brush not found'
 
 
+Cannot Reproduce
+----------------
+area stacked time brushed produces d3 invalid path errors when brushed (displays correctly though)
 
 
 Features Implemented
@@ -73,8 +76,8 @@ Line / area carts w time scale: brush selection not updated after data change
 
 area markers brushed ordinal produces d3 invalid path errors when brush area contains only a single data point (displays correctly through)
 line markers brushed ordinal produces d3 invalid path errors when brush area contains only a single data point (displays correctly through)
-area stacked time brushed produces d3 invalid path errors when brushed (displays correctly though)
-line w time scale u markers brushed: if empty brush selection shows many marker bubbles at left axis
+
+line w time scale u markers brushed: if empty brush selection shows many marker bubbles at left axis (for all area and line charts with non-ordinal scales)
 
 Brush highlighting does not honor range paddings
 

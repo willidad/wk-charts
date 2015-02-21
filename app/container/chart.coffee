@@ -117,9 +117,13 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
 
       # cleanup when destroyed
 
+      scope.$on '$destroy', () ->
+        'destroying chart scope'
+
       element.on '$destroy', () ->
         if watcherRemoveFn
           watcherRemoveFn()
         $log.log 'Destroying chart'
         me.lifeCycle().destroy()
+        scope.$destroy()
   }
