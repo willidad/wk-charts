@@ -70,7 +70,7 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
         @layers[key] = {}
         @layers[key].value = _valueScale.formatValue(data[key])
         if _colorScale.property().length > 0
-          @layers[key].color = _colorScale.map(data)
+          @layers[key].color = {'background-color': _colorScale.map(data)}
         else if _colorByKey
           @layers[key].color = {'background-color': _colorScale.scale()(_keyScale.value(data))}
         else

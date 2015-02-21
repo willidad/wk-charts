@@ -6,7 +6,7 @@
                 th {{headerValue}}
         tbody
             tr(ng-repeat="(name,value) in layers track by name")
-                td(ng-style="value.color", ng-class="ttRow.class")
-                    svg-icon(ng-if="ttRow.path", path="value.path", width="15")
+                td(ng-style="value.color", ng-class="value.class")
+                    svg-icon(ng-if="value.path", path="value.path", width="15")
                 td {{name}}
                 td {{value.value}}

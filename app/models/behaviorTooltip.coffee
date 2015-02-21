@@ -52,8 +52,6 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       })
       _templScope.$apply()  # ensure tooltip gets rendered and size attributes get set correctly
 
-      #_.throttle positionBox, 200 #wait until it is rendered and then reposition
-
     #--- TooltipStart Event Handler ------------------------------------------------------------------------------------
 
     tooltipEnter = () ->
