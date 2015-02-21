@@ -32,7 +32,8 @@ angular.module('wk.chart').directive 'spider', ($log, utils) ->
       #--- Tooltip Event Handlers --------------------------------------------------------------------------------------
 
       ttEnter = (data) ->
-        @layers = _data.map((d) ->  {name:_scaleList.x.value(d), value:_scaleList.y.formatValue(d[data]), color: {'background-color':_scaleList.color.scale()(data)}})
+        for d in _data
+          @layers[_scaleList.x.value(d)] = {value:_scaleList.y.formatValue(d[data]), color: {'background-color':_scaleList.color.scale()(data)}}
 
       #--- Draw --------------------------------------------------------------------------------------------------------
 

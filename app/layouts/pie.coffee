@@ -47,7 +47,7 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
     ttEnter = (data) ->
       @headerName = _scaleList.color.axisLabel()
       @headerValue = _scaleList.size.axisLabel()
-      @layers.push({name: _scaleList.color.formattedValue(data), value: _scaleList.size.formattedValue(data), color:{'background-color': _scaleList.color.map(data)}})
+      @layers[_scaleList.color.formattedValue(data)] = {value: _scaleList.size.formattedValue(data), color:{'background-color': _scaleList.color.map(data)}}
 
     #-------------------------------------------------------------------------------------------------------------------
 

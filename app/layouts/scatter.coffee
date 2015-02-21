@@ -29,13 +29,13 @@ angular.module('wk.chart').directive 'scatter', ($log, utils) ->
 
       ttEnter = (data) ->
         for sName, scale of _scaleList
-          @layers.push({
-            name: scale.axisLabel(),
-            value: scale.formattedValue(data),
-            color: if sName is 'color' then {'background-color':scale.map(data)} else undefined,
-            path: if sName is 'shape' then d3.svg.symbol().type(scale.map(data)).size(80)() else undefined
-            class: if sName is 'shape' then 'wk-chart-tt-svg-shape' else ''
-          })
+          @layers[scale.axisLabel()] =
+            {
+              value: scale.formattedValue(data),
+              color: if sName is 'color' then {'background-color':scale.map(data)} else undefined,
+              path: if sName is 'shape' then d3.svg.symbol().type(scale.map(data)).size(80)() else undefined
+              class: if sName is 'shape' then 'wk-chart-tt-svg-shape' else ''
+            }
 
       #-----------------------------------------------------------------------------------------------------------------
 

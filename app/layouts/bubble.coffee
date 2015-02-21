@@ -32,7 +32,7 @@ angular.module('wk.chart').directive 'bubble', ($log, utils) ->
 
       ttEnter = (data) ->
         for sName, scale of _scaleList
-          @layers.push({name: scale.axisLabel(), value: scale.formattedValue(data), color: if sName is 'color' then {'background-color':scale.map(data)} else undefined})
+          @layers[scale.axisLabel()] = {value: scale.formattedValue(data), color: if sName is 'color' then {'background-color':scale.map(data)} else undefined}
 
       #--- Draw --------------------------------------------------------------------------------------------------------
 

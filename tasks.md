@@ -39,12 +39,15 @@ Fix: cd7692d Tooltips: Does not show values from column / bar charts if mixed w.
 Fix: a481674 Tab 'Applying brush to chart' does not work
 Fix: a481674 Tab 'Brushing Multiple Charts' does not brush upper chart (lower chart is brushed)
 Fix: b21cd9e Brush on global axis does not work 'Controller layout required by directive brush not found'
-
+Fix: 137850b leaking tooltip scopes and tooltip and brush event handlers
+Fix: Tooltips for chart with layer property do not display value correctly ('Brushing Multiple Charts' tab)
+Fix: Tooltip does not display for charts with shape dimension
+Fix: Pie/donat, spider,scatter, bubble charts do not display tooltips
 
 Cannot Reproduce
 ----------------
-area stacked time brushed produces d3 invalid path errors when brushed (displays correctly though)
-
+area stacked time brushed produces d3 invalid path errors when brushed (displays correctly though) (probably fixed w 137850b
+bars / columns charts: data update shows incorrect bars at borders after data update
 
 Features Implemented
 --------------------
@@ -65,28 +68,33 @@ Implemented: a9bc925 Patterns for pie, range area charts
 
 Open
 ----
+More General: Legends on dual axis does not work as expected
+- Line Scale Bug: Legend does not display correct list (only from left axis) Is this a bug or a feature ????
+- if legend defined for both, left and right y axis, only one is displayed
 
-Line Scale Bug: Legend does not display correct list (only from left axis) Is this a bug or a feature ????
 Area Stacked Vertical Brushed silhouette: Tooltip markers are not positioned correctly
 Dup: Tooltip on non-zero stacked area chart positions markers wrong
 
-Line / area carts w ordinal scales: brush selection corrupted after data update
-bars / columns carts: data update shows incorrect bars at borders after data update
-Line / area carts w time scale: brush selection not updated after data change
+More general: Brush does not re-evaluate brush selection after a data update. Should either clear selection or re-position brush to the old range points on new data
+- Line / area charts w ordinal scales: brush selection corrupted after data update
+- Line / area charts w time scale: brush selection not updated after data change
 
-area markers brushed ordinal produces d3 invalid path errors when brush area contains only a single data point (displays correctly through)
-line markers brushed ordinal produces d3 invalid path errors when brush area contains only a single data point (displays correctly through)
-
-line w time scale u markers brushed: if empty brush selection shows many marker bubbles at left axis (for all area and line charts with non-ordinal scales)
+More general: area and line charts produce path errors when path contains only one data point. Summarizes
+- area markers brushed ordinal produces d3 invalid path errors when brush area contains only a single data point (displays correctly through)
+- line markers brushed ordinal produces d3 invalid path errors when brush area contains only a single data point (displays correctly through)
+- line w time scale u markers brushed: if empty brush selection shows many marker bubbles at left axis (for all area and line charts with non-ordinal scales)
 
 Brush highlighting does not honor range paddings
 
+More General: Tooltip and brush combined event handling does not work as desired
+- Tooltips / Brush: Tooltips are not shown when brush extend covers an item
+- Brush: when mousedown over an object, crosshair cursor is displayed but brush extent dragging is not triggered
+- Brush: when mousedown over brushExtent crosshair cursor is displayed (should be move cursor) - draggs correctly though
 
-Tooltips / Brush: Tooltips are not shown when brush extend covers an item
-Brush: when mousedown over an object, crosshair cursor is displayed but brush extent dragging is not triggered
-Brush: when mousedown over brushExtent crosshair cursor is displayed (should be move cursor) - draggs correctly though
-Resizing page does not trigger chart resizing
 Browser Zooming does not resize chart
+Responsive pages (css @media based resiring) does not always trigger chart resize
+
+
 
 
 TODO / Features
