@@ -103,6 +103,10 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       _pos = d3.mouse(_area)
 
       if _showMarkerLine
+        if not _markerG
+          # mouse entered chart area with mouse button down.
+          tooltipEnter.apply(this,arguments) # pass event context along
+          return
         keyValue = _markerScale.invert(if _markerScale.isHorizontal() then _pos[0] else _pos[1])
         dataObj = _markerScale.find(keyValue)
         _tooltipDispatch.moveMarker.apply(_markerG, [keyValue, dataObj])

@@ -19,7 +19,7 @@
 angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior) ->
   return {
     restrict: 'A'
-    require: ['^chart', '^layout', '?x', '?y','?rangeX', '?rangeY']
+    require: ['^chart', '^?layout', '?x', '?y']
     scope:
       ###*
         @ngdoc attr
@@ -76,8 +76,6 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       layout = controllers[1]?.me
       x = controllers[2]?.me
       y = controllers[3]?.me
-      rangeX = controllers[4]?.me
-      rangeY = controllers[5]?.me
       xScale = undefined
       yScale = undefined
       _selectables = undefined
@@ -87,14 +85,16 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
 
       brush = chart.behavior().brush
 
-      if not x and not y and not rangeX and not rangeY
+      host = chart or layout
+
+      if not x and not y
         #layout brush, get x and y from layout scales
-        scales = layout.scales().getScales(['x', 'y'])
+        scales = host.scales().getScales(['x', 'y'])
         brush.x(scales.x)
         brush.y(scales.y)
       else
-        brush.x(x or rangeX)
-        brush.y(y or rangeY)
+        brush.x(x)
+        brush.y(y)
       brush.active(true)
 
       scope.$watch 'clearBrush' , (val) ->
@@ -125,7 +125,7 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
         scope.brushEnd({domain:domain})
         scope.$apply()
 
-      layout.lifeCycle().on 'drawChart.brush', (data) ->
+      host.lifeCycle().on 'drawChart.brush', (data) ->
         brush.data(data)
 
 

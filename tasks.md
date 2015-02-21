@@ -36,8 +36,12 @@ Fix: 501f813 line vertical does not show markers with time scale (non-ordinal sc
 Fix: 8a8b59b data markers are cut at chart borders
 Fix: 939319d tooltip w mixed format charts(line and column): tooltip box position jumps up and down when cursor moves over column borders
 Fix: cd7692d Tooltips: Does not show values from column / bar charts if mixed w. line/area
-Fix:  Tab 'Applying brush to chart' does not work
-Fix:  Tab 'Brushing Multiple Charts' does not brush upper chart (lower chart is brushed)
+Fix: a481674 Tab 'Applying brush to chart' does not work
+Fix: a481674 Tab 'Brushing Multiple Charts' does not brush upper chart (lower chart is brushed)
+Fix:  Brush on global axis does not work 'Controller layout required by directive brush not found'
+
+
+
 
 Features Implemented
 --------------------
@@ -67,7 +71,6 @@ Line / area carts w ordinal scales: brush selection corrupted after data update
 bars / columns carts: data update shows incorrect bars at borders after data update
 Line / area carts w time scale: brush selection not updated after data change
 
-Brush on global axis does not work 'Controller layout required by directive brush not found'
 area markers brushed ordinal produces d3 invalid path errors when brush area contains only a single data point (displays correctly through)
 line markers brushed ordinal produces d3 invalid path errors when brush area contains only a single data point (displays correctly through)
 area stacked time brushed produces d3 invalid path errors when brushed (displays correctly though)
