@@ -24,9 +24,12 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
         _chart.lifeCycle().on "configure.#{me.id()}", () -> _layoutLifeCycle.configure.apply(me.scales()) #passthrough
         _chart.lifeCycle().on "drawChart.#{me.id()}", me.draw # register for the drawing event
         _chart.lifeCycle().on "prepareData.#{me.id()}", me.prepareData
-        _chart.lifeCycle().on "destroy.#{me.id()}", () -> _layoutLifeCycle.destroy() #passthrough
+
         _chart.lifeCycle().on "animationStartState..#{me.id()}", me.animationStartState
         _chart.lifeCycle().on "animationEndState..#{me.id()}", me.animationEndState
+        _chart.lifeCycle().on "destroy.#{me.id()}", () ->
+          _layoutLifeCycle.destroy() #passthrough
+          _chart.lifeCycle().on ".#{me.id()}", null #de-register all handlers
         return me
 
     me.scales = () ->
@@ -96,14 +99,17 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
 
       _layoutLifeCycle.drawChart.apply(getDrawArea(), buildArgs(data, notAnimated))
 
-      _layoutLifeCycle.on 'redraw', me.redraw
-      _layoutLifeCycle.on 'update', me.chart().lifeCycle().update
-      _layoutLifeCycle.on 'drawAxis', me.chart().lifeCycle().drawAxis
-      _layoutLifeCycle.on 'updateAttrs', me.chart().lifeCycle().updateAttrs
+      _layoutLifeCycle.on "redraw.#{_id}", me.redraw
+      _layoutLifeCycle.on "update.#{_id}", me.chart().lifeCycle().update
+      _layoutLifeCycle.on "drawAxis.#{_id}", me.chart().lifeCycle().drawAxis
+      _layoutLifeCycle.on "updateAttrs.#{_id}", me.chart().lifeCycle().updateAttrs
 
-      _layoutLifeCycle.on 'brush', (axis, notAnimated, idxRange) ->
+      _layoutLifeCycle.on "brush.#{_id}", (axis, notAnimated, idxRange) ->
           _container.drawSingleAxis(axis)
           _layoutLifeCycle.brushDraw.apply(getDrawArea(), [axis, idxRange, _container.width(), _container.height()])
+          
+      _layoutLifeCycle.on "destroy.#{_id}", () ->
+        _layoutLifeCycle.on ".#{_id}", null
 
     me.animationStartState = (data) ->
       _layoutLifeCycle.animationStartState.apply(getDrawArea(), buildArgs(data, true))

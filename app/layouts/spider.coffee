@@ -128,7 +128,11 @@ angular.module('wk.chart').directive 'spider', ($log, utils) ->
         _tooltip = layout.behavior().tooltip
         _tooltip.on "enter.#{_id}", ttEnter
 
-      layout.lifeCycle().on 'drawChart', draw
+      layout.lifeCycle().on "drawChart.#{_id}", draw
+
+      layout.lifeCycle().on "destroy.#{_id}", ->
+        layout.lifeCycle().on ".#{_id}", null
+        _tooltip.on ".#{_id}", null
 
   }
 

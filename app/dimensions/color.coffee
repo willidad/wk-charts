@@ -51,4 +51,7 @@ angular.module('wk.chart').directive 'color', ($log, scale, legend, scaleUtils) 
         if fn and _.isFunction(fn)
           me.scaleMapFn(fn)
 
+      chart.lifeCycle().on 'destroy.color', ()->
+        scope.$destroy()
+
   }

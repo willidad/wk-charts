@@ -691,6 +691,9 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
         if calcRule and calcDomain[calcRule]
           _calculatedDomain = calcDomain[calcRule](data)
 
+      me.chart().lifeCycle().on "destroy.#{me.id()}", () ->
+        me.chart().lifeCycle().on ".#{me.id()}", null # de-register handlers
+
     me.update = (noAnimation) ->
       me.parent().lifeCycle().update(noAnimation)
       return me

@@ -33,7 +33,7 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
       _tooltip = undefined
       _scaleList = {}
       offs = 0
-      _id = 'areaStacked' + areaStackedVertCntr++
+      _id = 'areaStackedVert' + areaStackedVertCntr++
 
       xData = dataManagerFactory()
       markers = markerFactory()
@@ -147,9 +147,13 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
         _tooltip.on "moveData.#{_id}", ttHelper.moveData
         _tooltip.on "moveMarker.#{_id}", ttHelper.moveMarkers
 
-      host.lifeCycle().on 'brushDraw', brush
-      host.lifeCycle().on 'animationStartState', setAnimationStart
-      host.lifeCycle().on 'animationEndState', setAnimationEnd
+      host.lifeCycle().on "brushDraw.#{_id}", brush
+      host.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
+      host.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
+
+      host.lifeCycle().on "destroy.#{_id}", ->
+        host.lifeCycle().on ".#{_id}", null
+        _tooltip.on ".#{_id}", null
 
       #--- Property Observers ------------------------------------------------------------------------------------------
 

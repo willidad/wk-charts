@@ -21,6 +21,7 @@ angular.module('wk.chart').directive 'y', ($log, scale, legend, scaleUtils) ->
       #$log.log 'creating controller scaleY'
 
     link: (scope, element, attrs, controllers) ->
+      $log.log 'color-scope', scope.$id
       me = controllers[0].me
       chart = controllers[1].me
       layout = controllers[2]?.me

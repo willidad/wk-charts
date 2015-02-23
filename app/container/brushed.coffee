@@ -10,11 +10,13 @@
 
 ###
 angular.module('wk.chart').directive 'brushed', ($log,selectionSharing, timing) ->
-  sBrushCnt = 0
+  sBrushedCnt = 0
   return {
     restrict: 'A'
     require: ['^chart', '?^layout', '?x', '?y', '?rangeX', '?rangeY']
     link: (scope, element, attrs, controllers) ->
+      $log.log 'brushed-scope', scope.$id
+      _id = sBrushedCnt++
       chart = controllers[0].me
       layout = controllers[1]?.me
       x = controllers[2]?.me
@@ -49,7 +51,8 @@ angular.module('wk.chart').directive 'brushed', ($log,selectionSharing, timing) 
         else
           _brushGroup = undefined
 
-      scope.$on '$destroy', () ->
+      chart.lifeCycle().on "destroy.#{_id}", () ->
         selectionSharing.unregister _brushGroup, brusher
+        chart.lifeCycle().on ".#{_id}", null
 
   }

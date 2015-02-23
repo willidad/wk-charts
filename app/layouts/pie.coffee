@@ -216,8 +216,12 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
       _selected = layout.behavior().selected
       _tooltip.on "enter.#{_id}", ttEnter
 
-    layout.lifeCycle().on 'drawChart', draw
-    layout.lifeCycle().on 'objectsSelected', selectionHandler
+    layout.lifeCycle().on "drawChart.#{_id}", draw
+    layout.lifeCycle().on "objectsSelected.#{_id}", selectionHandler
+
+    layout.lifeCycle().on "destroy.#{_id}", ->
+      layout.lifeCycle().on ".#{_id}", null
+      _tooltip.on ".#{_id}", null
 
     #-------------------------------------------------------------------------------------------------------------------
 

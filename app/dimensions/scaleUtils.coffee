@@ -273,12 +273,12 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
       if val isnt undefined
         me.showLabel(val is '' or val is 'true').update(true)
 
-    ###*
+    ###* #TODO Find memory-leak save implementation - de-register watcher when scope is destroyed
       @ngdoc attr
       @name axisFormatters
       @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
       @param [axisFormatters] {expression}
-    ###
+
     scope.$watch attrs.axisFormatters, (val) ->
       if _.isObject(val)
         if _.has(val, 'tickFormat') and _.isFunction(val.tickFormat)
@@ -288,6 +288,7 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
         if _.has(val, 'tickValues') and _.isArray(val.tickValues)
           me.tickValues(val.tickValues)
         me.update()
+    ###
 
     ###*
       @ngdoc attr

@@ -98,7 +98,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
         iSucc = cur.iNew
         atBorder = false
       i--
-    $log.debug result
+    #$log.debug result
     return result
 
   merge = () ->

@@ -7,6 +7,7 @@
         tbody
             tr(ng-repeat="(name,value) in layers track by name")
                 td(ng-style="value.color", ng-class="value.class")
-                    svg-icon(ng-if="value.path", path="value.path", width="15")
+                    svg(ng-if="value.path", style="width:15px;height:17px;")
+                        path(ng-attr-d="{{value.path}}",transform="translate(8,9)")
                 td {{name}}
                 td {{value.value}}

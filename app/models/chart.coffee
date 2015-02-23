@@ -120,8 +120,6 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
             if ps.reverse()
               s.reverse(true)
 
-
-
     me.animationDuration = (val) ->
       if arguments.length is 0 then return _animationDuration
       else

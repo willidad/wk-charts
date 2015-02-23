@@ -161,10 +161,10 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       if arguments.length is 0 then return _chart
       else
         _chart = chart
-        _chart.lifeCycle().on 'destroy', () ->
+        _chart.lifeCycle().on 'destroy.tooltip', () ->
           if _templScope
-            $log.log 'destroying scope', _templScope.$id
-          _templScope.$destroy()
+            $log.log 'destroying tooltip scope', _templScope.$id, _chart.id()
+            _templScope.$destroy()
         return me
 
     me.active = (val) ->
@@ -229,8 +229,8 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
     compileTemplate = (template) ->
       if not _templScope
 
-        _templScope = _chart.scope().$parent.$new(true)   ## create the template scope as child of the chart's scope
-        $log.log 'creating tooltip scope' + _templScope.$id
+        _templScope = _chart.scope().$new(true)   ## create the template scope as child of the chart's scope
+        $log.log 'creating tooltip scope', _templScope.$id, _chart.id()
         # add scale access functions to scope
         _templScope.properties = {}
         _templScope.map = {}
@@ -239,11 +239,12 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         _templScope.value = {}
         _templScope.ttHide = false
         for name, scale of _chart.allScales().allKinds()
-          _templScope.map[name] = createClosure(scale.map)
-          _templScope.scale[name] = scale.scale()
-          _templScope.properties[name] = createClosure(scale.layerKeys)
-          _templScope.label[name] = scale.axisLabel()
-          _templScope.value[name] = createClosure(scale.value)
+          #_templScope.map[name] = createClosure(scale.map)  #TODO Find memory-leak save implementation
+          #_templScope.scale[name] = scale.scale() #TODO Find memory-leak save implementation
+          #_templScope.properties[name] = createClosure(scale.layerKeys) #TODO Find memory-leak save implementation
+          #_templScope.label[name] = scale.axisLabel() #TODO Find memory-leak save implementation
+          #_templScope.value[name] = createClosure(scale.value) #TODO Find memory-leak save implementation
+          null
 
       if not _compiledTempl
         _compiledTempl = $compile(_templ)(_templScope) # and bind it to the tooltip template
@@ -254,9 +255,9 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       if arguments.length is 0 then return me
       else  # set tooltip for an objects selection
         compileTemplate(_templ) # set up tooltip template
-        me.chart().lifeCycle().on 'destroy.tooltip', tooltipLeave
+        #me.chart().lifeCycle().on 'destroy.tooltip', tooltipLeave
 
-        if not _showMarkerLine or s.classed('wk-chart-area')
+        if not _showMarkerLine or s.classed('wk-chart-area')  #Note: handlers are cleaned up when wk-chart-area is destroyed
           s.on 'mouseenter.tooltip', tooltipEnter
             .on 'mousemove.tooltip', tooltipMove
             .on 'mouseleave.tooltip', tooltipLeave

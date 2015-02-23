@@ -158,10 +158,14 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig, da
           .colorScale(_scaleList.color)
           .value((d) -> d.value)
 
-      #host.lifeCycle().on 'drawChart', draw
-      host.lifeCycle().on 'brushDraw', drawBrush
-      host.lifeCycle().on 'animationStartState', setAnimationStart
-      host.lifeCycle().on 'animationEndState', setAnimationEnd
+      #host.lifeCycle().on "drawChart", draw
+      host.lifeCycle().on "brushDraw.#{_id}", drawBrush
+      host.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
+      host.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
+
+      host.lifeCycle().on "destroy.#{_id}", ->
+        host.lifeCycle().on ".#{_id}", null
+        _tooltip.on ".#{_id}", null
 
       ###*
         @ngdoc attr

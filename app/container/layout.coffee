@@ -17,7 +17,7 @@ angular.module('wk.chart').directive 'layout', ($log, layout, container) ->
     controller: ($element) ->
       this.me = layout()
     link: (scope, element, attrs, controllers) ->
-
+      $log.log 'layout-scope', scope.$id
       me = controllers[0].me
       chart = controllers[1].me
       me.chart(chart)

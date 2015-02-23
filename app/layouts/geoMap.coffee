@@ -49,7 +49,7 @@ angular.module('wk.chart').directive 'geoMap', ($log, utils) ->
       ttEnter = (data) ->
 
         val = _dataMapping.get(data.properties[_idProp[0]])
-        @layers.push({name:val.RS, value:val.DES})
+        @layers[val.RS] = {value:val.DES}
 
       #-----------------------------------------------------------------------------------------------------------------
       pathSel = []
@@ -104,6 +104,11 @@ angular.module('wk.chart').directive 'geoMap', ($log, utils) ->
       _tooltip = layout.behavior().tooltip
       _selected = layout.behavior().selected
       _tooltip.on "enter.#{_id}", ttEnter
+
+      layout.lifeCycle().on "destroy.#{_id}", ->
+        layout.lifeCycle().on ".#{_id}", null
+        _tooltip.on ".#{_id}", null
+        scope.$destroy()
 
       # GeoMap specific properties -------------------------------------------------------------------------------------
       ###*

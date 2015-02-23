@@ -17,6 +17,7 @@
   Brush will be published under this name for consumption by other layouts
 ###
 angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior) ->
+  brushId = 0
   return {
     restrict: 'A'
     require: ['^chart', '^?layout', '?x', '?y']
@@ -72,6 +73,8 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       clearBrush: "="
 
     link:(scope, element, attrs, controllers) ->
+      $log.log 'brush-scope', scope.$id
+      _id = brushId++
       chart = controllers[0].me
       layout = controllers[1]?.me
       x = controllers[2]?.me
@@ -82,6 +85,8 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       _brushAreaSelection = undefined
       _isAreaBrush = not x and not y
       _brushGroup = undefined
+
+      $log.log 'creating brush scope', scope.$id
 
       brush = chart.behavior().brush
 
@@ -97,21 +102,21 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
         brush.y(y)
       brush.active(true)
 
-      scope.$watch 'clearBrush' , (val) ->
+      scope.$watch "clearBrush" , (val) ->
         if attrs.clearBrush
           scope.clearBrush = brush.clearBrush
 
-      attrs.$observe 'brush', (val) ->
+      attrs.$observe "brush", (val) ->
         if _.isString(val) and val.length > 0
           brush.brushGroup(val)
         else
           brush.brushGroup(undefined)
 
-      brush.events().on 'brushStart', () ->
+      brush.events().on "brushStart.#{_id}", () ->
         scope.brushStart()
         scope.$apply()
 
-      brush.events().on 'brush', (idxRange, valueRange, domain) ->
+      brush.events().on "brush.#{_id}", (idxRange, valueRange, domain) ->
         if attrs.brushExtent
           scope.brushExtent = idxRange
         if attrs.selectedValues
@@ -121,12 +126,16 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
         scope.selectedDomainChange({domain:domain})
         scope.$apply()
 
-      brush.events().on 'brushEnd', (idxRange, valueRange, domain) ->
+      brush.events().on "brushEnd.#{_id}", (idxRange, valueRange, domain) ->
         scope.brushEnd({domain:domain})
         scope.$apply()
 
-      host.lifeCycle().on 'drawChart.brush', (data) ->
+      chart.lifeCycle().on 'drawChart.brush', (data) ->
         brush.data(data)
 
+      host.lifeCycle().on 'destroy.brush', () ->
+        scope.$destroy()
+        brush.events().on ".#{_id}", null #deregister handlers
+        $log.log 'destroying brush scope', scope.$id
 
   }

@@ -21,6 +21,7 @@ angular.module('wk.chart').directive 'x', ($log, scale, scaleUtils) ->
       this.me = scale() # for Angular 1.3
 
     link: (scope, element, attrs, controllers) ->
+      $log.log 'x-scope', scope.$id
       me = controllers[0].me
       chart = controllers[1].me
       layout = controllers[2]?.me

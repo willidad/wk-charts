@@ -132,9 +132,13 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
         .keyScale(_scaleList.y)
         .valueScale(_scaleList.x)
 
-    host.lifeCycle().on 'brushDraw', brush
-    host.lifeCycle().on 'animationStartState', setAnimationStart
-    host.lifeCycle().on 'animationEndState', setAnimationEnd
+    host.lifeCycle().on "brushDraw.#{_id}", brush
+    host.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
+    host.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
+
+    host.lifeCycle().on "destroy.#{_id}", ->
+      host.lifeCycle().on ".#{_id}", null
+      _tooltip.on ".#{_id}", null
 
     ###*
       @ngdoc attr

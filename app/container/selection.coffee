@@ -38,9 +38,11 @@ angular.module('wk.chart').directive 'selection', ($log) ->
     require: 'layout'
 
     link: (scope, element, attrs, controller) ->
+      $log.log 'selection-scope', scope.$id
       layout = controller.me
+      _id = objId++
 
-      layout.lifeCycle().on 'configure.selection', ->
+      layout.lifeCycle().on "configure.selection#{_id}", ->
         _selection = layout.behavior().selected
         _selection.layout(layout)
         scope.$watch 'clearSelection' , (val) ->
@@ -48,9 +50,14 @@ angular.module('wk.chart').directive 'selection', ($log) ->
             scope.clearSelection = _selection.clearSelection
 
         _selection.active(true)
-        _selection.on 'selected', (selectedObjects) ->
+        _selection.on "selected.selection#{_id}", (selectedObjects) ->
           if scope.selectedDomain then scope.selectedDomain = selectedObjects
           scope.selectedDomainChange({domain:selectedObjects})
           scope.$apply()
+
+        layout.lifeCycle().on "destroy.selection#{_id}", () ->
+          _selection.on ".selection#{_id}", null
+          layout.lifeCycle().on ".selection#{_id}", null
+          scope.$destroy()
 
   }

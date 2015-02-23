@@ -66,7 +66,11 @@ angular.module('wk.chart').directive 'bubble', ($log, utils) ->
         _selected = layout.behavior().selected
         _tooltip.on "enter.#{_id}", ttEnter
 
-      layout.lifeCycle().on 'drawChart', draw
+      layout.lifeCycle().on "drawChart.#{_id}", draw
+
+      layout.lifeCycle().on "destroy.#{_id}", ->
+        layout.lifeCycle().on ".#{_id}", null
+        _tooltip.on ".#{_id}", null
 
   }
 

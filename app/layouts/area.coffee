@@ -98,7 +98,9 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
       brush = (axis, idxRange) ->
         lines = this.selectAll(".wk-chart-area-path")
         if axis.isOrdinal()
-          lines.attr('d', (d) -> area(d.values.slice(idxRange[0],idxRange[1] + 1)))
+          lines.attr('d', (d) ->
+            null
+            area(d.values.slice(idxRange[0],idxRange[1] + 1)))
             .attr('transform', "translate(#{axis.scale().rangeBand() / 2})")
           markers.brush(this, idxRange)
           ttHelper.brushRange(idxRange)
@@ -108,7 +110,7 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
 
       #--- Configuration and registration ------------------------------------------------------------------------------
 
-      host.lifeCycle().on 'configure', ->
+      host.lifeCycle().on "configure", ->
         _scaleList = @getScales(['x', 'y', 'color'])
         @layerScale('color')
         @getKind('y').domainCalc('extent').resetOnNewData(true)
@@ -125,9 +127,14 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
         _tooltip.on "moveMarker.#{_id}", ttHelper.moveMarkers
 
       #host.lifeCycle().on 'drawChart', draw
-      host.lifeCycle().on 'brushDraw', brush
-      host.lifeCycle().on 'animationStartState', setAnimationStart
-      host.lifeCycle().on 'animationEndState', setAnimationEnd
+      host.lifeCycle().on "brushDraw.#{_id}", brush
+      host.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
+      host.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
+
+      host.lifeCycle().on "destroy.#{_id}", ->
+        host.lifeCycle().on ".#{_id}", null
+        _tooltip.on ".#{_id}", null
+
 
       #--- Property Observers ------------------------------------------------------------------------------------------
       ###*

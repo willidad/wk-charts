@@ -14,6 +14,7 @@ angular.module('wk.chart').directive 'tooltips', ($log, behavior) ->
     require: 'chart'
     link: (scope, element, attrs, chartCtrl) ->
       chart = chartCtrl.me
+      $log.log 'tooltips-scope', scope.$id
 
       ###*
         @ngdoc attr

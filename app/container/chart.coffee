@@ -31,6 +31,7 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
       this.me.scope($scope)
 
     link: (scope, element, attrs, controller) ->
+      $log.log 'chart-scope', scope.$id
       me = controller.me
 
       deepWatch = false
@@ -116,9 +117,6 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
       watcherRemoveFn = scope.$watch 'data', dataWatchFn, deepWatch
 
       # cleanup when destroyed
-
-      scope.$on '$destroy', () ->
-        'destroying chart scope'
 
       element.on '$destroy', () ->
         if watcherRemoveFn

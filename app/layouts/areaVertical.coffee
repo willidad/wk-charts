@@ -133,9 +133,13 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelper
         _tooltip.on "moveMarker.#{_id}", ttHelper.moveMarkers
 
       #host.lifeCycle().on 'drawChart', draw
-      host.lifeCycle().on 'brushDraw', brush
-      host.lifeCycle().on 'animationStartState', setAnimationStart
-      host.lifeCycle().on 'animationEndState', setAnimationEnd
+      host.lifeCycle().on "brushDraw.#{_id}", brush
+      host.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
+      host.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
+
+      host.lifeCycle().on "destroy.#{_id}", ->
+        host.lifeCycle().on ".#{_id}", null
+        _tooltip.on ".#{_id}", null
 
       #--- Property Observers ------------------------------------------------------------------------------------------
       ###*

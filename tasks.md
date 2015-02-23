@@ -40,13 +40,13 @@ Fix: a481674 Tab 'Applying brush to chart' does not work
 Fix: a481674 Tab 'Brushing Multiple Charts' does not brush upper chart (lower chart is brushed)
 Fix: b21cd9e Brush on global axis does not work 'Controller layout required by directive brush not found'
 Fix: 137850b leaking tooltip scopes and tooltip and brush event handlers
-Fix: Tooltips for chart with layer property do not display value correctly ('Brushing Multiple Charts' tab)
-Fix: Tooltip does not display for charts with shape dimension
-Fix: Pie/donat, spider,scatter, bubble charts do not display tooltips
+Fix: 8d7f490 Tooltips for chart with layer property do not display value correctly ('Brushing Multiple Charts' tab)
+Fix: 8d7f490 Tooltip does not display for charts with shape dimension
+Fix: 8d7f490 Pie/donat, spider,scatter, bubble charts do not display tooltips
 
 Cannot Reproduce
 ----------------
-area stacked time brushed produces d3 invalid path errors when brushed (displays correctly though) (probably fixed w 137850b
+area stacked time brushed produces d3 invalid path errors when brush ed (displays correctly though) (probably fixed w 137850b
 bars / columns charts: data update shows incorrect bars at borders after data update
 
 Features Implemented

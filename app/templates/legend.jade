@@ -3,7 +3,8 @@
     ul.list-unstyled
         li(ng-repeat="legendRow in legendRows track by legendRow.value", class="wk-chart-legend-item")
             span(ng-if="legendRow.color", ng-style="legendRow.color") &nbsp;&nbsp;&nbsp;
-            svg-icon(ng-if="legendRow.path", path="legendRow.path", width="20")
+            svg(ng-if="legendRow.path", style="width:20px;height:17px;")
+                path(ng-attr-d="{{legendRow.path}}",transform="translate(8,9)")
             span  &nbsp;{{legendRow.value}}
 
 
