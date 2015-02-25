@@ -84,6 +84,10 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
 
     setSelection = (left, right, top, bottom) ->
       if _brushX
+        if me.x().reverse()
+          s = left
+          left = right
+          right = s
         #test if selected elements are changed
         _leftVal = me.x().invert(left)
         _rightVal = me.x().invert(right)
@@ -103,6 +107,10 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
           selectionSharing.setSelection _boundsValues, _boundsIdx, _brushGroup
       if _brushY
         #test if selected elements are changed
+        if me.y().reverse()
+          s = top
+          top = bottom
+          bottom = s
         _bottomVal = me.y().invert(bottom)
         _topVal = me.y().invert(top)
         if _lastBottomVal isnt _bottomVal or _lastTopVal isnt _topVal
