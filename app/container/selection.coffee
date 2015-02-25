@@ -16,7 +16,7 @@ angular.module('wk.chart').directive 'selection', ($log) ->
       ###*
         @ngdoc attr
         @name selection#selectedDomain
-        @param selectedDomain {array} Array containing the selected data objects.
+        @param selectedDomain {array} Array containing the selected data objects. Settimg selectedDomain to `[]` (an empty array) clears the selection
       ###
       selectedDomain: '='
 

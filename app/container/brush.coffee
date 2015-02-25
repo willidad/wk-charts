@@ -64,14 +64,6 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       ###
       brushEnd: '&'
 
-    ###*
-      @ngdoc attr
-      @name brush#clearBrush
-      @param clearBrush {function} assigns a function that clears the brush selection when called via a bound scope variable.
-      * Usage: bind a scope variable to the attribute: `clear-selection="scopeVar"`. `brush` assigns a function to scopeVar that can be called to reset the brush, e.g. in a button: `<button ng-click="scopeVar()">Clear Brush</button>`
-    ###
-
-
     link:(scope, element, attrs, controllers) ->
       $log.log 'brush-scope', scope.$id
       _id = brushId++
