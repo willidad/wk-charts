@@ -99,6 +99,7 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelper
           .x((d) -> x.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
           .y((d) -> y.scale()(d.targetKey) + if y.isOrdinal() then y.scale().rangeBand() / 2 else 0)
           .color((d) -> color.scale()(d.layerKey))
+          .keyScale(y.scale())
         layers.call(markers, doAnimate)
 
       brush = (axis, idxRange, width, height) ->

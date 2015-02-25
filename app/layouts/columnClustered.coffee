@@ -1,13 +1,13 @@
 ###*
   @ngdoc layout
-  @name barClustered
+  @name columnClustered
   @module wk.chart
   @restrict A
   @area api
   @element layout
   @description
 
-  draws a clustered bar layout
+  draws a clustered Column layout
 
   @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
   @usesDimension y [type=linear, domainRange=extent]

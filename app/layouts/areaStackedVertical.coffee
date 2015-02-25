@@ -113,6 +113,7 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
           .x((d) -> scaleX(d.y + d.y0))
           .y((d) -> y.scale()(d.targetKey) +  if y.isOrdinal() then y.scale().rangeBand() / 2 else 0)
           .color((d) -> color.scale()(d.layerKey))
+          .keyScale(y.scale())
           .isVertical(true)
 
         layers.call(markers, doAnimate)

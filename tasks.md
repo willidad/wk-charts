@@ -43,6 +43,14 @@ Fix: 137850b leaking tooltip scopes and tooltip and brush event handlers
 Fix: 8d7f490 Tooltips for chart with layer property do not display value correctly ('Brushing Multiple Charts' tab)
 Fix: 8d7f490 Tooltip does not display for charts with shape dimension
 Fix: 8d7f490 Pie/donat, spider,scatter, bubble charts do not display tooltips
+Fix: dd15d68 (and several other commits) remove memory leaks and dangling objects and scopes. Also resolves:
+    More general: area and line charts produce path errors when path contains only one data point. Summarizes
+    - area markers brushed ordinal produces d3 invalid path errors when brush area contains only a single data point (displays correctly through)
+    - line markers brushed ordinal produces d3 invalid path errors when brush area contains only a single data point (displays correctly through)
+Fix:  line w time scale u markers brushed: if empty brush selection shows many marker bubbles at left axis (for all area and line charts with non-ordinal scales)    
+
+
+
 
 Cannot Reproduce
 ----------------
@@ -78,11 +86,6 @@ Dup: Tooltip on non-zero stacked area chart positions markers wrong
 More general: Brush does not re-evaluate brush selection after a data update. Should either clear selection or re-position brush to the old range points on new data
 - Line / area charts w ordinal scales: brush selection corrupted after data update
 - Line / area charts w time scale: brush selection not updated after data change
-
-More general: area and line charts produce path errors when path contains only one data point. Summarizes
-- area markers brushed ordinal produces d3 invalid path errors when brush area contains only a single data point (displays correctly through)
-- line markers brushed ordinal produces d3 invalid path errors when brush area contains only a single data point (displays correctly through)
-- line w time scale u markers brushed: if empty brush selection shows many marker bubbles at left axis (for all area and line charts with non-ordinal scales)
 
 Brush highlighting does not honor range paddings
 

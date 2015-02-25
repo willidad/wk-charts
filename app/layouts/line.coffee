@@ -107,6 +107,7 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
           #.x((d) -> x.scale()(d.targetKey) + if x.isOrdinal() then x.scale().rangeBand() / 2 else 0)
           .y((d) -> y.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
           .color((d) -> color.scale()(d.layerKey))
+          .keyScale(x.scale())
 
         if x.isOrdinal()
           markers.x((d) -> if d.highBorder then options.width + moveOutside else if d.lowBorder then -moveOutside else x.scale()(d.targetKey) + x.scale().rangeBand() / 2)

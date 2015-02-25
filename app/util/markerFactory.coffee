@@ -12,6 +12,7 @@ angular.module('wk.chart').factory 'markerFactory', ($log, d3Animation) ->
     _initialOpacity = 0
     _duration = d3Animation.duration;
     _isVertical = false
+    _keyScale = undefined
     _markerSelection = undefined
     _id = markersCnt++
 
@@ -49,14 +50,11 @@ angular.module('wk.chart').factory 'markerFactory', ($log, d3Animation) ->
           c = 'cx'
           v = _x
         if idxRange
-          _markerSelection.selectAll(".wk-chart-marker-#{_id}").each((d, i) ->
-            if idxRange[0] <= i and i <= idxRange[1]
-              d3.select(this).attr(c,v).style('opacity', 1)
-            else
-              d3.select(this).style('opacity', 0)
-          )
+          _markerSelection.selectAll(".wk-chart-marker-#{_id}").attr(c,v).style('opacity', (d,i) -> if idxRange[0] <= i and i <= idxRange[1] then 1 else 0)
         else
-          _markerSelection.selectAll(".wk-chart-marker-#{_id}").attr(c, v)
+          domain = _keyScale.domain()
+          _markerSelection.selectAll(".wk-chart-marker-#{_id}").attr(c, v).style('opacity', (d) -> if domain[0] <= d.key and d.key <= domain[1] then 1 else 0)
+
 
     me.active = (trueFalse) ->
       if arguments.length is 0 then return _active
@@ -93,6 +91,11 @@ angular.module('wk.chart').factory 'markerFactory', ($log, d3Animation) ->
     me.isVertical = (val) ->
       if arguments.length is 0 then return _isVertical
       _isVertical = val
+      return me
+
+    me.keyScale = (val) ->
+      if arguments.length is 0 then return _keyScale
+      _keyScale = val
       return me
 
     return me

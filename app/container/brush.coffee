@@ -3,7 +3,7 @@
   @name brush
   @module wk.chart
   @restrict A
-  @element x, y, range-x, range-y or layout
+  @element x, y or layout
   @description
 
   enable brushing behavior

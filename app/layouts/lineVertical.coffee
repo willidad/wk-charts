@@ -106,6 +106,7 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelper
           .isVertical(true)
           .x((d) -> x.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
           .color((d) -> color.scale()(d.layerKey))
+          .keyScale(y.scale())
 
         if y.isOrdinal()
           markers.y((d) -> if d.lowBorder then options.height + moveOutside else if d.highBorder then -moveOutside else y.scale()(d.targetKey) +  y.scale().rangeBand() / 2)
