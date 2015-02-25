@@ -320,7 +320,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
           s.append('g').attr('class', 'wk-chart-resize wk-chart-se').style({cursor:'nwse-resize', display:'none'})
           .append('rect').attr({x: -3, y: -3, width:6, height:6}).datum({name:'se'})
         #register handler. Please note, brush wants the mouse down exclusively !!!
-        s.on 'mousedown.brush', brushStart
+        s.on 'mousedown.brush', brushStart  # de-registered by container when deleting chart area
 
         return me
 
@@ -375,7 +375,10 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
     me.area = (val) ->
       if arguments.length is 0 then return _areaSelection
       else
-        if not _areaSelection
+        if val is undefined
+          _area = undefined
+          _areaSelection = undefined
+        else if not _areaSelection
           _areaSelection = val
           _area = _areaSelection.node()
           #_areaBox = _area.getBBox() need to get when calculating size to deal with resizing
@@ -387,7 +390,8 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       if arguments.length is 0 then return _container
       else
         _container = val
-        _selectables = _container.selectAll('.wk-chart-selectable')
+        if _container
+          _selectables = _container.selectAll('.wk-chart-selectable')
         return me #to enable chaining
 
     me.data = (val) ->

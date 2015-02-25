@@ -49,14 +49,15 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       else
         _resizeHandler = () ->  me.chart().lifeCycle().resize(true) # no animation
         _element = elem
-        _elementSelection = d3.select(_element)
-        if _elementSelection.empty()
-          $log.error "Error: Element #{_element} does not exist"
-        else
-          _genChartFrame()
-          # find the div element to attach the handler to
-          resizeTarget = _elementSelection.select('.wk-chart').node()
-          new ResizeSensor(resizeTarget, _resizeHandler)
+        if _element
+          _elementSelection = d3.select(_element)
+          if _elementSelection.empty()
+            $log.error "Error: Element #{_element} does not exist"
+          else
+            _genChartFrame()
+            # find the div element to attach the handler to
+            resizeTarget = _elementSelection.select('.wk-chart').node()
+            new ResizeSensor(resizeTarget, _resizeHandler)
 
         return me
 
@@ -390,9 +391,14 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       # register destroy event listener
 
       angular.element(_chartArea.node()).on '$destroy', ()->
-        $log.log 'removeing event listeners'
+        $log.log 'removing event listeners from', _chartArea.attr('class')
         _chartArea.on '.tooltip', null
         _chartArea.on '.brush', null
+        _chart.behavior().overlay(undefined)
+        _gridArea = undefined
+        _element = undefined
+        _chartAreaDiv = undefined
+
 
     #--- Brush Accelerator ---------------------------------------------------------------------------------------------
 

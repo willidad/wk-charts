@@ -27,28 +27,22 @@ angular.module('wk.chart').directive 'selection', ($log) ->
       ###
       selectedDomainChange: '&'
 
-      ###*
-        @ngdoc attr
-        @name selection#clearSelection
-        @param clearSelection {function} assigns a function that clears the selection when called via a bound scope variable.
-        * Usage: bind a scope variable to the attribute: `clear-selection="scopeVar"`. `selection` assigns a function to scopeVar that can be called to reset the brush, e.g. in a button: `<button ng-click="scopeVar()">Clear Selection</button>`
-      ###
-      clearSelection: "="
-
     require: 'layout'
 
     link: (scope, element, attrs, controller) ->
       $log.log 'selection-scope', scope.$id
       layout = controller.me
+      _selection = undefined
       _id = objId++
+
+      scope.$watch 'selectedDomain', (val) ->
+        if _.isArray(val) and val.length is 0
+          _selection.clearSelection()
+          scope.selectedDomainChange({domain:[]})
 
       layout.lifeCycle().on "configure.selection#{_id}", ->
         _selection = layout.behavior().selected
         _selection.layout(layout)
-        scope.$watch 'clearSelection' , (val) ->
-          if attrs.clearSelection
-            scope.clearSelection = _selection.clearSelection
-
         _selection.active(true)
         _selection.on "selected.selection#{_id}", (selectedObjects) ->
           if scope.selectedDomain then scope.selectedDomain = selectedObjects

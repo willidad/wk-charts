@@ -83,4 +83,3 @@ angular.module('wk.chart').directive 'scatter', ($log, utils) ->
   }
 
 #TODO verify behavior with custom tooltips
-#TODO Implement in new demo app

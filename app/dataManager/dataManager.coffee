@@ -122,7 +122,7 @@ angular.module('wk.chart').factory 'dataManagerFactory',($log) ->
       _keyOld = _keyNew
       _layerKeysOld = _layerKeysNew
       _layerKeysNew  = _valueScale.layerKeys(data)
-      _dataNew = _.cloneDeep(data)
+      _dataNew = _.clone(data)
       _keyNew = _keyScale.value(data)
       if _keyScale.scaleType() is 'time'  # convert to number to ensure date equality works correctly
         _keyNew = _keyNew.map((d) -> +d)

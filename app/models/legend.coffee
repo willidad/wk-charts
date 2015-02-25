@@ -135,6 +135,9 @@ angular.module('wk.chart').factory 'legend', ($log, $compile, $rootScope, $templ
       layout.lifeCycle().on "destroy.#{_id}", () ->
         _legendScope.$destroy()
         _parsedTemplate.remove()
+        _parsedTemplate = undefined
+        _containerDiv = undefined
+        _legendDiv = undefined
         layout.lifeCycle().on ".#{_id}", null
       return me
 

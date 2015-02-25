@@ -43,15 +43,10 @@ angular.module('wk.chart').factory 'behaviorSelect', ($log) ->
 
     me.clearSelection = () ->
       $log.log 'selection Cleared'
-      _container.selectAll('.wk-chart-selected').classed('wk-chart-selected', false)
-      _container.classed('wk-chart-has-selected-items', false)
-      _.delay(
-        () ->
-          _selectionEvents.selected([])
-          _layout.lifeCycle().objectsSelected(_container.selectAll('.wk-chart-selected'))
-      ,
-        20
-      )
+      if _container
+        _container.selectAll('.wk-chart-selected').classed('wk-chart-selected', false)
+        _container.classed('wk-chart-has-selected-items', false)
+        _layout.lifeCycle().objectsSelected(_container.selectAll('.wk-chart-selected'))
 
     me.container = (val) ->
       if arguments.length is 0 then return _container

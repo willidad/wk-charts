@@ -25,7 +25,7 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       ###*
         @ngdoc attr
         @name brush#brushExtent
-        @param brushExtent {array} Contains the start and end index into the data array for the brushed axis. Is undefined if brush is empty or is a xy (layout) brush
+        @param brushExtent {array} Contains the data array index of the start and end item of teh brush area. Updates when brush is moved and can be set to position the brush. An empty array ´[]´ resets the brush to empty.
       ###
       brushExtent: '='
 
@@ -64,13 +64,13 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       ###
       brushEnd: '&'
 
-      ###*
-        @ngdoc attr
-        @name brush#clearBrush
-        @param clearBrush {function} assigns a function that clears the brush selection when called via a bound scope variable.
-        * Usage: bind a scope variable to the attribute: `clear-selection="scopeVar"`. `brush` assigns a function to scopeVar that can be called to reset the brush, e.g. in a button: `<button ng-click="scopeVar()">Clear Brush</button>`
-      ###
-      clearBrush: "="
+    ###*
+      @ngdoc attr
+      @name brush#clearBrush
+      @param clearBrush {function} assigns a function that clears the brush selection when called via a bound scope variable.
+      * Usage: bind a scope variable to the attribute: `clear-selection="scopeVar"`. `brush` assigns a function to scopeVar that can be called to reset the brush, e.g. in a button: `<button ng-click="scopeVar()">Clear Brush</button>`
+    ###
+
 
     link:(scope, element, attrs, controllers) ->
       $log.log 'brush-scope', scope.$id
@@ -102,19 +102,20 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
         brush.y(y)
       brush.active(true)
 
-      scope.$watch "clearBrush" , (val) ->
-        if attrs.clearBrush
-          scope.clearBrush = brush.clearBrush
-
       attrs.$observe "brush", (val) ->
         if _.isString(val) and val.length > 0
           brush.brushGroup(val)
         else
           brush.brushGroup(undefined)
 
+      scope.$watch 'brushExtent', (newVal, oldVal) ->
+        if _.isArray(newVal) and newVal.length is 0 and _.isArray(oldVal) and oldVal.length isnt 0
+          brush.clearBrush()
+
       brush.events().on "brushStart.#{_id}", () ->
-        scope.brushStart()
-        scope.$apply()
+        if attrs.brushStart
+          scope.brushStart()
+          scope.$apply()
 
       brush.events().on "brush.#{_id}", (idxRange, valueRange, domain) ->
         if attrs.brushExtent
@@ -127,15 +128,18 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
         scope.$apply()
 
       brush.events().on "brushEnd.#{_id}", (idxRange, valueRange, domain) ->
-        scope.brushEnd({domain:domain})
-        scope.$apply()
+        if attrs.brushEnd
+          scope.brushEnd({domain:domain})
+          scope.$apply()
 
       chart.lifeCycle().on 'drawChart.brush', (data) ->
         brush.data(data)
 
       host.lifeCycle().on 'destroy.brush', () ->
-        scope.$destroy()
+        scope.$apply()
         brush.events().on ".#{_id}", null #deregister handlers
+        chart.lifeCycle().on ".#{_id}", null
+        scope.$destroy()
         $log.log 'destroying brush scope', scope.$id
 
   }

@@ -25,7 +25,7 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
     scope:
       data: '='
       filter: '='
-      editSelected: '&'
+      #editSelected: '&'
     controller: ($scope) ->
       this.me = chart()
       this.me.scope($scope)
@@ -45,12 +45,13 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
 
       me.lifeCycle().configure()
 
-      me.lifeCycle().on 'scopeApply', () ->
+      me.lifeCycle().on 'scopeApply.chart', () ->
         scope.$apply()
 
-      me.lifeCycle().on 'editSelected', (selection, object) ->
-        scope.editSelected({selected:selection, object:object})
-        scope.$apply()
+      me.lifeCycle().on 'editSelected.chart', (selection, object) ->
+        if attr.editSelected
+          #scope.editSelected({selected:selection, object:object})
+          scope.$apply()
 
       attrs.$observe 'animationDuration', (val) ->
         if val and _.isNumber(+val) and +val >= 0
@@ -121,6 +122,8 @@ angular.module('wk.chart').directive 'chart', ($log, chart, $filter) ->
       element.on '$destroy', () ->
         if watcherRemoveFn
           watcherRemoveFn()
+        me.lifeCycle().on '.chart', null
+        me.container().element(undefined)
         $log.log 'Destroying chart'
         me.lifeCycle().destroy()
         scope.$destroy()

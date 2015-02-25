@@ -220,7 +220,7 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
         _lifeCycle.drawAxis(true)              # No Animation
         _lifeCycle.drawChart(_data, true)
 
-    me.lifeCycle().on 'newData.chart', _.debounce(lifecycleFull, 300)
+    me.lifeCycle().on 'newData.chart', _.debounce(lifecycleFull, 10)
     me.lifeCycle().on 'resize.chart', me.resizeLifeCycle
     me.lifeCycle().on 'update.chart', (noAnimation) -> me.execLifeCycleFull(_data, noAnimation)
     me.lifeCycle().on 'updateAttrs', me.attributeChange

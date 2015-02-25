@@ -123,8 +123,6 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
       _markerG = undefined
       _compiledTempl.remove()
 
-
-
     #--- Interface to brush --------------------------------------------------------------------------------------------
 
     forwardToBrush = (e) ->
@@ -164,7 +162,14 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         _chart.lifeCycle().on 'destroy.tooltip', () ->
           if _templScope
             $log.log 'destroying tooltip scope', _templScope.$id, _chart.id()
+            _templScope.map = undefined
+            _templScope.scale = undefined
+            _templScope.properties = undefined
+            _templScope.label = undefined
+            _templScope.value = undefined
             _templScope.$destroy()
+          _compiledTempl = undefined
+          _area = undefined
         return me
 
     me.active = (val) ->
@@ -187,8 +192,12 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
     me.area = (val) ->
       if arguments.length is 0 then return _areaSelection
       else
-        _areaSelection = val
-        _area = _areaSelection.node()
+        if val is undefined
+          _areaSelection = val
+          _area = val
+        else
+          _areaSelection = val
+          _area = _areaSelection.node()
         #if _showMarkerLine
         #  me.tooltip(_container)
         return me #to enable chaining
@@ -239,11 +248,11 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         _templScope.value = {}
         _templScope.ttHide = false
         for name, scale of _chart.allScales().allKinds()
-          #_templScope.map[name] = createClosure(scale.map)  #TODO Find memory-leak save implementation
-          #_templScope.scale[name] = scale.scale() #TODO Find memory-leak save implementation
-          #_templScope.properties[name] = createClosure(scale.layerKeys) #TODO Find memory-leak save implementation
-          #_templScope.label[name] = scale.axisLabel() #TODO Find memory-leak save implementation
-          #_templScope.value[name] = createClosure(scale.value) #TODO Find memory-leak save implementation
+          _templScope.map[name] = createClosure(scale.map)
+          _templScope.scale[name] = scale.scale()
+          _templScope.properties[name] = createClosure(scale.layerKeys)
+          _templScope.label[name] = scale.axisLabel()
+          _templScope.value[name] = createClosure(scale.value)
           null
 
       if not _compiledTempl
