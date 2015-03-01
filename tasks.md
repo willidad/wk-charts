@@ -49,7 +49,7 @@ Fix: dd15d68 (and several other commits) remove memory leaks and dangling object
     - line markers brushed ordinal produces d3 invalid path errors when brush area contains only a single data point (displays correctly through)
 Fix: ca424f5 line w time scale u markers brushed: if empty brush selection shows many marker bubbles at left axis (for all area and line charts with non-ordinal scales)
 Fix: f843b1f Brush from a reverse axis does not work correctly
-Fix: barClustered wrong animation start
+Fix: a885fa2 barClustered wrong animation start
 
 
 

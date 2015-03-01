@@ -73,20 +73,20 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig, da
         clusterHeight = y.scale().rangeBand()
         clusterY = d3.scale.ordinal().domain(layerKeys).rangeBands([0, clusterHeight], 0, 0)
         barHeight = clusterY.rangeBand()
-        barPadding = barHeight / (1 - config.padding) * config.padding
-        barOuterPadding = barHeight / (1 - config.outerPadding) * config.outerPadding
+        clusterPadding = clusterHeight / (1 - config.padding) * config.padding
+        barOuterPadding = clusterHeight / (1 - config.outerPadding) * config.outerPadding
 
         offset = (d) ->
           if y.reverse()
-            if d.deleted and d.highBorder then return clusterHeight + barPadding / 2
-            if d.deleted then return -barPadding / 2
-            if d.added and d.atBorder then return clusterHeight + barPadding / 2
-            if d.added then return -barPadding / 2
+            if d.deleted and d.highBorder then return clusterHeight + clusterPadding / 2
+            if d.deleted then return -clusterPadding / 2
+            if d.added and d.atBorder then return clusterHeight + clusterPadding / 2
+            if d.added then return -clusterPadding / 2
           else
-            if d.deleted and d.highBorder then return -barPadding / 2
-            if d.deleted then return clusterHeight + barPadding / 2
-            if d.added and d.atBorder then return -barPadding / 2
-            if d.added then return clusterHeight + barPadding / 2
+            if d.deleted and d.highBorder then return -clusterPadding / 2
+            if d.deleted then return clusterHeight + clusterPadding / 2
+            if d.added and d.atBorder then return -clusterPadding / 2
+            if d.added then return clusterHeight + clusterPadding / 2
           return 0
 
         stackLayout = stack(data)
@@ -129,7 +129,7 @@ angular.module('wk.chart').directive 'barClustered', ($log, utils, barConfig, da
           .remove()
 
         initial = false
-        barPaddingOld = barPadding
+        barPaddingOld = clusterPadding
         barOuterPaddingOld = barOuterPadding
 
       drawBrush = (axis, idxRange) ->

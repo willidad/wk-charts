@@ -74,20 +74,20 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig,
         clusterX = d3.scale.ordinal().domain(layerKeys).rangeBands([0, clusterWidth], 0, 0)
 
         barWidth = clusterX.rangeBand()
-        barPadding = barWidth / (1 - config.padding) * config.padding
-        barOuterPadding = barWidth / (1 - config.outerPadding) * config.outerPadding
+        clusterPadding = clusterWidth / (1 - config.padding) * config.padding
+        barOuterPadding = clusterWidth / (1 - config.outerPadding) * config.outerPadding
 
         offset = (d) ->
           if x.reverse()
-            if d.deleted and d.highBorder then return barPadding / 2
-            if d.deleted then return clusterWidth + barPadding / 2
-            if d.added and d.atBorder then return barPadding / 2
-            if d.added then return clusterWidth + barPadding / 2
+            if d.deleted and d.highBorder then return clusterPadding / 2
+            if d.deleted then return clusterWidth + clusterPadding / 2
+            if d.added and d.atBorder then return clusterPadding / 2
+            if d.added then return clusterWidth + clusterPadding / 2
           else
             if d.deleted and d.highBorder then return clusterWidth
-            if d.deleted then return 0 -barPadding / 2
-            if d.added and d.atBorder then return  clusterWidth + barPadding / 2
-            if d.added then return 0 -barPadding / 2
+            if d.deleted then return 0 -clusterPadding / 2
+            if d.added and d.atBorder then return  clusterWidth + clusterPadding / 2
+            if d.added then return 0 -clusterPadding / 2
           return 0
 
         stackLayout = stack(data)
@@ -130,7 +130,7 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig,
           .remove()
 
         initial = false
-        barPaddingOld = barPadding
+        barPaddingOld = clusterPadding
         barOuterPaddingOld = barOuterPadding
 
       drawBrush = (axis, idxRange) ->
