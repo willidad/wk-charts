@@ -48,7 +48,8 @@ Fix: dd15d68 (and several other commits) remove memory leaks and dangling object
     - area markers brushed ordinal produces d3 invalid path errors when brush area contains only a single data point (displays correctly through)
     - line markers brushed ordinal produces d3 invalid path errors when brush area contains only a single data point (displays correctly through)
 Fix: ca424f5 line w time scale u markers brushed: if empty brush selection shows many marker bubbles at left axis (for all area and line charts with non-ordinal scales)
-Fix: Brush from a reverse axis does not work correctly
+Fix: f843b1f Brush from a reverse axis does not work correctly
+Fix: barClustered wrong animation start
 
 
 
@@ -90,7 +91,7 @@ More General: Tooltip and brush combined event handling does not work as desired
 - Brush: when mousedown over brushExtent crosshair cursor is displayed (should be move cursor) - draggs correctly though
 
 Browser Zooming does not resize chart
-Responsive pages (css @media based resiring) does not always trigger chart resize
+Responsive pages (css @media based resizing) does not always trigger chart resize
 
 
 
