@@ -52,6 +52,7 @@ Fix: f843b1f Brush from a reverse axis does not work correctly
 Fix: a885fa2 barClustered wrong animation start
 Fix: 44d3a06 label text accumulates when property changes
 Fix: aa4565d tooltip marker circles cut at edge of chart area
+Fix: set drawpadding to 0
 
 
 

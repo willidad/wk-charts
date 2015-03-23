@@ -28,7 +28,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
     _overlay = undefined
     _behavior = undefined
     _duration = 0
-    drawPadding = 5
+    drawPadding = 0
 
     #--- Getter/Setter Functions ---------------------------------------------------------------------------------------
 
