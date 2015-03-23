@@ -109,7 +109,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
     #--- utility functions ---------------------------------------------------------------------------------------------
     #  Return: text height
     drawAndPositionText = (container, text, selector, style, offset) ->
-      elem = container.select('.' + selector)
+      elem = container.select('.' + selector.replace(' ','.'))
       if elem.empty()
         elem = container.append('text')
           .attr({class:selector, 'text-anchor': 'middle', y:if offset then offset else 0})
