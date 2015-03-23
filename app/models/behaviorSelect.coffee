@@ -4,7 +4,7 @@ angular.module('wk.chart').factory 'behaviorSelect', ($log) ->
   select = () ->
 
     _id = "select#{selectId++}"
-    _container = undefined
+    _chartArea = undefined
     _layout = undefined
     _active = false
     _selectionEvents = d3.dispatch('selected')
@@ -16,9 +16,9 @@ angular.module('wk.chart').factory 'behaviorSelect', ($log) ->
       if obj.classed('wk-chart-selectable')
         isSelected = obj.classed('wk-chart-selected')
         obj.classed('wk-chart-selected', not isSelected)
-        selectedObjects = _container.selectAll('.wk-chart-selected')
+        selectedObjects = _chartArea.selectAll('.wk-chart-selected')
         selectedObjectsData = selectedObjects.data().map((d) -> if d.data then d.data else d)
-        _container.classed('wk-chart-has-selected-items', selectedObjectsData.length > 0)
+        _chartArea.classed('wk-chart-has-selected-items', selectedObjectsData.length > 0)
         # ensure that only the original values are reported back
 
         _layout.lifeCycle().objectsSelected(selectedObjects)
@@ -43,15 +43,15 @@ angular.module('wk.chart').factory 'behaviorSelect', ($log) ->
 
     me.clearSelection = () ->
       $log.log 'selection Cleared'
-      if _container
-        _container.selectAll('.wk-chart-selected').classed('wk-chart-selected', false)
-        _container.classed('wk-chart-has-selected-items', false)
-        _layout.lifeCycle().objectsSelected(_container.selectAll('.wk-chart-selected'))
+      if _chartArea
+        _chartArea.selectAll('.wk-chart-selected').classed('wk-chart-selected', false)
+        _chartArea.classed('wk-chart-has-selected-items', false)
+        _layout.lifeCycle().objectsSelected(_chartArea.selectAll('.wk-chart-selected'))
 
-    me.container = (val) ->
-      if arguments.length is 0 then return _container
+    me.area = (val) ->
+      if arguments.length is 0 then return _chartArea
       else
-        _container = val
+        _chartArea = val
         return me #to enable chaining
 
     me.layout = (val) ->

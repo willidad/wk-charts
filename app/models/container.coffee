@@ -123,7 +123,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       titleAreaHeight = 0
       area = _container.select('.wk-chart-title-area')
       if area.empty()
-        area = _container.append('g').attr('class','wk-chart-title-area wk-center-hor')
+        area = _container.insert('g', '.wk-chart-area').attr('class','wk-chart-title-area wk-center-hor')
       if title
         _titleHeight = drawAndPositionText(area, title, 'wk-chart-title wk-chart-label-text', _chart.titleStyle())
       if subTitle
@@ -183,7 +183,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
     drawAxis = (dim) ->
       axis = _container.select(".wk-chart-axis.wk-chart-#{dim.axisOrient()}")
       if axis.empty()
-        axis = _container.append('g').attr('class', 'wk-chart-axis wk-chart-' + dim.axisOrient())
+        axis = _container.insert('g','.wk-chart-area').attr('class', 'wk-chart-axis wk-chart-' + dim.axisOrient())
         axis.append('rect').attr('class',"wk-chart-axis-select wk-chart-#{dim.axisOrient()}")
           .style({opacity: 0, 'pointer-events': 'none'})
       axis.transition().duration(_duration).call(dim.axis())
@@ -272,6 +272,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       _chartArea = _container.append('g').attr('class', 'wk-chart-area')
       _chartArea.append('rect').style('visibility', 'hidden').attr('class', 'wk-chart-background').datum({name:'background'})
       #_chartArea.append('rect').attr({class:'wk-chart-extent', x:0, y:0, width:0, height:0}).style('cursor','move').datum({name:'extent'})
+      _container.append('g').attr('class','wk-chart-marker-area')
 
     # start to build and size the elements from top to bottom
 
@@ -306,7 +307,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
             label = _container.select(".wk-chart-label.wk-chart-#{s.axisOrient()}")
             if s.showLabel()
               if label.empty()
-                label = _container.append('g').attr('class', 'wk-chart-label wk-chart-'  + s.axisOrient())
+                label = _container.insert('g', '.wk-chart-area').attr('class', 'wk-chart-label wk-chart-'  + s.axisOrient())
               labelHeight[s.axisOrient()] = drawAndPositionText(label, s.axisLabel(), 'wk-chart-label-text wk-chart-' + s.axisOrient(), s.axisLabelStyle());
             else
               label.remove()
@@ -385,8 +386,8 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
 
       _chartAreaDiv.style(_chart.backgroundStyle())
 
-      _chart.behavior().overlay(_chartArea)
-      _chart.behavior().container(_chartArea)
+      _chart.behavior().chartArea(_chartArea)
+      _chart.behavior().container(_container)
 
       # register destroy event listener
 
@@ -394,7 +395,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
         $log.log 'removing event listeners from', _chartArea.attr('class')
         _chartArea.on '.tooltip', null
         _chartArea.on '.brush', null
-        _chart.behavior().overlay(undefined)
+        _chart.behavior().chartArea(undefined)
         _gridArea = undefined
         _element = undefined
         _chartAreaDiv = undefined

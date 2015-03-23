@@ -9,10 +9,10 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
     _extent = undefined
     _startPos = undefined
     _evTargetData = undefined
-    _area = undefined
+    _areaNode = undefined
     _chart = undefined
     _data = undefined
-    _areaSelection = undefined
+    _chartArea = undefined
     _areaBox = undefined
     _backgroundBox = undefined
     _container = undefined
@@ -63,7 +63,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
         _extent.attr('width', _areaBox.width).attr('height', height).attr('x', 0).attr('y', top)
 
     hideBrushElements = () ->
-      d3.select(_area).selectAll('.wk-chart-resize').style('display', 'none')
+      d3.select(_areaNode).selectAll('.wk-chart-resize').style('display', 'none')
       _extent.attr('width',0).attr('height', 0).attr('x', 0).attr('y', 0).style('display', 'none')
 
     #-------------------------------------------------------------------------------------------------------------------
@@ -76,8 +76,8 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
           yHit = er.top < cr.bottom - cr.height / 3 and cr.top + cr.height / 3 < er.bottom
           d3.select(this).classed('wk-chart-selected', yHit and xHit)
         )
-      allSelected = _container.selectAll('.wk-chart-selected').data()
-      _container.classed('wk-chart-has-selected-items', allSelected.length > 0)
+      allSelected = _chartArea.selectAll('.wk-chart-selected').data()
+      _chartArea.classed('wk-chart-has-selected-items', allSelected.length > 0)
       return allSelected
 
     #-------------------------------------------------------------------------------------------------------------------
@@ -140,7 +140,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       _boundsValues = []
       _boundsDomain = []
       _selectables.classed('wk-chart-selected', false)
-      _container.classed('wk-chart-has-selected-items', false)
+      _chartArea.classed('wk-chart-has-selected-items', false)
       selectionSharing.setSelection _boundsValues, _boundsIdx, _brushGroup
       _.delay(   # ensure digest cycle from button pressed is completed
           () ->
@@ -162,14 +162,14 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       _evTargetData = _eventTarget.datum()
       if _eventTarget.classed('wk-chart-selectable')
         _evTargetData = {name:'forwarded'}
-      _areaBox = _area.getBBox()
-      _startPos = d3.mouse(_area)
+      _areaBox = _areaNode.getBBox()
+      _startPos = d3.mouse(_areaNode)
       startTop = top
       startLeft = left
       startRight = right
       startBottom = bottom
-      d3.select(_area).selectAll(".wk-chart-resize").style("display", null)
-      d3.select(_area).select('.wk-chart-selectable').style('pointer-events','none')
+      d3.select(_areaNode).selectAll(".wk-chart-resize").style("display", null)
+      d3.select(_areaNode).select('.wk-chart-selectable').style('pointer-events','none')
       _extent.style('display',null)
       d3.select('body').style('cursor', d3.select(d3.event.target).style('cursor'))
 
@@ -178,7 +178,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       _tooltip.hide(true)
       _boundsIdx = [undefined, undefined]
       _boundsDomain = [undefined]
-      _selectables = _container.selectAll('.wk-chart-selectable')
+      _selectables = _chartArea.selectAll('.wk-chart-selectable')
       _brushEvents.brushStart()
       timing.clear()
       timing.init()
@@ -190,8 +190,8 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
 
       d3.select($window).on 'mousemove.brush', null
       d3.select($window).on 'mouseup.brush', null
-      d3.select(_area).style('pointer-events','all').selectAll('.wk-chart-resize').style('display', null) # show the resize handles
-      d3.select(_area).select('.wk-chart-selectable').style('pointer-events',null)
+      d3.select(_areaNode).style('pointer-events','all').selectAll('.wk-chart-resize').style('display', null) # show the resize handles
+      d3.select(_areaNode).select('.wk-chart-selectable').style('pointer-events',null)
       d3.select('body').style('cursor', null)
       _tooltip.hide(false)
       _brushEvents.brushEnd(_boundsIdx, _boundsValues, _boundsDomain)
@@ -201,7 +201,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
 
     brushMove = () ->
       #$log.info 'brushmove'
-      pos = d3.mouse(_area)
+      pos = d3.mouse(_areaNode)
       deltaX = pos[0] - _startPos[0]
       deltaY = pos[1] - _startPos[1]
 
@@ -337,7 +337,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
     resizeExtent = () ->
       if _areaBox
         #$log.info 'resizeHandler'
-        newBox = _area.getBBox()
+        newBox = _areaNode.getBBox()
         horizontalRatio = _areaBox.width / newBox.width
         verticalRatio = _areaBox.height / newBox.height
         top = top / verticalRatio
@@ -381,16 +381,17 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
         return me #to enable chaining
 
     me.area = (val) ->
-      if arguments.length is 0 then return _areaSelection
+      if arguments.length is 0 then return _chartArea
       else
         if val is undefined
-          _area = undefined
-          _areaSelection = undefined
-        else if not _areaSelection
-          _areaSelection = val
-          _area = _areaSelection.node()
+          _areaNode = undefined
+          _chartArea = undefined
+        else if not _chartArea
+          _chartArea = val
+          _areaNode = _chartArea.node()
           #_areaBox = _area.getBBox() need to get when calculating size to deal with resizing
-          me.brush(_areaSelection)
+          me.brush(_chartArea)
+          _selectables = _chartArea.selectAll('.wk-chart-selectable')
 
         return me #to enable chaining
 
@@ -398,8 +399,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       if arguments.length is 0 then return _container
       else
         _container = val
-        if _container
-          _selectables = _container.selectAll('.wk-chart-selectable')
+
         return me #to enable chaining
 
     me.data = (val) ->

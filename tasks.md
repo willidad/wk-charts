@@ -50,7 +50,8 @@ Fix: dd15d68 (and several other commits) remove memory leaks and dangling object
 Fix: ca424f5 line w time scale u markers brushed: if empty brush selection shows many marker bubbles at left axis (for all area and line charts with non-ordinal scales)
 Fix: f843b1f Brush from a reverse axis does not work correctly
 Fix: a885fa2 barClustered wrong animation start
-Fix: label text accumulates when property changes
+Fix: 44d3a06 label text accumulates when property changes
+Fix: tooltip marker circles cut at edge of chart area
 
 
 

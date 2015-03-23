@@ -8,9 +8,9 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
     _showMarkerLine = undefined
     _markerG = undefined
     _markerLine = undefined
-    _areaSelection = undefined
+    _area = undefined
     _chart = undefined
-    _area= undefined
+    _areaNode= undefined
     _container = undefined
     _scales = undefined
     _markerScale = undefined
@@ -81,10 +81,10 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
 
       # create a marker line if required
       if _showMarkerLine
-        _markerG = _areaSelection.select('.wk-chart-tooltip-marker')
+        _markerG = _container.select('.wk-chart-tooltip-marker')
         if _markerG.empty()
-          _areaBox = _areaSelection.select('.wk-chart-background').node().getBBox()
-          _markerG = _areaSelection.append('g')  # need to append marker to chart area to ensure it is on top of the chart elements Fix 10
+          _areaBox = _area.select('.wk-chart-background').node().getBBox()
+          _markerG = _container.append('g')  # need to append marker to chart area to ensure it is on top of the chart elements Fix 10
             .attr('class', 'wk-chart-tooltip-marker')
           _markerLine = _markerG.append('line')
           if _markerScale.isHorizontal()
@@ -100,7 +100,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
 
     tooltipMove = () ->
       if not _active or _hide then return
-      _pos = d3.mouse(_area)
+      _pos = d3.mouse(_areaNode)
 
       if _showMarkerLine
         if not _markerG
@@ -128,7 +128,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
     forwardToBrush = (e) ->
       # forward the mousdown event to the brush overlay to ensure that brushing can start at any point in the drawing area
 
-      brush_elm = _container.node();
+      brush_elm = _areaNode;
       if d3.event.target isnt brush_elm #do not dispatch if target is overlay
         new_click_event = new Event('mousedown');
         new_click_event.pageX = d3.event.pageX;
@@ -169,7 +169,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
             _templScope.value = undefined
             _templScope.$destroy()
           _compiledTempl = undefined
-          _area = undefined
+          _areaNode = undefined
         return me
 
     me.active = (val) ->
@@ -190,24 +190,22 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         return me
 
     me.area = (val) ->
-      if arguments.length is 0 then return _areaSelection
+      if arguments.length is 0 then return _area
       else
         if val is undefined
-          _areaSelection = val
           _area = val
+          _areaNode = val
         else
-          _areaSelection = val
-          _area = _areaSelection.node()
-        #if _showMarkerLine
-        #  me.tooltip(_container)
+          _area = val
+          _areaNode = _area.node()
+          if _showMarkerLine
+            me.tooltip(_area)
         return me #to enable chaining
 
     me.container = (val) ->
       if arguments.length is 0 then return _container
       else
         _container = val
-        if _showMarkerLine
-          me.tooltip(_container)
         return me #to enable chaining
 
     me.markerScale = (val) ->
