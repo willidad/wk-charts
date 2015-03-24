@@ -52,7 +52,7 @@ Fix: f843b1f Brush from a reverse axis does not work correctly
 Fix: a885fa2 barClustered wrong animation start
 Fix: 44d3a06 label text accumulates when property changes
 Fix: aa4565d tooltip marker circles cut at edge of chart area
-Fix: set drawpadding to 0
+Fix: 8c71885 set drawpadding to 0
 
 
 
@@ -72,6 +72,7 @@ Implemented: d49f70b separate axis definition from dimension property to allow a
 Implemented: e06442a enable line chart line styling (dashed lines)
 Implemented: 4f14cf2 Patterns for line, bar, column and range(bar/column) charts
 Implemented: a9bc925 Patterns for pie, range area charts
+Implemented: Box Chart
 
 Open
 ----
