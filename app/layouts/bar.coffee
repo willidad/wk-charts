@@ -53,6 +53,15 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
 
     drawPath = (doAnimate, data, options, x, y, color) ->
 
+      setStyle = (d) ->
+        elem = d3.select(this)
+        elem.style(_barStyle)
+        style = if color.property().length is 0 then color.scale()(d.layerKey) else color.map(d.data)
+        if typeof style is 'string'
+          elem.style({fill:style, stroke:style})
+        else
+          elem.style(style)
+
       _colorByKey = not color.property() and color.isOrdinal()
       ttHelper.colorByKey(_colorByKey)
 
@@ -94,9 +103,10 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
           .attr('transform', (d) -> "translate(#{x.scale()(0)}, #{y.scale()(d.targetKey) + offset(d)}) scale(1,1)")
 
       rect = bars.select('rect')
-        .style('fill', (d) -> if color.property().length is 0 then color.scale()(d.layerKey) else color.map(d.data))
-        .style('stroke', (d) -> if color.property().length is 0 then color.scale()(d.layerKey) else color.map(d.data))
-        .style(_barStyle)
+        #.style('fill', (d) -> if color.property().length is 0 then color.scale()(d.layerKey) else color.map(d.data))
+        #.style('stroke', (d) -> if color.property().length is 0 then color.scale()(d.layerKey) else color.map(d.data))
+        #.style(_barStyle)
+        .each(setStyle)
       (if doAnimate then rect.transition().duration(options.duration) else rect)
         .attr('height', (d) -> if d.added or d.deleted then 0 else barHeight)
         .attr('width', (d) -> Math.abs(x.scale()(0) - x.scale()(d.targetValue)))

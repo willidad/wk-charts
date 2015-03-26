@@ -10,6 +10,7 @@ angular.module('wk.chart').provider 'wkChartTemplates', () ->
 
   tooltipTemplateUrl = 'templates/toolTip.html'
   legendTemplateUrl = 'templates/legend.html'
+  svgDefTemplateUrl = 'templates/patterns.html'
   ###*
     @ngdoc method
     @name wkChartTemplatesProvider#setTooltipTemplate
@@ -25,6 +26,14 @@ angular.module('wk.chart').provider 'wkChartTemplates', () ->
     ###
   this.setLegendTemplate = (url) ->
     legendTemplateUrl = url
+
+  ###*
+      @ngdoc method
+      @name wkChartTemplatesProvider#setSVGDefsUrl
+      @param url {string} the url of the template file
+    ###
+  this.setSVGDefsUrl = (url) ->
+    svgDefTemplateUrl = url
 
   ###*
     @ngdoc service
@@ -47,7 +56,15 @@ angular.module('wk.chart').provider 'wkChartTemplates', () ->
         @name wkChartTemplates#legendTemplate
         @returns {string} the legends template
       ###
-      legendTemplate: () -> $templateCache.get(legendTemplateUrl)}
+      legendTemplate: () -> $templateCache.get(legendTemplateUrl)
+
+      ###*
+        @ngdoc method
+        @name wkChartTemplates#svgDefTemplate
+        @returns {string} the SVG Def template
+      ###
+      svgDefTemplate: () -> $templateCache.get(svgDefTemplateUrl)
+    }
   ]
 
   return this

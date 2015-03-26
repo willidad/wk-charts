@@ -72,7 +72,7 @@ Implemented: d49f70b separate axis definition from dimension property to allow a
 Implemented: e06442a enable line chart line styling (dashed lines)
 Implemented: 4f14cf2 Patterns for line, bar, column and range(bar/column) charts
 Implemented: a9bc925 Patterns for pie, range area charts
-Implemented: Box Chart
+Implemented: 5bf50bc Box Chart
 
 Open
 ----

@@ -128,7 +128,7 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
         brush.data(data)
 
       host.lifeCycle().on 'destroy.brush', () ->
-        scope.$apply()
+        #scope.$apply()
         brush.events().on ".#{_id}", null #deregister handlers
         chart.lifeCycle().on ".#{_id}", null
         scope.$destroy()
