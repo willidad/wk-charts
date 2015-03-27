@@ -158,4 +158,13 @@ li.wk-chart-legend-shapeItem span {
     stroke-opacity: 0.4;
 }
 
+.wk-chart-svg-box {
+    width:1em;
+    height:1.4em;
+}
+td.wk-chart-tt-svg-box {
+    padding: 0!important;
+    padding-top:5px!important;
+    margin:0!important;
+}
 /*# sourceMappingURL=app.css.map*/

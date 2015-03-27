@@ -1,5 +1,7 @@
 Defects
 
+Tooltips does not honor pie-style (probably true for all layout styles)
+
 Fixed
 -----
 
@@ -53,7 +55,7 @@ Fix: a885fa2 barClustered wrong animation start
 Fix: 44d3a06 label text accumulates when property changes
 Fix: aa4565d tooltip marker circles cut at edge of chart area
 Fix: 8c71885 set drawpadding to 0
-
+Fix: 56206e3 Selection does not work for boxplot
 
 
 Features Implemented

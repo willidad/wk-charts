@@ -69,12 +69,15 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
       for key in layerKeys
         @layers[key] = {}
         @layers[key].value = _valueScale.formattedLayerValue(data,key)
+        cVal = ''
         if _colorScale.property().length > 0
-          @layers[key].color = {'background-color': _colorScale.map(data)}
+          cVal =  _colorScale.map(data)
         else if _colorByKey
-          @layers[key].color = {'background-color': _colorScale.scale()(_keyScale.value(data))}
+          cVal = _colorScale.scale()(_keyScale.value(data))
         else
-          @layers[key].color =  {'background-color': _colorScale.scale()(key)}
+          cVal = _colorScale.scale()(key)
+        @layers[key].color = if typeof cVal is 'string' then {fill:cVal, stroke:cVal} else cVal
+        $log.log @layers[key].color
 
     me.moveData = (key, data) ->
       me.enter.apply(this, [data])
