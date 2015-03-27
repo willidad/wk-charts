@@ -55,6 +55,17 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelper
 
       drawPath = (doAnimate, data, options, x, y, color) ->
 
+        setStyle = (d) ->
+          elem = d3.select(this)
+          elem.style(_lineStyle)
+          style = color.scale()(d.layerKey)
+          if typeof style is 'string'
+            elem.style({stroke:style})
+          else
+            cVal = style.color
+            style.stroke = cVal
+            elem.style(style)
+
         offset = if y.isOrdinal() then y.scale().rangeBand() / 2 else 0
         if _tooltip
           _tooltip.data(data)
@@ -73,12 +84,6 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelper
         else
           line.y((d) -> y.scale()(d.targetKey))
 
-        drawLines = (s) ->
-          s.attr('d', (d) -> line(d.values))
-            .style('stroke', (d) -> color.scale()(d.layerKey))
-            .style('opacity', (d) -> if d.added or d.deleted then 0 else 1)
-            .style('pointer-events', 'none')
-
         layers = this.selectAll(".wk-chart-layer")
         .data(data, (d) -> d.layerKey)
         enter = layers.enter().append('g').attr('class', "wk-chart-layer")
@@ -89,15 +94,13 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelper
           .style('pointer-events', 'none')
           .style('stroke', (d) -> color.scale()(d.layerKey))
 
-        if doAnimate
-          layers.select('.wk-chart-line').attr('transform', "translate(0,#{offset})")
-          .style(_lineStyle)
-          .transition().duration( options.duration)
-          .call(drawLines)
-        else
-          layers.select('.wk-chart-line').attr('transform', "translate(0,#{offset})")
-          .style(_lineStyle)
-          .call(drawLines)
+        path = layers.select('.wk-chart-line')
+          .attr('transform', "translate(0,#{offset})")
+        path.each(setStyle)
+        (if doAnimate then path.transition().duration( options.duration) else path)
+          .attr('d', (d) -> line(d.values))
+          .style('opacity', (d) -> if d.added or d.deleted then 0 else 1)
+          .style('pointer-events', 'none')
 
         layers.exit()
           .remove()
@@ -105,7 +108,10 @@ angular.module('wk.chart').directive 'lineVertical', ($log, utils, tooltipHelper
         markers
           .isVertical(true)
           .x((d) -> x.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
-          .color((d) -> color.scale()(d.layerKey))
+          .color( (d)->
+            style = color.scale()(d.layerKey)
+            return if typeof style is 'string' then style else style.color
+          )
           .keyScale(y.scale())
 
         if y.isOrdinal()

@@ -56,6 +56,17 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig, d
 
       drawPath = (doAnimate, data, options, x, y, color) ->
 
+        setStyle = (d) ->
+          elem = d3.select(this)
+          elem.style(_columnStyle)
+          style = color.scale()(d.layerKey)
+          if typeof style is 'string'
+            elem.style({fill:style, stroke:style})
+          else
+            cVal = style.color
+            style.fill = cVal
+            elem.style(style)
+
         barWidth = x.scale().rangeBand()
         barPadding = barWidth / (1 - config.padding) * config.padding
 
@@ -87,12 +98,12 @@ angular.module('wk.chart').directive 'columnStacked', ($log, utils, barConfig, d
         )
         bars.enter().append('rect').attr('class','wk-chart-rect wk-chart-selectable')
           .style('opacity', 0)
-          .attr('fill', (d) -> color.scale()(d.layerKey))
+          #.attr('fill', (d) -> color.scale()(d.layerKey))
           .call(_tooltip.tooltip)
           .call(_selected)
 
         bars
-          .style(_columnStyle)
+          .each(setStyle)
 
         (if doAnimate then bars.transition().duration(options.duration) else bars)
           .attr('y', (d) -> y.scale()(d.y0  + d.y))

@@ -111,7 +111,14 @@ angular.module('wk.chart').factory 'legend', ($log, $compile, $rootScope, $templ
           s = me.layout().scales().layerScale().scale()
         colorScale = _scale.parent().scales().getKind('color').scale()
         if _scale.kind() isnt 'shape'
-          _legendScope.legendRows = layers.map((d) -> {value:d, color:{'background-color':colorScale(d)}})
+          _legendScope.legendRows = layers.map((d) ->
+            cVal = colorScale(d)
+            if typeof cVal is 'string'
+                style =  {fill:cVal, stroke:cVal}
+            else
+              style = cVal
+              style.fill = cVal.color
+            {value:d, color:style})
         else
           _legendScope.legendRows = layers.map((d) -> {value:d, path:d3.svg.symbol().type(s(d)).size(80)()})
         _legendScope.showLegend = true

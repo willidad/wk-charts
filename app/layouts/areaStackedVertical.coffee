@@ -34,6 +34,7 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
       _scaleList = {}
       offs = 0
       _id = 'areaStackedVert' + areaStackedVertCntr++
+      _showOpacity = 0.5
 
       xData = dataManagerFactory()
       markers = markerFactory()
@@ -61,6 +62,17 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
         drawPath.apply(this, [true, layoutData, options, x, y, color])
 
       drawPath = (doAnimate, data, options, x, y, color) ->
+
+        setStyle = (d) ->
+          elem = d3.select(this)
+          elem.style(_areaStyle)
+          style = color.scale()(d.layerKey)
+          if typeof style is 'string'
+            elem.style({fill:style, stroke:style})
+          else
+            cVal = style.color
+            style.fill = cVal
+            elem.style(style)
 
         stackLayout = stack(data)
 
@@ -95,16 +107,17 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
           .style('opacity', 0)
 
         pathLayers = layers.select('.wk-chart-area-path')
-          .style('fill', (d, i) -> color.scale()(d.layerKey))
-          .style('stroke', (d, i) -> color.scale()(d.layerKey))
-          .style(_areaStyle)
+          #.style('fill', (d, i) -> color.scale()(d.layerKey))
+          #.style('stroke', (d, i) -> color.scale()(d.layerKey))
+          #.style(_areaStyle)
           .attr('transform', "translate(#{offs})rotate(-90)")
+          .each(setStyle)
 
         updLayers = if doAnimate then pathLayers.transition().duration(options.duration) else pathLayers
 
         updLayers
           .attr('d', (d) -> area(d.values))
-          .style('opacity', 1)
+          .style('opacity', _showOpacity)
 
         layers.exit() #.transition().duration(options.duration)
           .remove()
@@ -112,7 +125,10 @@ angular.module('wk.chart').directive 'areaStackedVertical', ($log, utils, toolti
         markers
           .x((d) -> scaleX(d.y + d.y0))
           .y((d) -> y.scale()(d.targetKey) +  if y.isOrdinal() then y.scale().rangeBand() / 2 else 0)
-          .color((d) -> color.scale()(d.layerKey))
+          .color( (d)->
+            style = color.scale()(d.layerKey)
+            return if typeof style is 'string' then style else style.color
+          )
           .keyScale(y.scale())
           .isVertical(true)
 

@@ -75,6 +75,7 @@ Implemented: e06442a enable line chart line styling (dashed lines)
 Implemented: 4f14cf2 Patterns for line, bar, column and range(bar/column) charts
 Implemented: a9bc925 Patterns for pie, range area charts
 Implemented: 5bf50bc Box Chart
+Implemented: explicit styling for all charts, support for gradients, masks, and SVG element supported style properties. 
 
 Open
 ----

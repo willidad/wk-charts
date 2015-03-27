@@ -60,6 +60,8 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
         if typeof style is 'string'
           elem.style({fill:style, stroke:style})
         else
+          cVal = style.color
+          style.fill = cVal
           elem.style(style)
 
       _colorByKey = not color.property() and color.isOrdinal()

@@ -49,7 +49,8 @@ angular.module('wk.chart').directive 'geoMap', ($log, utils) ->
       ttEnter = (data) ->
 
         val = _dataMapping.get(data.properties[_idProp[0]])
-        @layers[val.RS] = {value:val.DES}
+        style = _scaleList.color.map(val)
+        @layers[val.RS] = {value:val.DES, color: {fill:if typeof style is 'string' then style else style.color}}
 
       #-----------------------------------------------------------------------------------------------------------------
       pathSel = []
@@ -68,6 +69,18 @@ angular.module('wk.chart').directive 'geoMap', ($log, utils) ->
       _geoJson = undefined
 
       draw = (data, options, x, y, color) ->
+
+        setStyle = (d) ->
+          elem = d3.select(this)
+          val = _dataMapping.get(d.properties[_idProp[0]])
+          style = color.map(val)
+          if typeof style is 'string'
+            elem.style({fill:style, stroke:style})
+          else
+            cVal = style.color
+            style.fill = cVal
+            elem.style(style)
+
         _width = options.width
         _height = options.height
         if data and data[0].hasOwnProperty(_idProp[1])
@@ -87,10 +100,7 @@ angular.module('wk.chart').directive 'geoMap', ($log, utils) ->
 
           pathSel
             .attr("d", _path)
-            .style('fill', (d) ->
-              val = _dataMapping.get(d.properties[_idProp[0]])
-              color.map(val)
-          )
+            .each(setStyle)
 
           pathSel.exit().remove()
 

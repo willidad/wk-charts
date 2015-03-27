@@ -32,7 +32,7 @@ angular.module('wk.chart').directive 'scatter', ($log, utils) ->
           @layers[scale.axisLabel()] =
             {
               value: scale.formattedValue(data),
-              color: if sName is 'color' then {'background-color':scale.map(data)} else undefined,
+              color: if sName is 'color' then {fill:(if typeof scale.map(data) is 'string' then scale.map(data) else scale.map(data).color)} else {fill:'none'},
               path: if sName is 'shape' then d3.svg.symbol().type(scale.map(data)).size(80)() else undefined
               class: if sName is 'shape' then 'wk-chart-tt-svg-shape' else ''
             }

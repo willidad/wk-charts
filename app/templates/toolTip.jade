@@ -10,7 +10,9 @@
                     svg(ng-if="value.path", style="width:15px;height:17px;")
                         path(ng-attr-d="{{value.path}}",transform="translate(8,9)")
                 td(class="wk-chart-tt-svg-box")
-                    svg(class="wk-chart-svg-box")
+                    svg(ng-if="!value.path",class="wk-chart-svg-box")
                         rect(ng-style="value.color", x="0", y="0", width="50", height="50")
+                    svg(ng-if="value.path", style="width:15px;height:17px;")
+                        path(ng-attr-d="{{value.path}}",transform="translate(8,9)")
                 td {{name}}
                 td {{value.value}}

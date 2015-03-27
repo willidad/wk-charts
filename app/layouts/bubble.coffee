@@ -32,11 +32,22 @@ angular.module('wk.chart').directive 'bubble', ($log, utils) ->
 
       ttEnter = (data) ->
         for sName, scale of _scaleList
-          @layers[scale.axisLabel()] = {value: scale.formattedValue(data), color: if sName is 'color' then {'background-color':scale.map(data)} else undefined}
+          @layers[scale.axisLabel()] = {value: scale.formattedValue(data), color: if sName is 'color' then {fill:(if typeof scale.map(data) is 'string' then scale.map(data) else scale.map(data).color)} else {fill:'none'}}
 
       #--- Draw --------------------------------------------------------------------------------------------------------
 
       draw = (data, options, x, y, color, size) ->
+
+        setStyle = (d) ->
+          elem = d3.select(this)
+          #elem.style(_areaStyle)
+          style = color.map(d)
+          if typeof style is 'string'
+            elem.style({fill:style, stroke:style})
+          else
+            cVal = style.color
+            style.fill = cVal
+            elem.style(style)
 
         bubbles = @selectAll('.wk-chart-bubble').data(data, (d) -> color.value(d))
         bubbles.enter().append('circle').attr('class','wk-chart-bubble wk-chart-selectable')
@@ -44,7 +55,7 @@ angular.module('wk.chart').directive 'bubble', ($log, utils) ->
           .call(_tooltip.tooltip)
           .call(_selected)
         bubbles
-          .style('fill', (d) -> color.map(d))
+          .each(setStyle)
           .transition().duration(options.duration)
             .attr({
               r:  (d) -> size.map(d)

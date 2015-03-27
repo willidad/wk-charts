@@ -34,6 +34,7 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
       area = undefined
       layoutData = undefined
       _initialOpacity = 0
+      _showOpacity = 0.5
 
       xData = dataManagerFactory()
       markers = markerFactory()
@@ -61,6 +62,8 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
           if typeof style is 'string'
             elem.style({fill:style, stroke:style})
           else
+            cVal = style.color
+            style.fill = cVal
             elem.style(style)
 
         offset = if x.isOrdinal() then x.scale().rangeBand() / 2 else 0
@@ -92,7 +95,7 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
           .each(setStyle)
         path = if doAnimate then path.transition().duration( options.duration) else path
         path.attr('d', (d) -> area(d.values))
-          .style('opacity', (d) -> if d.added or d.deleted then 0 else 1)
+          .style('opacity', (d) -> if d.added or d.deleted then 0 else _showOpacity)
           #.style('pointer-events', 'none')
         layers.exit()
           .remove()
@@ -100,7 +103,10 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
         markers
           .x((d) -> x.scale()(d.targetKey) + if x.isOrdinal() then x.scale().rangeBand() / 2 else 0)
           .y((d) -> y.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
-          .color((d) -> color.scale()(d.layerKey))
+          .color( (d)->
+            style = color.scale()(d.layerKey)
+            return if typeof style is 'string' then style else style.color
+          )
           .keyScale(x.scale())
         layers.call(markers, doAnimate)
 
@@ -143,7 +149,6 @@ angular.module('wk.chart').directive 'area', ($log, utils, tooltipHelperFactory,
       host.lifeCycle().on "destroy.#{_id}", ->
         host.lifeCycle().on ".#{_id}", null
         _tooltip.on ".#{_id}", null
-
 
       #--- Property Observers ------------------------------------------------------------------------------------------
       ###*

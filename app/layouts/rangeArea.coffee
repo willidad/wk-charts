@@ -54,6 +54,17 @@ angular.module('wk.chart').directive 'rangeArea', ($log, utils, dataManagerFacto
 
     drawPath = (doAnimate, data, options, x, y, color, size, shape, rangeX, rangeY) ->
 
+      setStyle = (d) ->
+        elem = d3.select(this)
+        elem.style(_areaStyle)
+        style = color.scale()(d.layerKey)
+        if typeof style is 'string'
+          elem.style({fill:style, stroke:style})
+        else
+          cVal = style.color
+          style.fill = cVal
+          elem.style(style)
+
       offset = if x.isOrdinal() then x.scale().rangeBand() / 2 else 0
       if _tooltip
         _tooltip.data(data)
@@ -85,14 +96,15 @@ angular.module('wk.chart').directive 'rangeArea', ($log, utils, dataManagerFacto
         .attr('d', (d) -> area(d.values))
         .style('opacity', _initialOpacity)
         .style('pointer-events', 'none')
-        .style('stroke', (d) -> color.scale()(d.layerKey))
-        .style('fill', (d) -> color.scale()(d.layerKey))
+        #.style('stroke', (d) -> color.scale()(d.layerKey))
+        #.style('fill', (d) -> color.scale()(d.layerKey))
         .attr('transform', "translate(#{offset})")
 
       range
         .style('stroke', (d) -> color.scale()(d.layerKey))
         .style('pointer-events', 'none')
-        .style(_areaStyle)
+        .each(setStyle)
+
       (if doAnimate then range.transition().duration( options.duration) else range)
         .attr('d', (d) -> area(d.values))
         .style('opacity', (d) -> if d.added or d.deleted then 0 else 1)

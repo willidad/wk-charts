@@ -53,6 +53,17 @@ angular.module('wk.chart').directive 'rangeBars', ($log, utils, barConfig, dataM
 
     drawPath = (doAnimate, data, options, x, y, color) ->
 
+      setStyle = (d) ->
+        elem = d3.select(this)
+        elem.style(_barStyle)
+        style = color.scale()(d.layerKey)
+        if typeof style is 'string'
+          elem.style({fill:style, stroke:style})
+        else
+          cVal = style.color
+          style.fill = cVal
+          elem.style(style)
+
       barHeight = y.scale().rangeBand()
       barPadding = barHeight / (1 - config.padding) * config.padding
       offset = if y.isOrdinal() then barHeight / 2 else 0
@@ -83,13 +94,13 @@ angular.module('wk.chart').directive 'rangeBars', ($log, utils, barConfig, dataM
       range.enter().append('rect')
         .attr('class','wk-chart-rect')
         .style('opacity', 0)
-        .style('fill', color.scale()(range[0].layerKey))
+        #.style('fill', color.scale()(range[0].layerKey))
         .call(_tooltip.tooltip)
         .call(_selected)
         .attr('transform',(d) -> "translate(0, #{y.scale()(d.targetKey)})")
 
       range
-        .style(_barStyle)
+        .each(setStyle)
 
       (if doAnimate then range.transition().duration( options.duration) else range)
         .attr('transform',(d) -> "translate(0, #{y.scale()(d.targetKey) + offset(d)})")

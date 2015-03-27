@@ -76,8 +76,12 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
           cVal = _colorScale.scale()(_keyScale.value(data))
         else
           cVal = _colorScale.scale()(key)
-        @layers[key].color = if typeof cVal is 'string' then {fill:cVal, stroke:cVal} else cVal
-        $log.log @layers[key].color
+        if typeof cVal is 'string'
+          style =  {fill:cVal, stroke:cVal}
+        else
+          style = cVal
+          style.fill = cVal.color
+        @layers[key].color = style
 
     me.moveData = (key, data) ->
       me.enter.apply(this, [data])
@@ -99,13 +103,19 @@ angular.module('wk.chart').factory 'tooltipHelperFactory', ($log) ->
       enter = _circles.enter().append('g').attr('class', "wk-chart-tt-marker-#{_id}") # make markers unique for multi-layout charts
       enter.append('circle').attr('class', 'wk-chart-tt-marker')
         .attr('r', 9)
-        .style('fill', (d)-> _colorScale.scale()(d.key))
+        .style('fill', (d)->
+          style = _colorScale.scale()(d.key)
+          return if typeof style is 'string' then style else style.color
+        )
         .style('fill-opacity', 0.3)
         .style('stroke', (d)-> _colorScale.scale()(d.key))
         .style('pointer-events', 'none')
       enter.append('circle').attr('class', 'wk-chart-tt-inner-marker')
         .attr('r', 4)
-        .style('fill', (d)-> _colorScale.scale()(d.key))
+        .style('fill', (d)->
+          style = _colorScale.scale()(d.key)
+          return if typeof style is 'string' then style else style.color
+        )
         .style('fill-opacity', 0.6)
         .style('stroke', 'white')
         .style('pointer-events', 'none')

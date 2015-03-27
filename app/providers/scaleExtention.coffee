@@ -57,7 +57,7 @@ angular.module('wk.chart').provider 'wkChartScales', () ->
     me = (value) ->
       if not arguments then return me
       # use the mapFn to compute the return value
-      return mapFn.apply(me, [value])
+      return mapFn.apply(me, [value, me.domain()])
 
     me.mapFn = (fn) ->
       if not arguments then return mapFn

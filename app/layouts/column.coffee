@@ -58,6 +58,8 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, dataMana
         if typeof style is 'string'
           elem.style({fill:style, stroke:style})
         else
+          cVal = style.color
+          style.fill = cVal
           elem.style(style)
 
       _colorByKey = not color.property() and color.isOrdinal()

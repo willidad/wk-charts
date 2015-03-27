@@ -33,6 +33,7 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelper
       offset = 0
       area = undefined
       _id = 'areaVertical' + lineCntr++
+      _showOpacity = 0.5
 
       layoutData = undefined
       _initialOpacity = 0
@@ -56,6 +57,17 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelper
 
       drawPath = (doAnimate, data, options, x, y, color) ->
 
+        setStyle = (d) ->
+          elem = d3.select(this)
+          elem.style(_areaStyle)
+          style = color.scale()(d.layerKey)
+          if typeof style is 'string'
+            elem.style({fill:style, stroke:style})
+          else
+            cVal = style.color
+            style.fill = cVal
+            elem.style(style)
+
         offset = if y.isOrdinal() then y.scale().rangeBand() / 2 else 0
         if _tooltip
           _tooltip.data(data)
@@ -77,19 +89,18 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelper
           .attr('d', (d) -> area(d.values))
           .style('opacity', _initialOpacity)
           .style('pointer-events', 'none')
-          .style('stroke', (d) -> color.scale()(d.layerKey))
-          .style('fill', (d) -> color.scale()(d.layerKey))
 
         path = layers.select('.wk-chart-area-path')
           .attr('transform', "translate(0,#{offset})rotate(-90)") #rotate and position chart
-          .style(_areaStyle)
-          .style('stroke', (d) -> color.scale()(d.layerKey))
-          .style('fill', (d) -> color.scale()(d.layerKey))
+          #.style(_areaStyle)
+          #.style('stroke', (d) -> color.scale()(d.layerKey))
+          #.style('fill', (d) -> color.scale()(d.layerKey))
           .style('pointer-events', 'none')
+        path.each(setStyle)
         path = if doAnimate then path.transition().duration( options.duration) else path
         path
           .attr('d', (d) -> area(d.values))
-          .style('opacity', (d) -> if d.added or d.deleted then 0 else 1)
+          .style('opacity', (d) -> if d.added or d.deleted then 0 else _showOpacity)
 
         layers.exit()
           .remove()
@@ -98,7 +109,10 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelper
           .isVertical(true)
           .x((d) -> x.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
           .y((d) -> y.scale()(d.targetKey) + if y.isOrdinal() then y.scale().rangeBand() / 2 else 0)
-          .color((d) -> color.scale()(d.layerKey))
+          .color( (d)->
+            style = color.scale()(d.layerKey)
+            return if typeof style is 'string' then style else style.color
+          )
           .keyScale(y.scale())
         layers.call(markers, doAnimate)
 

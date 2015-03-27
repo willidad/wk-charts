@@ -69,6 +69,17 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig,
       drawPath = (doAnimate, data, options, x, y, color) ->
         #$log.info "rendering clustered-bar"
 
+        setStyle = (d) ->
+          elem = d3.select(this)
+          elem.style(_columnStyle)
+          style = color.scale()(d.layerKey)
+          if typeof style is 'string'
+            elem.style({fill:style, stroke:style})
+          else
+            cVal = style.color
+            style.fill = cVal
+            elem.style(style)
+
         layerKeys = data.filter((d) -> not d.added and not d.deleted).map((d) -> d.layerKey)
         clusterWidth = x.scale().rangeBand()
         clusterX = d3.scale.ordinal().domain(layerKeys).rangeBands([0, clusterWidth], 0, 0)
@@ -111,13 +122,13 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig,
 
         bars.enter().append('rect')
           .attr('class', 'wk-chart-rect wk-chart-selectable')
-          .style('fill', (d) -> color.scale()(d.layerKey))
+          #.style('fill', (d) -> color.scale()(d.layerKey))
           .style('opacity', 0)
           .call(_tooltip.tooltip)
           .call(_selected)
 
         bars
-          .style(_columnStyle)
+          .each(setStyle)
 
         (if doAnimate then bars.transition().duration(options.duration) else bars)
           .attr('x', (d) -> x.scale()(d.targetKey) + d.y0 + offset(d))

@@ -57,6 +57,17 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig, data
 
       drawPath = (doAnimate, data, options, x, y, color) ->
 
+        setStyle = (d) ->
+          elem = d3.select(this)
+          elem.style(_barStyle)
+          style = color.scale()(d.layerKey)
+          if typeof style is 'string'
+            elem.style({fill:style, stroke:style})
+          else
+            cVal = style.color
+            style.fill = cVal
+            elem.style(style)
+
         if not layers
           layers = @selectAll(".wk-chart-layer")
         #$log.debug "drawing stacked-bar"
@@ -92,13 +103,13 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig, data
           )
         bars.enter().append('rect').attr('class','wk-chart-rect wk-chart-selectable')
           .style('opacity', 0)
-          .attr('fill', (d) -> color.scale()(d.layerKey))
+          #.attr('fill', (d) -> color.scale()(d.layerKey))
           .style('opacity', 0)
           .call(_tooltip.tooltip)
           .call(_selected)
 
         bars
-          .style(_barStyle)
+          .each(setStyle)
 
         (if doAnimate then bars.transition().duration(options.duration) else bars)
           .attr('x', (d) -> x.scale()(d.y0))

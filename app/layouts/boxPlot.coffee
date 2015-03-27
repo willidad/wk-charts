@@ -61,6 +61,8 @@ angular.module('wk.chart').directive 'boxPlot', ($log, utils, barConfig, dataMan
           if typeof style is 'string'
             elem.style({fill:style, stroke:style})
           else
+            cVal = style.color
+            style.fill = cVal
             elem.style(style)
           )
       barWidth = x.scale().rangeBand()

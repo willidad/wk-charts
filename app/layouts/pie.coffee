@@ -67,6 +67,8 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
         if typeof style is 'string'
           elem.style({fill:style, stroke:style})
         else
+          cVal = style.color
+          style.fill = cVal
           elem.style(style)
 
       animationDuration = options.duration

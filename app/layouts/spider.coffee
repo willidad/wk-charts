@@ -33,11 +33,24 @@ angular.module('wk.chart').directive 'spider', ($log, utils) ->
 
       ttEnter = (data) ->
         for d in _data
-          @layers[_scaleList.x.value(d)] = {value:_scaleList.y.formatValue(d[data]), color: {'background-color':_scaleList.color.scale()(data)}}
+          style = _scaleList.color.scale()(data)
+          @layers[_scaleList.x.value(d)] = {value:_scaleList.y.formatValue(d[data]), color: {fill:(if typeof style is 'string' then style else style.color)}}
 
       #--- Draw --------------------------------------------------------------------------------------------------------
 
       draw = (data, options, x, y, color) ->
+
+        setStyle = (d) ->
+          elem = d3.select(this)
+          #elem.style(_areaStyle)
+          style = color.scale()(d)
+          if typeof style is 'string'
+            elem.style({fill:'none', stroke:style, 'stroke-width':3})
+          else
+            cVal = style.color
+            style.stroke = cVal
+            elem.style(style)
+
         _data = data
         $log.log data
         # compute center of area
@@ -104,17 +117,18 @@ angular.module('wk.chart').directive 'spider', ($log, utils) ->
 
         dataLine = this.selectAll('.wk-chart-data-line').data(y.layerKeys(data))
         dataLine.enter().append('path').attr('class', 'wk-chart-data-line')
-          .style({
-            stroke:(d) -> color.scale()(d)
-            fill:(d) -> 'none' #color.scale()(d)
-            #'fill-opacity': 0.2
-            'stroke-width': 2
-          })
+          #.style({
+          #  stroke:(d) -> color.scale()(d)
+          #  fill:(d) -> 'none' #color.scale()(d)
+          #  #'fill-opacity': 0.2
+          #  'stroke-width': 2
+          #})
           .call(_tooltip.tooltip)
         dataLine.attr('d', (d) ->
             p = data.map((a, i) -> {x:Math.sin(arc*i + Math.PI) * y.scale()(a[d]),y:Math.cos(arc*i + Math.PI) * y.scale()(a[d])})
             dataPath(p) + 'Z'
           )
+          .each(setStyle)
           .attr('transform', "translate(#{centerX}, #{centerY})")
 
 
