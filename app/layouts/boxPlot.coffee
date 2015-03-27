@@ -24,7 +24,7 @@ angular.module('wk.chart').directive 'boxPlot', ($log, utils, barConfig, dataMan
 
     _id = "boxPlot#{sBarCntr++}"
 
-    _columnStyle = {}
+    _boxStyle = {}
 
     _tooltip = undefined
     _selected = undefined
@@ -53,6 +53,16 @@ angular.module('wk.chart').directive 'boxPlot', ($log, utils, barConfig, dataMan
 
     drawPath = (doAnimate, data, options, x, y, color) ->
 
+      setStyle = (s, key) ->
+        s.each((d) ->
+          elem = d3.select(this)
+          elem.style(_boxStyle)
+          style = color.scale()(d[key].property)
+          if typeof style is 'string'
+            elem.style({fill:style, stroke:style})
+          else
+            elem.style(style)
+          )
       barWidth = x.scale().rangeBand()
       barPadding = barWidth / (1 - config.padding) * config.padding
       offset = if y.isOrdinal() then barWidth / 2 else 0
@@ -77,6 +87,8 @@ angular.module('wk.chart').directive 'boxPlot', ($log, utils, barConfig, dataMan
       else if data.length is 5
         prop = ['min','lq', 'med', 'uq', 'max']
         showMin = showMax = true
+
+      layerKeys = y.property()
       while i < data[0].values.length
         r = {}
         r.key = data[0].values[i].key
@@ -85,17 +97,20 @@ angular.module('wk.chart').directive 'boxPlot', ($log, utils, barConfig, dataMan
         r.added = data[0].values[i].added
         r.deleted = data[0].values[i].deleted
         for p, j in prop
-          r[p] = data[j].values[i].targetValue
+          r[p] = {}
+          r[p].val = data[j].values[i].targetValue
+          r[p].property = layerKeys[j]
         ranges.push(r)
         i++
 
       box = this.selectAll(".wk-chart-box")
         .data(ranges, (d) -> d.key)
       boxEnter = box.enter()
-        .append('g').attr('class','wk-chart-box')
+        .append('g').attr('class','wk-chart-box wk-chart-selectable')
         .attr('transform',(d) -> "translate(#{x.scale()(d.targetKey) + offset(d)})")
         .classed('wk-chart-hidden', true)
         .style('opacity', 0)
+        .call(_selected)
       boxEnter.append('rect')
         .attr('class', 'wk-chart-box-uq wk-chart-selectable')
         .classed('wk-chart-hidden', true)
@@ -103,7 +118,7 @@ angular.module('wk.chart').directive 'boxPlot', ($log, utils, barConfig, dataMan
         .style('fill', 'white')
         .style('stroke', 'black')
         .call(_tooltip.tooltip)
-        .call(_selected)
+
       boxEnter.append('rect')
         .attr('class', 'wk-chart-box-lq  wk-chart-selectable')
         .classed('wk-chart-hidden', true)
@@ -111,15 +126,19 @@ angular.module('wk.chart').directive 'boxPlot', ($log, utils, barConfig, dataMan
         .style('fill', 'white')
         .style('stroke', 'black')
         .call(_tooltip.tooltip)
-        .call(_selected)
+
+      boxEnter.append('line')
+        .attr('class', 'wk-chart-box-med')
+        .classed('wk-chart-hidden', true)
+        .style({opacity: 0})
       boxEnter.append('line')
         .attr('class', 'wk-chart-box-lw')
         .classed('wk-chart-hidden', true)
-        .style({stroke: 'black', opacity: 0})
+        .style({opacity: 0})
       boxEnter.append('line')
         .attr('class', 'wk-chart-box-lw-conn')
         .classed('wk-chart-hidden', true)
-        .style({stroke: 'black', opacity: 0, 'stroke-dasharray':'2.2'})
+        .style({opacity: 0, 'stroke-dasharray':'2.2'})
       boxEnter.append('line')
         .attr('class', 'wk-chart-box-uw')
         .classed('wk-chart-hidden', true)
@@ -127,59 +146,71 @@ angular.module('wk.chart').directive 'boxPlot', ($log, utils, barConfig, dataMan
       boxEnter.append('line')
         .attr('class', 'wk-chart-box-uw-conn')
         .classed('wk-chart-hidden', true)
-        .style({stroke: 'black', opacity: 0, 'stroke-dasharray':'2.2'})
+        .style({opacity: 0, 'stroke-dasharray':'2.2'})
       (if doAnimate then box.transition().duration( options.duration) else box)
         .attr('transform',(d) -> "translate(#{x.scale()(d.targetKey) + offset(d)})")
         .style('opacity', (d) -> if d.deleted then 0 else 1)
 
       uq = box.select('.wk-chart-box-uq')
+        .call(setStyle, 'uq')
       (if doAnimate then uq.transition().duration( options.duration) else uq)
-        .attr('y', (d) -> y.scale()(d.uq))
-        .attr('height', (d) -> Math.abs(y.scale()(d.uq) - y.scale()(d.med)))
+        .attr('y', (d) -> y.scale()(d.uq.val))
+        .attr('height', (d) -> Math.abs(y.scale()(d.uq.val) - y.scale()(d.med.val)))
         .attr('width', (d) -> if d.added or d.deleted then 0 else barWidth)
-
-        .style('opacity', 1).style('stroke', 'black')
+        .style('opacity', 1)
 
       lq = box.select('.wk-chart-box-lq')
+        .call(setStyle, 'lq')
       (if doAnimate then lq.transition().duration( options.duration) else lq)
-        .attr('y', (d) -> y.scale()(d.med))
-        .attr('height', (d) -> Math.abs(y.scale()(d.med) - y.scale()(d.lq)))
+        .attr('y', (d) -> y.scale()(d.med.val))
+        .attr('height', (d) -> Math.abs(y.scale()(d.med.val) - y.scale()(d.lq.val)))
         .attr('width', (d) -> if d.added or d.deleted then 0 else barWidth)
-        .style('opacity', 1).style('stroke', 'black')
+        .style('opacity', 1)
+
+      med = box.select('.wk-chart-box-med')
+        .call(setStyle, 'med')
+      (if doAnimate then med.transition().duration( options.duration) else med)
+        .attr('x1', -barWidth * 0.2)
+        .attr('x2', (d) -> if d.added or d.deleted then 0 else barWidth*1.3)
+        .attr('y1', (d) -> y.scale()(d.med.val))
+        .attr('y2', (d) -> y.scale()(d.med.val))
+        .style({'opacity':1, 'stroke-width':2})
 
       lWhisker =  box.select('.wk-chart-box-lw')
+        .call(setStyle, 'min')
       (if doAnimate then lWhisker.transition().duration( options.duration) else lWhisker)
         .attr('x1', 0)
         .attr('x2', (d) -> if d.added or d.deleted then 0 else barWidth)
-        .attr('y1', (d) -> if showMin then y.scale()(d.min) else 0)
-        .attr('y2', (d) -> if showMin then y.scale()(d.min) else 0)
-        .style('opacity', 1).style('stroke', 'black')
+        .attr('y1', (d) -> if showMin then y.scale()(d.min.val) else 0)
+        .attr('y2', (d) -> if showMin then y.scale()(d.min.val) else 0)
+        .style({'opacity':1, 'stroke-width':3})#.style('stroke', 'black')
         .style('visibility', if showMin then 'visible' else 'none')
 
       lwConn = box.select('.wk-chart-box-lw-conn')
       (if doAnimate then lwConn.transition().duration( options.duration) else lwConn)
         .attr('x1', (d) -> if d.added or d.deleted then 0 else barWidth/2)
         .attr('x2', (d) -> if d.added or d.deleted then 0 else barWidth/2)
-        .attr('y1', (d) -> if showMin then y.scale()(d.lq) else 0)
-        .attr('y2', (d) -> if showMin then y.scale()(d.min) else 0)
+        .attr('y1', (d) -> if showMin then y.scale()(d.lq.val) else 0)
+        .attr('y2', (d) -> if showMin then y.scale()(d.min.val) else 0)
         .style('opacity', 1).style('stroke', 'black')
         .style('visibility', if showMin then 'visible' else 'none')
 
       uWhisker =  box.select('.wk-chart-box-uw')
+        .call(setStyle, 'max')
       (if doAnimate then uWhisker.transition().duration( options.duration) else uWhisker)
         .attr('x1', 0)
         .attr('x2', (d) -> if d.added or d.deleted then 0 else barWidth)
-        .attr('y1', (d) -> if showMax then y.scale()(d.max) else 0)
-        .attr('y2', (d) -> if showMax then y.scale()(d.max) else 0)
-        .style('opacity', 1).style('stroke', 'black')
+        .attr('y1', (d) -> if showMax then y.scale()(d.max.val) else 0)
+        .attr('y2', (d) -> if showMax then y.scale()(d.max.val) else 0)
+        .style({'opacity':1, 'stroke-width':3}) #.style('stroke', 'black')
         .style('visibility', if showMax then 'visible' else 'none')
 
       uwConn = box.select('.wk-chart-box-uw-conn')
       (if doAnimate then uwConn.transition().duration( options.duration) else uwConn)
         .attr('x1', (d) -> if d.added or d.deleted then 0 else barWidth/2)
         .attr('x2', (d) -> if d.added or d.deleted then 0 else barWidth/2)
-        .attr('y1', (d) -> if showMax then y.scale()(d.uq) else 0)
-        .attr('y2', (d) -> if showMax then y.scale()(d.max) else 0)
+        .attr('y1', (d) -> if showMax then y.scale()(d.uq.val) else 0)
+        .attr('y2', (d) -> if showMax then y.scale()(d.max.val) else 0)
         .style('opacity', 1).style('stroke', 'black')
         .style('visibility', if showMax then 'visible' else 'none')
 
@@ -262,11 +293,11 @@ angular.module('wk.chart').directive 'boxPlot', ($log, utils, barConfig, dataMan
 
     ###*
       @ngdoc attr
-      @name rangeColumn#columnStyle
+      @name rangeColumn#boxStyle
       @param [columnStyle] {object} - Set the line style for columns lines in the layout
     ###
-    attrs.$observe 'columnStyle', (val) ->
+    attrs.$observe 'boxStyle', (val) ->
       if val
-        _columnStyle = scope.$eval(val)
+        _boxStyle = scope.$eval(val)
 
   }
