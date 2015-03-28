@@ -70,6 +70,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
   geojson = {geojson:propertyType.object}
   projection = {projection:propertyType.object}
   spline = {spline:propertyType.bool}
+  mapFunction = {mapFunction:propertyType.string}
 
   property = {
     property:propertyType.list
@@ -261,7 +262,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
     'x top': dim('x top', [property, base, tickRotation], [axis, brush, brushed])
     y: dim('y', [property, base, tickRotation],[axis, brush, brushed])
     'y right': dim('y right', [property, base, tickRotation],[axis, brush, brushed])
-    color: dim('color', [property, base],[legend, valuesLegend])
+    color: dim('color', [property, base, mapFunction],[legend, valuesLegend])
     size: dim('size', [property, base],[legend, valuesLegend])
     shape: dim('shape', [property, base],[legend, valuesLegend])
   }

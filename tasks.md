@@ -56,7 +56,7 @@ Fix: 44d3a06 label text accumulates when property changes
 Fix: aa4565d tooltip marker circles cut at edge of chart area
 Fix: 8c71885 set drawpadding to 0
 Fix: 56206e3 Selection does not work for boxplot
-
+Fix: mapFunction attribute not available in color scale
 
 Features Implemented
 --------------------
@@ -75,7 +75,7 @@ Implemented: e06442a enable line chart line styling (dashed lines)
 Implemented: 4f14cf2 Patterns for line, bar, column and range(bar/column) charts
 Implemented: a9bc925 Patterns for pie, range area charts
 Implemented: 5bf50bc Box Chart
-Implemented: explicit styling for all charts, support for gradients, masks, and SVG element supported style properties. 
+Implemented: 06b52be explicit styling for all charts, support for gradients, masks, and SVG element supported style properties.
 
 Open
 ----
@@ -118,3 +118,6 @@ Verify animation change impact on bubble and Scatter charts
 - new method does not add value, just complicates things there
 
 enable to show marker line independent of tooltips in line and area chart
+
+clickable axis lables for edit mode
+clickable line overlay in linecharts for edit mode
