@@ -3,6 +3,21 @@ angular.module('wk.chart').provider 'wkChartScales', () ->
   _customColors = ['red', 'orange', 'yellow', 'green', 'blue']
   _customMapFn = undefined
 
+  ordinalIdentity = () ->
+    d3Scale = d3.scale.ordinal()
+
+    me = (value) ->
+      if arguments.length is 0 then return me
+      return value
+
+    me.invert = (val) ->
+      return val
+
+    me.domain = d3.scale.domain
+    me.range = d3.scale.domain
+
+    return me
+
   hashed = () ->
     d3Scale = d3.scale.ordinal()
 
@@ -42,7 +57,7 @@ angular.module('wk.chart').provider 'wkChartScales', () ->
     me = (value) ->
       if not arguments then return me
       # use the mapFn to compute the return value
-      return mapFn.apply(me, [value])
+      return mapFn.apply(me, [value, me.domain()])
 
     me.mapFn = (fn) ->
       if not arguments then return mapFn
@@ -62,6 +77,8 @@ angular.module('wk.chart').provider 'wkChartScales', () ->
 
 
   categoryColors = () -> return d3.scale.ordinal().range(_customColors)
+  category20Linear = () -> return d3.scale.ordinal().range(d3.scale.category20().range().map((c) -> "url(#lgrad-#{c.replace('#','')})"))
+  category20Radial = () -> return d3.scale.ordinal().range(d3.scale.category20().range().map((c) -> "url(#rgrad-#{c.replace('#','')})"))
 
   categoryColorsHashed = () -> return hashed().range(_customColors)
 
@@ -72,13 +89,15 @@ angular.module('wk.chart').provider 'wkChartScales', () ->
     if _.isFunction(fn)
       mapFn = fn
 
-
   this.$get = ['$log',($log) ->
     return {
       hashed: hashed,
       customCategory: categoryColors,
       customCategoryHashed: categoryColorsHashed
       customScale: customScale
+      category20Linear: category20Linear
+      category20Radial: category20Radial
+      ordinalIdentity: ordinalIdentity
     }
   ]
 

@@ -29,44 +29,41 @@ angular.module('wk.chart').directive 'scatter', ($log, utils) ->
 
       ttEnter = (data) ->
         for sName, scale of _scaleList
-          @layers.push({
-            name: scale.axisLabel(),
-            value: scale.formattedValue(data),
-            color: if sName is 'color' then {'background-color':scale.map(data)} else undefined,
-            path: if sName is 'shape' then d3.svg.symbol().type(scale.map(data)).size(80)() else undefined
-            class: if sName is 'shape' then 'wk-chart-tt-svg-shape' else ''
-          })
+          @layers[scale.axisLabel()] =
+            {
+              value: scale.formattedValue(data),
+              color: if sName is 'color' then {fill:(if typeof scale.map(data) is 'string' then scale.map(data) else scale.map(data).color)} else {fill:'none'},
+              path: if sName is 'shape' then d3.svg.symbol().type(scale.map(data)).size(80)() else undefined
+              class: if sName is 'shape' then 'wk-chart-tt-svg-shape' else ''
+            }
 
       #-----------------------------------------------------------------------------------------------------------------
 
-      initialShow = true
+      initialOpacity = 0
 
 
 
       draw = (data, options, x, y, color, size, shape) ->
         #$log.debug 'drawing scatter chart'
-        init = (s) ->
-          if initialShow
-            s.style('fill', color.map)
-            .attr('transform', (d)-> "translate(#{x.map(d)},#{y.map(d)})").style('opacity', 1)
-          initialShow = false
 
-        points = @selectAll('.wk-chart-points')
-          .data(data)
+        points = @selectAll('.wk-chart-shape')
+          .data(data,(d,i) -> i)
         points.enter()
-          .append('path').attr('class', 'wk-chart-points wk-chart-selectable')
-          .attr('transform', (d)-> "translate(#{x.map(d)},#{y.map(d)})")
-          .call(init)
-          .call(_tooltip.tooltip)
-          .call(_selected)
+          .append('path').attr('class', 'wk-chart-shape wk-chart-selectable')
+            .attr('transform', (d)-> "translate(#{x.map(d)},#{y.map(d)})")
+            .style('opacity', initialOpacity)
+            .call(_tooltip.tooltip)
+            .call(_selected)
         points
-          .transition().duration(options.duration)
+          .style('fill', (d) -> color.map (d))
           .attr('d', d3.svg.symbol().type((d) -> shape.map(d)).size((d) -> size.map(d) * size.map(d)))
-          .style('fill', color.map)
-          .attr('transform', (d)-> "translate(#{x.map(d)},#{y.map(d)})").style('opacity', 1)
+          .transition().duration(options.duration)
+            .attr('transform', (d)-> "translate(#{x.map(d)},#{y.map(d)})")
+            .style('opacity', 1)
+
+        initialOpacity = 1
 
         points.exit().remove()
-
 
       #-----------------------------------------------------------------------------------------------------------------
 
@@ -78,8 +75,11 @@ angular.module('wk.chart').directive 'scatter', ($log, utils) ->
         _selected = layout.behavior().selected
         _tooltip.on "enter.#{_id}", ttEnter
 
-      layout.lifeCycle().on 'drawChart', draw
+      layout.lifeCycle().on "drawChart.#{_id}", draw
+
+      layout.lifeCycle().on "destroy.#{_id}", ->
+        layout.lifeCycle().on ".#{_id}", null
+        _tooltip.on ".#{_id}", null
   }
 
 #TODO verify behavior with custom tooltips
-#TODO Implement in new demo app

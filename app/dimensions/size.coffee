@@ -20,6 +20,7 @@ angular.module('wk.chart').directive 'size', ($log, scale, scaleUtils) ->
       #$log.log 'creating controller scaleSize'
 
     link: (scope, element, attrs, controllers) ->
+      $log.log 'size-scope', scope.$id
       me = controllers[0].me
       chart = controllers[1].me
       layout = controllers[2]?.me
@@ -44,5 +45,5 @@ angular.module('wk.chart').directive 'size', ($log, scale, scaleUtils) ->
       #---Directive Attributes handling --------------------------------------------------------------------------------
 
       scaleUtils.observeSharedAttributes(attrs, me)
-      scaleUtils.observeLegendAttributes(attrs, me, layout)
+      scaleUtils.observeLegendAttributes(attrs, me, layout, scope)
   }

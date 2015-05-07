@@ -25,7 +25,7 @@ module.exports = function assignAttrsProcessor(log) {
                         });
                         _.forEach(docMap, function (entry) {
                             if (entry.length > 1) {
-                                var targetDoc = getDocByTypeName(entry[0], entry[1]);
+                                var targetDoc = getDocByTypeName(entry[0].trim(), entry[1].trim());
                                 if (!targetDoc) {
                                     log.error('assignAttrsProcessor: Cannnot find Target Doc for ', doc.name)
                                 }
@@ -39,8 +39,9 @@ module.exports = function assignAttrsProcessor(log) {
                                     reAssign(targetDoc, doc.params)
                                 })
                             }
-                            doc.params = []
+
                         })
+                        //doc.params = []
                     } else {
                         if (doc.name.indexOf('#')>= 0) {
                             // find container

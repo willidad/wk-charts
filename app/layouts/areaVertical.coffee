@@ -15,7 +15,7 @@
 
 
 ###
-angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipUtils) ->
+angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipHelperFactory, dataManagerFactory, markerFactory) ->
   lineCntr = 0
   return {
     restrict: 'A'
@@ -23,157 +23,111 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipUtils)
     link: (scope, element, attrs, controller) ->
       host = controller.me
       #$log.log 'linking s-line'
-      layerKeys = []
-      _layout = []
-      _dataOld = []
-      _pathValuesOld = []
-      _pathValuesNew = []
-      _pathArray = []
       _tooltip = undefined
       _ttHighlight = undefined
       _circles = undefined
       _scaleList = {}
+      _spline = false
       _showMarkers = false
+      _areaStyle = {}
       offset = 0
-      areaBrush = undefined
-      brushStartIdx = 0
-      _id = 'area' + lineCntr++
+      area = undefined
+      _id = 'areaVertical' + lineCntr++
+      _showOpacity = 0.5
 
-      #--- Tooltip handlers --------------------------------------------------------------------------------------------
+      layoutData = undefined
+      _initialOpacity = 0
 
-      ttEnter = (idx) ->
-        _pathArray = _.toArray(_pathValuesNew)
-        ttMoveData.apply(this, [idx])
-
-      ttMoveData = (idx) ->
-        offs = idx + brushStartIdx
-        ttLayers = _pathArray.map((l) -> {name:l[offs].key, value:_scaleList.x.formatValue(l[offs].xv), color:{'background-color': l[offs].color}, yv:l[offs].yv})
-        @headerName = _scaleList.y.axisLabel()
-        @headerValue = _scaleList.y.formatValue(ttLayers[0].yv)
-        @layers = @layers.concat(ttLayers)
-
-      ttMoveMarker = (idx) ->
-        offs = idx + brushStartIdx
-        _circles = this.selectAll(".wk-chart-marker-#{_id}").data(_pathArray, (d) -> d[offs].key)
-        _enter_group = _circles.enter().append('g').attr('class',"wk-chart-marker-#{_id}").call(tooltipUtils.styleTooltipMarker, offs)
-        _circles.selectAll('circle').attr('cx', (d) -> d[offs].x)
-        _circles.exit().remove()
-        o = if _scaleList.y.isOrdinal then _scaleList.y.scale().rangeBand() / 2 else 0
-        this.attr('transform', "translate(0,#{_scaleList.y.scale()(_pathArray[0][offs].yv) + o})") # need to compute form scale because of brushing
+      xData = dataManagerFactory()
+      markers = markerFactory()
+      ttHelper = tooltipHelperFactory()
 
       #-----------------------------------------------------------------------------------------------------------------
 
-      draw = (data, options, x, y, color) ->
+      setAnimationStart = (data, options, x, y, color) ->
+        xData.keyScale(y).valueScale(x).data(data)
+        if not xData.isInitial()
+          layoutData = xData.animationStartLayers()
+          drawPath.apply(this, [false, layoutData, options, x, y, color])
 
-        if y.isOrdinal()
-          mergedY = utils.mergeSeriesUnsorted(y.value(_dataOld), y.value(data))
-        else
-          mergedY = utils.mergeSeriesSorted(y.value(_dataOld), y.value(data))
-        _layerKeys = x.layerKeys(data)
-        _layout = []
-        _pathValuesNew = {}
+      setAnimationEnd = (data, options, x, y, color) ->
+        markers.active(_showMarkers)
+        layoutData = xData.animationEndLayers()
+        drawPath.apply(this, [true, layoutData, options, x, y, color])
 
-        #_layout = layerKeys.map((key) => {key:key, color:color.scale()(key), value:data.map((d)-> {y:y.value(d),x:x.layerValue(d, key)})})
+      drawPath = (doAnimate, data, options, x, y, color) ->
 
-        for key in _layerKeys
-          _pathValuesNew[key] = data.map((d)-> {y:y.map(d), x:x.scale()(x.layerValue(d, key)), yv:y.value(d), xv:x.layerValue(d,key), key:key, color:color.scale()(key), data:d})
-
-          layer = {key:key, color:color.scale()(key), value:[]}
-          # find starting value for old
-          i = 0
-          while i < mergedY.length
-            if mergedY[i][0] isnt undefined
-              oldFirst = _pathValuesOld[key][mergedY[i][0]]
-              break
-            i++
-
-          while i < mergedY.length
-            if mergedY[i][1] isnt undefined
-              newFirst = _pathValuesNew[key][mergedY[i][1]]
-              break
-            i++
-
-          for val, i in mergedY
-            v = {color:layer.color, y:val[2]}
-            # set x and y values for old values. If there is a added value, maintain the last valid position
-            if val[1] is undefined #ie an old value is deleted, maintain the last new position
-              v.yNew = newFirst.y
-              v.xNew = newFirst.x # animate to the predesessors new position
-              v.deleted = true
-            else
-              v.yNew = _pathValuesNew[key][val[1]].y
-              v.xNew = _pathValuesNew[key][val[1]].x
-              newFirst = _pathValuesNew[key][val[1]]
-              v.deleted = false
-
-            if _dataOld.length > 0
-              if  val[0] is undefined # ie a new value has been added
-                v.yOld = oldFirst.y
-                v.xOld = oldFirst.x # start x-animation from the predecessors old position
-              else
-                v.yOld = _pathValuesOld[key][val[0]].y
-                v.xOld = _pathValuesOld[key][val[0]].x
-                oldFirst = _pathValuesOld[key][val[0]]
-            else
-              v.xOld = v.xNew
-              v.yOld = v.yNew
-
-
-            layer.value.push(v)
-
-          _layout.push(layer)
+        setStyle = (d) ->
+          elem = d3.select(this)
+          elem.style(_areaStyle)
+          style = color.scale()(d.layerKey)
+          if typeof style is 'string'
+            elem.style({fill:style, stroke:style})
+          else
+            cVal = style.color
+            style.fill = cVal
+            elem.style(style)
 
         offset = if y.isOrdinal() then y.scale().rangeBand() / 2 else 0
+        if _tooltip
+          _tooltip.data(data)
+          ttHelper.layout(data)
 
-        if _tooltip then _tooltip.data(data)
-
-        areaOld = d3.svg.area()    # tricky. Draw this like a vertical chart and then rotate and position it.
-          .x((d) -> options.width - d.yOld)
-          .y0((d) ->  d.xOld)
+        area = d3.svg.area() # tricky. Draw this like a horizontal chart and then rotate and position it.
+          .x((d) -> -y.scale()(d.targetKey))
+          .y((d) -> x.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
           .y1((d) ->  x.scale()(0))
 
-        areaNew = d3.svg.area()    # tricky. Draw this like a vertical chart and then rotate and position it.
-          .x((d) -> options.width - d.yNew)
-          .y0((d) ->  d.xNew)
-          .y1((d) ->  x.scale()(0))
-
-        areaBrush = d3.svg.area()    # tricky. Draw this like a vertical chart and then rotate and position it.
-          .x((d) -> options.width - y.scale()(d.y))
-          .y0((d) ->  d.xNew)
-          .y1((d) ->  x.scale()(0))
+        if _spline
+          area.interpolate('cardinal')
 
         layers = this.selectAll(".wk-chart-layer")
-          .data(_layout, (d) -> d.key)
-        layers.enter().append('g')
-          .attr('class', "wk-chart-layer")
-          .append('path')
-          .attr('class','wk-chart-line')
-          .style('stroke', (d) -> d.color)
-          .style('fill', (d) -> d.color)
-          .style('opacity', 0)
+          .data(data, (d) -> d.layerKey)
+        enter = layers.enter().append('g').attr('class', "wk-chart-layer")
+        enter.append('path')
+          .attr('class','wk-chart-area-path')
+          .attr('d', (d) -> area(d.values))
+          .style('opacity', _initialOpacity)
           .style('pointer-events', 'none')
-        layers.select('.wk-chart-line')
-          .attr('transform', "translate(0,#{options.width + offset})rotate(-90)") #rotate and position chart
-            .attr('d', (d) -> areaOld(d.value))
-            .transition().duration(options.duration)
-              .attr('d', (d) -> areaNew(d.value))
-              .style('opacity', 0.7).style('pointer-events', 'none')
-        layers.exit().transition().duration(options.duration)
-          .style('opacity', 0)
+
+        path = layers.select('.wk-chart-area-path')
+          .attr('transform', "translate(0,#{offset})rotate(-90)") #rotate and position chart
+          #.style(_areaStyle)
+          #.style('stroke', (d) -> color.scale()(d.layerKey))
+          #.style('fill', (d) -> color.scale()(d.layerKey))
+          .style('pointer-events', 'none')
+        path.each(setStyle)
+        path = if doAnimate then path.transition().duration( options.duration) else path
+        path
+          .attr('d', (d) -> area(d.values))
+          .style('opacity', (d) -> if d.added or d.deleted then 0 else _showOpacity)
+
+        layers.exit()
           .remove()
 
-        _dataOld = data
-        _pathValuesOld = _pathValuesNew
+        markers
+          .isVertical(true)
+          .x((d) -> x.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
+          .y((d) -> y.scale()(d.targetKey) + if y.isOrdinal() then y.scale().rangeBand() / 2 else 0)
+          .color( (d)->
+            style = color.scale()(d.layerKey)
+            return if typeof style is 'string' then style else style.color
+          )
+          .keyScale(y.scale())
+        layers.call(markers, doAnimate)
 
       brush = (axis, idxRange, width, height) ->
-        layers = this.selectAll(".wk-chart-line")
+        areaPath = this.selectAll(".wk-chart-area-path")
         if axis.isOrdinal()
-          layers.attr('transform', "translate(0,#{width + axis.scale().rangeBand() / 2})rotate(-90)")
-          layers.attr('d', (d) ->  areaBrush(d.value.slice(idxRange[0], idxRange[1] + 1)))
-          brushStartIdx = idxRange[0]
+          areaPath.attr('d', (d) ->
+            null
+            area(d.values.slice(idxRange[0],idxRange[1] + 1)))
+          .attr('transform', "translate(0,#{axis.scale().rangeBand() / 2})rotate(-90)")
+          markers.brush(this, idxRange)
+          ttHelper.brushRange(idxRange)
         else
-          layers.attr('d', (d) -> areaBrush(d.value))
-        #layers.call(markers, 0)
+          areaPath.attr('d', (d) -> area(d.values))
+          markers.brush(this)
 
       #--- Configuration and registration ------------------------------------------------------------------------------
 
@@ -183,19 +137,57 @@ angular.module('wk.chart').directive 'areaVertical', ($log, utils, tooltipUtils)
         @getKind('y').domainCalc('extent').resetOnNewData(true)
         @getKind('x').resetOnNewData(true).domainCalc('extent')
         _tooltip = host.behavior().tooltip
+        ttHelper
+          .keyScale(_scaleList.y)
+          .valueScale(_scaleList.x)
+          .colorScale(_scaleList.color)
+          .value((d) -> d.value)
         _tooltip.markerScale(_scaleList.y)
-        _tooltip.on "enter.#{_id}", ttEnter
-        _tooltip.on "moveData.#{_id}", ttMoveData
-        _tooltip.on "moveMarker.#{_id}", ttMoveMarker
+        _tooltip.on "enter.#{_id}", ttHelper.enter
+        _tooltip.on "moveData.#{_id}", ttHelper.moveData
+        _tooltip.on "moveMarker.#{_id}", ttHelper.moveMarkers
 
-      host.lifeCycle().on 'drawChart', draw
-      host.lifeCycle().on 'brushDraw', brush
+      #host.lifeCycle().on 'drawChart', draw
+      host.lifeCycle().on "brushDraw.#{_id}", brush
+      host.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
+      host.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
+
+      host.lifeCycle().on "destroy.#{_id}", ->
+        host.lifeCycle().on ".#{_id}", null
+        _tooltip.on ".#{_id}", null
 
       #--- Property Observers ------------------------------------------------------------------------------------------
-
+      ###*
+        @ngdoc attr
+        @name areaVertical#markers
+        @values true, false
+        @param [markers=false] {boolean} - show a data maker icon for each data point
+      ###
       attrs.$observe 'markers', (val) ->
         if val is '' or val is 'true'
           _showMarkers = true
         else
           _showMarkers = false
-  }
+        host.lifeCycle().update()
+      ###*
+        @ngdoc attr
+        @name areaVertical#spline
+        @values true, false
+        @param [spline=false] {boolean} - interpolate the area shape using bSpline
+      ###
+      attrs.$observe 'spline', (val) ->
+        if val is '' or val is 'true'
+          _spline = true
+        else
+          _spline = false
+        host.lifeCycle().update()
+
+      ###*
+        @ngdoc attr
+        @name areaVertical#areaStyle
+        @param [areaStyle] {object} - Set the pie style for columns lines in the layout
+      ###
+      attrs.$observe 'areaStyle', (val) ->
+        if val
+          _areaStyle = scope.$eval(val)
+    }

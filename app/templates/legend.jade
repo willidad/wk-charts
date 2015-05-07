@@ -1,9 +1,12 @@
-.wk-chart-legend(ng-style="position", ng-show="showLegend")
+.wk-chart-legend(ng-style="legendStyle", ng-show="showLegend")
     .legend-title(ng-show="title") {{title}}
     ul.list-unstyled
         li(ng-repeat="legendRow in legendRows track by legendRow.value", class="wk-chart-legend-item")
-            span(ng-if="legendRow.color", ng-style="legendRow.color") &nbsp;&nbsp;&nbsp;
-            svg-icon(ng-if="legendRow.path", path="legendRow.path", width="20")
+            svg(ng-if="!legendRow.path",class="wk-chart-legend-svg-box")
+                rect(ng-style="legendRow.color", x="0", y="0", width="50", height="50")
+            svg(ng-if="legendRow.path", style="width:15px;height:17px;")
+                path(ng-attr-d="{{legendRow.path}}",transform="translate(8,9)")
+
             span  &nbsp;{{legendRow.value}}
 
 

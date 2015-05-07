@@ -14,7 +14,7 @@
 
 
 ###
-angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig) ->
+angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig, dataManagerFactory, tooltipHelperFactory) ->
 
   stackedBarCntr = 0
   return {
@@ -24,118 +24,109 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig) ->
       host = controller.me
       #$log.log 'linking Stacked bar'
 
-      _id = "stackedColumn#{stackedBarCntr++}"
+      _id = "stackedBar#{stackedBarCntr++}"
 
       layers = null
 
-      stack = []
-      _tooltip = ()->
+      _tooltip = undefined
       _scaleList = {}
       _selected = undefined
-      barPaddingOld = 0
-      barOuterPaddingOld = 0
-
-      _merge = utils.mergeData().key((d) -> d.key)
-      _mergeLayers = utils.mergeData()
-
-      initial = true
+      _barStyle = {}
 
       config = _.clone(barConfig, true)
 
-      ttEnter = (data) ->
-        ttLayers = data.layers.map((l) -> {name:l.layerKey, value:_scaleList.y.formatValue(l.value), color: {'background-color': l.color}})
-        @headerName = _scaleList.x.axisLabel()
-        @headerValue = _scaleList.x.formatValue(data.key)
-        @layers = @layers.concat(ttLayers)
+      xData = dataManagerFactory()
+      ttHelper = tooltipHelperFactory()
+      stack = d3.layout.stack()
+      stack
+        .values((d)->d.values)
+        .y((d) -> if d.layerAdded or d.layerDeleted then 0 else d.targetValue)
+        .x((d) -> d.targetKey)
 
       #-----------------------------------------------------------------------------------------------------------------
 
-      draw = (data, options, x, y, color, size, shape) ->
+      setAnimationStart = (data, options, x, y, color) ->
+        xData.keyScale(y).valueScale(x).data(data, true)
+        if not xData.isInitial()
+          layoutData = xData.animationStartLayers()
+          drawPath.apply(this, [false, layoutData, options, x, y, color])
+
+      setAnimationEnd = (data, options, x, y, color) ->
+        layoutData = xData.animationEndLayers()
+        drawPath.apply(this, [true, layoutData, options, x, y, color])
+
+      drawPath = (doAnimate, data, options, x, y, color) ->
+
+        setStyle = (d) ->
+          elem = d3.select(this)
+          elem.style(_barStyle)
+          style = color.scale()(d.layerKey)
+          if typeof style is 'string'
+            elem.style({fill:style, stroke:style})
+          else
+            cVal = style.color
+            style.fill = cVal
+            elem.style(style)
 
         if not layers
           layers = @selectAll(".wk-chart-layer")
         #$log.debug "drawing stacked-bar"
 
         barPadding = y.scale().rangeBand() / (1 - config.padding) * config.padding
-        barOuterPadding = y.scale().rangeBand() / (1 - config.outerPadding) * config.outerPadding
 
-        layerKeys = x.layerKeys(data)
-
-        stack = []
-        for d in data
-          x0 = 0
-          l = {key:y.value(d), layers:[], data:d, y:y.map(d), height:if y.scale().rangeBand then y.scale().rangeBand() else 1}
-          if l.y isnt undefined
-            l.layers = layerKeys.map((k) ->
-              layer = {layerKey:k, key:l.key, value:d[k], width: x.scale()(+d[k]), height: (if y.scale().rangeBand then y.scale().rangeBand() else 1), x: x.scale()(+x0), color: color.scale()(k)}
-              x0 += +d[k]
-              return layer
-            )
-            stack.push(l)
-
-        _merge(stack).first({y:options.height + barPaddingOld / 2 - barOuterPadding, height:0}).last({y:0, height:barOuterPaddingOld - barPaddingOld / 2})
-        _mergeLayers(layerKeys)
-
+        stackLayout = stack(data)
         layers = layers
-          .data(stack, (d)-> d.key)
+          .data(stackLayout, (d) -> d.layerKey)
 
-        layers.enter().append('g')
-          .attr('class', "wk-chart-layer").attr('transform',(d) -> "translate(0,#{if initial then d.y else _merge.addedPred(d).y - barPaddingOld / 2}) scale(1,#{if initial then 1 else 0})")
-          .style('opacity',if initial then 0 else 1)
+        barHeight = y.scale().rangeBand()
+
+        offset = (d) ->
+          if y.reverse()
+            if d.deleted and d.highBorder then return barHeight + barPadding / 2
+            if d.deleted then return -barPadding / 2
+            if d.added and d.atBorder then return barHeight + barPadding / 2
+            if d.added then return -barPadding / 2
+          else
+            if d.deleted and d.highBorder then return -barPadding / 2
+            if d.deleted then return barHeight + barPadding / 2
+            if d.added and d.atBorder then return -barPadding / 2
+            if d.added then return barHeight + barPadding / 2
+          return 0
+
+        layers.enter().append('g').attr('class', "wk-chart-layer")
+        layers.exit().remove()
+
+        bars = layers.selectAll('.wk-chart-rect')
+        bars = bars.data(
+          (d) -> d.values,
+          (d) -> d.key.toString() + '|' + d.layerKey.toString()
+          )
+        bars.enter().append('rect').attr('class','wk-chart-rect wk-chart-selectable')
+          .style('opacity', 0)
+          #.attr('fill', (d) -> color.scale()(d.layerKey))
+          .style('opacity', 0)
           .call(_tooltip.tooltip)
-
-        layers
-          .transition().duration(options.duration)
-          .attr('transform',(d) -> return "translate(0, #{d.y}) scale(1,1)").style('opacity', 1)
-
-        layers.exit()
-          .transition().duration(options.duration)
-          .attr('transform',(d) -> "translate(0,#{_merge.deletedSucc(d).y + _merge.deletedSucc(d).height + barPadding / 2}) scale(1,0)")
-          .remove()
-
-        bars = layers.selectAll('.wk-chart-bar')
-          .data(
-            (d) -> d.layers
-          , (d) -> d.layerKey + '|' + d.key
-          )
-
-        bars.enter().append('rect')
-          .attr('class', 'wk-chart-bar wk-chart-selectable')
-          .attr('x', (d) ->
-            if _merge.prev(d.key)
-              idx = layerKeys.indexOf(_mergeLayers.addedPred(d.layerKey))
-              if idx >= 0 then _merge.prev(d.key).layers[idx].x + _merge.prev(d.key).layers[idx].width else x.scale()(0)
-            else
-              d.x
-          )
-          .attr('width', (d) -> if _merge.prev(d.key) then 0 else d.width)
-          .attr('height',(d) -> d.height)
           .call(_selected)
 
-        bars.style('fill', (d) -> d.color)
-          .transition().duration(options.duration)
-            .attr('x', (d) -> d.x)
-            .attr('width', (d) -> d.width)
-            .attr('height', (d) -> d.height)
+        bars
+          .each(setStyle)
 
-        bars.exit()
-          .transition().duration(options.duration)
-          .attr('x', (d) ->
-            idx = layerKeys.indexOf(_mergeLayers.deletedSucc(d.layerKey))
-            if idx >= 0 then _merge.current(d.key).layers[idx].x else _merge.current(d.key).layers[layerKeys.length - 1].x + _merge.current(d.key).layers[layerKeys.length - 1].width
-          )
-          .attr('width', 0)
-          .remove()
+        (if doAnimate then bars.transition().duration(options.duration) else bars)
+          .attr('x', (d) -> x.scale()(d.y0))
+          .attr('width', (d) -> x.scale()(d.y))
+          .attr('height', (d) -> if d.added or d.deleted then 0 else barHeight)
+          .attr('y', (d) -> y.scale()(d.targetKey) + offset(d))
+          .style('opacity', 1)
 
-        initial = false
-        barPaddingOld = barPadding
-        barOuterPaddingOld = barOuterPadding
+        bars.exit().remove()
 
-      drawBrush = (axis, idxRange) ->
-        layers
-          .attr('transform',(d) -> "translate(0, #{if (x = axis.scale()(d.key)) >= 0 then x else -1000})")
-          .selectAll('.wk-chart-bar')
+      brush = (axis, idxRange) ->
+        bars = this.selectAll(".wk-chart-rect")
+        if axis.isOrdinal()
+          bars
+            .attr('y', (d) -> if (val = axis.scale()(d.key)) >= 0 then val else -1000)
             .attr('height', (d) -> axis.scale().rangeBand())
+          ttHelper.brushRange(idxRange)
 
       #-----------------------------------------------------------------------------------------------------------------
 
@@ -147,10 +138,21 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig) ->
         @layerScale('color')
         _tooltip = host.behavior().tooltip
         _selected = host.behavior().selected
-        _tooltip.on "enter.#{_id}", ttEnter
+        _tooltip.on "enter.#{_id}", ttHelper.enter
+        ttHelper
+          .keyScale(_scaleList.y)
+          .valueScale(_scaleList.x)
+          .colorScale(_scaleList.color)
+          .value((d) -> d.value)
 
-      host.lifeCycle().on 'drawChart', draw
-      host.lifeCycle().on 'brushDraw', drawBrush
+      #host.lifeCycle().on "drawChart", draw
+      host.lifeCycle().on "brushDraw.#{_id}", brush
+      host.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
+      host.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
+
+      host.lifeCycle().on "destroy.#{_id}", ->
+        host.lifeCycle().on ".#{_id}", null
+        _tooltip.on ".#{_id}", null
 
       ###*
           @ngdoc attr
@@ -182,4 +184,13 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig) ->
               config.outerPadding = values[1]/100
         _scaleList.y.rangePadding(config)
         host.lifeCycle().update()
+
+      ###*
+        @ngdoc attr
+        @name barStacked#barStyle
+        @param [barsStyle] {object} - Set the line style for columns lines in the layout
+      ###
+      attrs.$observe 'barStyle', (val) ->
+        if val
+          _barStyle = scope.$eval(val)
   }

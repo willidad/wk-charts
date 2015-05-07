@@ -28,21 +28,30 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
     inner = undefined
     outer = undefined
     labels = undefined
+    _labelStyle = undefined
+    _pieStyle = undefined
     pieBox = undefined
     polyline = undefined
     _scaleList = []
     _selected = undefined
     _tooltip = undefined
     _showLabels = false
+    _donat = false
+    selectionOffset = 0
+    animationDuration = 0
 
     _merge = utils.mergeData()
 
     #-------------------------------------------------------------------------------------------------------------------
 
     ttEnter = (data) ->
-      @headerName = _scaleList.color.axisLabel()
+      @headerName = _scaleList.y.axisLabel()
       @headerValue = _scaleList.size.axisLabel()
-      @layers.push({name: _scaleList.color.formattedValue(data.data), value: _scaleList.size.formattedValue(data.data), color:{'background-color': _scaleList.color.map(data.data)}})
+      d = {}
+      d.value = _scaleList.size.formattedValue(data)
+      cVal = _scaleList.color.map(data)
+      d.color = if typeof cVal is 'string' then {fill:cVal, stroke:cVal} else cVal
+      @layers[d.value] = d
 
     #-------------------------------------------------------------------------------------------------------------------
 
@@ -51,21 +60,38 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
     draw = (data, options, x, y, color, size) ->
       #$log.debug 'drawing pie chart v2'
 
+      setStyle = (d) ->
+        elem = d3.select(this)
+        elem.style(_pieStyle)
+        style = color.map(d.data)
+        if typeof style is 'string'
+          elem.style({fill:style, stroke:style})
+        else
+          cVal = style.color
+          style.fill = cVal
+          elem.style(style)
+
+      animationDuration = options.duration
+
       r = Math.min(options.width, options.height) / 2
+      selectionOffset = r * 0.06
 
       if not pieBox
         pieBox= @append('g').attr('class','wk-chart-pieBox')
       pieBox.attr('transform', "translate(#{options.width / 2},#{options.height / 2})")
 
+      outerR  = r * if _showLabels then 0.8 else 0.9
+      innerR = outerR * if _donat then 0.6 else 0
+
       innerArc = d3.svg.arc()
-        .outerRadius(r * if _showLabels then 0.8 else 1)
-        .innerRadius(0)
+        .outerRadius(outerR)
+        .innerRadius(innerR)
 
       outerArc = d3.svg.arc()
         .outerRadius(r * 0.9)
         .innerRadius(r * 0.9)
 
-      key = (d) -> _scaleList.color.value(d.data)
+      key = (d) -> _scaleList.y.value(d.data)
 
       pie = d3.layout.pie()
         .sort(null)
@@ -92,15 +118,17 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
       inner.enter().append('path')
         .each((d) -> this._current = if initialShow then d else {startAngle:_merge.addedPred(d).endAngle, endAngle:_merge.addedPred(d).endAngle})
         .attr('class','wk-chart-innerArc wk-chart-selectable')
-        .style('fill', (d) ->  color.map(d.data))
-        .style('stroke', (d) -> color.map(d.data))
-        .style('opacity', if initialShow then 0 else 1)
+        #.style('fill', (d) ->  color.map(d.data))
+        #.style('stroke', (d) -> color.map(d.data))
+        #.style('opacity', if initialShow then 0 else 1)
         .call(_tooltip.tooltip)
         .call(_selected)
 
       inner
+        #.attr('transform', "translate(#{options.width / 2},#{options.height / 2})")
+        .each(setStyle)
         .transition().duration(options.duration)
-          .style('opacity', 1)
+          #.style('opacity', 1)
           .attrTween('d',arcTween)
 
       inner.exit().datum((d) ->  {startAngle:_merge.deletedSucc(d).startAngle, endAngle:_merge.deletedSucc(d).startAngle})
@@ -119,12 +147,12 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
         labels.enter().append('text').attr('class', 'wk-chart-data-label')
           .each((d) -> @_current = d)
           .attr("dy", ".35em")
-          .style('font-size','1.3em')
+          .style(layout.dataLabelStyle())
           .style('opacity', 0)
           .text((d) -> size.formattedValue(d.data))
 
         labels.transition().duration(options.duration)
-          .style('opacity',1)
+          .style('opacity',1)#.style(layout.dataLabelStyle())
           .text((d) -> size.formattedValue(d.data))
           .attrTween('transform', (d) ->
             _this = this
@@ -141,7 +169,7 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
               d2 = interpolate(t)
               return if midAngle(d2) < Math.PI then  "start" else "end"
             )
-          
+
         labels.exit()
           .transition().duration(options.duration).style('opacity',0).remove()
 
@@ -152,6 +180,7 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
         polyline.enter()
         . append("polyline").attr('class','wk-chart-polyline')
           .style("opacity", 0)
+          .style('pointer-events','none')
           .each((d) ->  this._current = d)
 
         polyline.transition().duration(options.duration)
@@ -179,16 +208,37 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
 
       initialShow = false
 
+    highlightSelected = (s) ->
+      obj = d3.select(this)
+      if obj.classed('wk-chart-selected')
+        arc = (s.startAngle + s.endAngle) / 2
+        offsX = Math.sin(arc) * selectionOffset
+        offsY = -Math.cos(arc) * selectionOffset
+        obj.transition().duration(animationDuration)
+          .attr('transform',"translate(#{offsX},#{offsY})")
+      else
+        obj.transition().duration(animationDuration)
+          .attr('transform','translate(0,0)')
+
+    selectionHandler = (objects) ->
+      pieBox.selectAll('.wk-chart-innerArc').each(highlightSelected)
+
     #-------------------------------------------------------------------------------------------------------------------
 
     layout.lifeCycle().on 'configure', ->
-      _scaleList = this.getScales(['size', 'color'])
+      _scaleList = this.getScales(['size', 'y', 'color'])
       _scaleList.color.scaleType('category20')
+      _scaleList.y.scaleType('ordinal')
       _tooltip = layout.behavior().tooltip
       _selected = layout.behavior().selected
       _tooltip.on "enter.#{_id}", ttEnter
 
-    layout.lifeCycle().on 'drawChart', draw
+    layout.lifeCycle().on "drawChart.#{_id}", draw
+    layout.lifeCycle().on "objectsSelected.#{_id}", selectionHandler
+
+    layout.lifeCycle().on "destroy.#{_id}", ->
+      layout.lifeCycle().on ".#{_id}", null
+      _tooltip.on ".#{_id}", null
 
     #-------------------------------------------------------------------------------------------------------------------
 
@@ -204,6 +254,31 @@ angular.module('wk.chart').directive 'pie', ($log, utils) ->
       else if val is 'true' or val is ""
         _showLabels = true
       layout.lifeCycle().update()
-  }
 
-  #TODO verify behavior with custom tooltips
+    attrs.$observe 'donat' , (val) ->
+      if val is 'false'
+        _donat = false
+      else if val is 'true' or val is ""
+        _donat = true
+      layout.lifeCycle().update()
+
+    ###*
+      @ngdoc attr
+      @name pie#labelStyle
+      @param [labelStyle=font-size:"1.3em"] {object} defined the font style attributes for the labels.
+    ###
+    attrs.$observe 'labelStyle', (val) ->
+      if val
+        layout.dataLabelStyle(scope.$eval(val))
+      layout.lifeCycle().update()
+
+    ###*
+      @ngdoc attr
+      @name pie#pieStyle
+      @param [pieStyle] {object} - Set the pie style for columns lines in the layout
+    ###
+    attrs.$observe 'pieStyle', (val) ->
+      if val
+        _pieStyle = scope.$eval(val)
+
+  }

@@ -21,6 +21,7 @@ angular.module('wk.chart').directive 'y', ($log, scale, legend, scaleUtils) ->
       #$log.log 'creating controller scaleY'
 
     link: (scope, element, attrs, controllers) ->
+      $log.log 'color-scope', scope.$id
       me = controllers[0].me
       chart = controllers[1].me
       layout = controllers[2]?.me
@@ -28,6 +29,11 @@ angular.module('wk.chart').directive 'y', ($log, scale, legend, scaleUtils) ->
       if not (chart or layout)
         $log.error 'scale needs to be contained in a chart or layout directive '
         return
+
+      if attrs.hasOwnProperty('right')
+        me.orientation('right')
+      else
+        me.orientation('left')
 
       name = 'y'
       me.kind(name)
@@ -45,18 +51,6 @@ angular.module('wk.chart').directive 'y', ($log, scale, legend, scaleUtils) ->
       #---Directive Attributes handling --------------------------------------------------------------------------------
 
       scaleUtils.observeSharedAttributes(attrs, me)
-
-      attrs.$observe 'axis', (val) ->
-        if val isnt undefined
-          if val isnt 'false'
-            if val in ['left', 'right']
-              me.axisOrient(val).showAxis(true)
-            else
-              me.axisOrient('left').showAxis(true)
-          else
-            me.showAxis(false).axisOrient(undefined)
-          me.update(true)
-
       scaleUtils.observeAxisAttributes(attrs, me, scope)
       scaleUtils.observeLegendAttributes(attrs, me, layout)
   }

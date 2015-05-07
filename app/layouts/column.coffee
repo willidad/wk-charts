@@ -13,7 +13,7 @@
   @usesDimension y [type=linear, domainRange=extent]
   @usesDimension color [type=category20]
 ###
-angular.module('wk.chart').directive 'column', ($log, utils, barConfig, wkChartMargins)->
+angular.module('wk.chart').directive 'column', ($log, utils, barConfig, dataManagerFactory, dataLabelFactory, tooltipHelperFactory)->
   sBarCntr = 0
   return {
   restrict: 'A'
@@ -22,90 +22,105 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, wkChartM
   link: (scope, element, attrs, controller) ->
     host = controller.me
 
-    _id = "simpleColumn#{sBarCntr++}"
+    _id = "column#{sBarCntr++}"
 
     columns = null
     _scaleList = {}
     _selected = undefined
-    _merge = utils.mergeData()
-    _merge([]).key((d) -> d.key)
-    initial = true
-    barPaddingOld = 0
-    barOuterPaddingOld = 0
 
     config = _.clone(barConfig, true)
 
-    #--- Tooltip Event Handlers --------------------------------------------------------------------------------------
-
+    xData = dataManagerFactory()
+    ttHelper = tooltipHelperFactory()
+    dataLabels = dataLabelFactory()
     _tooltip = undefined
-
-    ttEnter = (data) ->
-      @headerName = _scaleList.x.axisLabel()
-      @headerValue = _scaleList.y.axisLabel()
-      @layers.push({name: _scaleList.color.formattedValue(data.data), value: _scaleList.y.formattedValue(data.data), color:{'background-color': _scaleList.color.map(data.data)}})
+    _columnStyle = {'stroke-width':1}
 
     #--- Draw --------------------------------------------------------------------------------------------------------
 
-    draw = (data, options, x, y, color) ->
+    setAnimationStart = (data, options, x, y, color) ->
+      xData.keyScale(x).valueScale(y).data(data, true)
+      if not xData.isInitial()
+        layoutData = xData.animationStartLayers()
+        drawPath.apply(this, [false, layoutData, options, x, y, color])
+
+    setAnimationEnd = (data, options, x, y, color) ->
+      layoutData = xData.animationEndLayers()
+      dataLabels.duration(options.duration).active(host.showDataLabels()) # needs to be here to ensure right opacity animation !
+      drawPath.apply(this, [true, layoutData, options, x, y, color])
+
+    drawPath = (doAnimate, data, options, x, y, color) ->
+
+      setStyle = (d) ->
+        elem = d3.select(this)
+        elem.style(_columnStyle)
+        style = if color.property().length is 0 then color.scale()(d.layerKey) else color.map(d.data)
+        if typeof style is 'string'
+          elem.style({fill:style, stroke:style})
+        else
+          cVal = style.color
+          style.fill = cVal
+          elem.style(style)
+
+      _colorByKey = not color.property() and color.isOrdinal()
+      ttHelper.colorByKey(_colorByKey)
 
       if not columns
-        columns = @selectAll('.wk-chart-column')
+        columns = @selectAll('.wk-chart-layer')
       #$log.log "rendering stacked-bar"
 
-      barPadding = x.scale().rangeBand() / (1 - config.padding) * config.padding
-      barOuterPadding = x.scale().rangeBand() / (1 - config.outerPadding) * config.outerPadding
+      barWidth = x.scale().rangeBand()
+      barPadding = barWidth / (1 - config.padding) * config.padding
 
-      layout = data.map((d) -> {data:d, key:x.value(d), x:x.map(d), y:Math.min(y.scale()(0), y.map(d)), color:color.map(d), width:x.scale().rangeBand(x.value(d)), height:Math.abs(y.scale()(0) - y.map(d))})
+      offset = (d) ->
+        if x.reverse()
+          if d.deleted and d.highBorder then return  -barPadding / 2
+          if d.deleted then return barWidth + barPadding / 2
+          if d.added and d.atBorder then return -barPadding / 2
+          if d.added then return barWidth + barPadding / 2
+        else
+          if d.deleted and d.highBorder then return barWidth
+          if d.deleted then return -barPadding / 2
+          if d.added and d.atBorder then return  barWidth + barPadding / 2
+          if d.added then return -barPadding / 2
+        return 0
 
-      _merge(layout).first({x:0, width:0}).last({x:options.width + barPadding/2 - barOuterPaddingOld, width: barOuterPadding})
+      columns = columns.data(data[0].values, (d) -> d.key)
 
+      enter = columns.enter().append('g').attr('class','wk-chart-layer')
+        .attr('transform', (d)-> "translate(#{x.scale()(d.targetKey)})")
 
-      columns = columns.data(layout, (d) -> d.key)
-
-      enter = columns.enter().append('g').attr('class','wk-chart-column')
-        .attr('transform', (d,i) -> "translate(#{if initial then d.x else _merge.addedPred(d).x  + _merge.addedPred(d).width + if i then barPaddingOld / 2 else barOuterPaddingOld},#{d.y}) scale(#{if initial then 1 else 0},1)")
       enter.append('rect')
         .attr('class', 'wk-chart-rect wk-chart-selectable')
-        .attr('height', (d) -> d.height)
-        .attr('width', (d) -> d.width)
-        .style('fill',(d) -> d.color)
-        .style('opacity', if initial then 0 else 1)
+        .attr('width', (d) -> if d.added or d.deleted then 0 else barWidth)
+        .style('opacity', 0)
         .call(_tooltip.tooltip)
         .call(_selected)
-      enter.append('text')
-        .attr('class', 'wk-chart-data-label')
-        .attr('x', (d) -> d.width / 2)
-        .attr('y', - wkChartMargins.dataLabelPadding.vert)
-        .attr({'text-anchor':'middle'})
-        .style({opacity: 0})
 
-      columns.transition().duration(options.duration)
-        .attr("transform", (d) -> "translate(#{d.x}, #{d.y}) scale(1,1)")
-      columns.select('rect').transition().duration(options.duration)
-        .attr('width', (d) -> d.width)
-        .attr('height', (d) -> d.height)
-        .style('opacity',1)
-      columns.select('text')
-        .text((d) -> y.formattedValue(d.data))
-        .transition().duration(options.duration)
-          .attr('x', (d) -> d.width / 2)
-          .style('opacity', if host.showDataLabels() then 1 else 0)
+      (if doAnimate then columns.transition().duration(options.duration) else columns)
+        .attr('transform', (d) -> "translate(#{x.scale()(d.targetKey) + offset(d)})")
 
-      columns.exit().transition().duration(options.duration)
-        .attr('transform', (d) -> "translate(#{_merge.deletedSucc(d).x - barPadding / 2},#{d.y}) scale(0,1)")
-        .remove()
+      rect = columns.select('rect')
+        #.style('fill', (d) -> if color.property().length is 0 then color.scale()(d.layerKey) else color.map(d.data))
+        #.style('stroke', (d) -> if color.property().length is 0 then color.scale()(d.layerKey)  else color.map(d.data))
+        .each(setStyle)
+      (if doAnimate then rect.transition().duration(options.duration) else rect)
+        .attr('width', (d) -> if d.added or d.deleted then 0 else barWidth)
+        .attr('height', (d) -> Math.abs(y.scale()(0) - y.scale()(d.targetValue)))
+        .attr('y', (d) -> Math.min(y.scale()(0), y.scale()(d.targetValue)))
+        .style('opacity', 1)
 
-      initial = false
-      barPaddingOld = barPadding
-      barOuterPaddingOld = barOuterPadding
+      columns.call(dataLabels, doAnimate, host.dataLabelStyle())
+
+      columns.exit()
+      .remove()
 
     brush = (axis, idxRange) ->
       columns
-        .attr('transform',(d) -> "translate(#{if (x = axis.scale()(d.key)) >= 0 then x else -1000}, #{d.y})")
+        .attr('transform',(d) -> "translate(#{if (x = axis.scale()(d.key)) >= 0 then x else -1000})")
         .selectAll('.wk-chart-rect')
         .attr('width', (d) -> axis.scale().rangeBand())
-      columns.selectAll('text')
-          .attr('x',axis.scale().rangeBand() / 2)
+      dataLabels.brush(columns)
 
     #--- Configuration and registration ------------------------------------------------------------------------------
 
@@ -115,10 +130,24 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, wkChartM
       @getKind('x').resetOnNewData(true).rangePadding(config).scaleType('ordinal')
       _tooltip = host.behavior().tooltip
       _selected = host.behavior().selected
-      _tooltip.on "enter.#{_id}", ttEnter
+      ttHelper
+        .keyScale(_scaleList.x)
+        .valueScale(_scaleList.y)
+        .colorScale(_scaleList.color)
+        .value((d) -> d.value)
+      dataLabels
+        .keyScale(_scaleList.x)
+        .valueScale(_scaleList.y)
+      _tooltip.on "enter.#{_id}", ttHelper.enter
 
-    host.lifeCycle().on 'drawChart', draw
-    host.lifeCycle().on 'brushDraw', brush
+    host.lifeCycle().on "brushDraw.#{_id}", brush
+    host.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
+    host.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
+
+    host.lifeCycle().on "destroy.#{_id}", ->
+      host.lifeCycle().on ".#{_id}", null
+      _tooltip.on ".#{_id}", null
+
     ###*
     @ngdoc attr
       @name column#padding
@@ -161,5 +190,24 @@ angular.module('wk.chart').directive 'column', ($log, utils, barConfig, wkChartM
       else if val is 'true' or val is ""
         host.showDataLabels('y')
       host.lifeCycle().update()
+
+    ###*
+      @ngdoc attr
+      @name column#labelStyle
+      @param [labelStyle=font-size:"1.3em"] {object} defined the font style attributes for the labels.
+    ###
+    attrs.$observe 'labelStyle', (val) ->
+      if val
+        host.dataLabelStyle(scope.$eval(val))
+      host.lifeCycle().update()
+
+    ###*
+        @ngdoc attr
+        @name column#columnStyle
+        @param [columnStyle] {object} - Set the line style for columns lines in the layout
+      ###
+    attrs.$observe 'columnStyle', (val) ->
+      if val
+        _columnStyle = scope.$eval(val)
 
   }

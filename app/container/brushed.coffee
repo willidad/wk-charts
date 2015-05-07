@@ -10,11 +10,13 @@
 
 ###
 angular.module('wk.chart').directive 'brushed', ($log,selectionSharing, timing) ->
-  sBrushCnt = 0
+  sBrushedCnt = 0
   return {
     restrict: 'A'
     require: ['^chart', '?^layout', '?x', '?y', '?rangeX', '?rangeY']
     link: (scope, element, attrs, controllers) ->
+      $log.log 'brushed-scope', scope.$id
+      _id = sBrushedCnt++
       chart = controllers[0].me
       layout = controllers[1]?.me
       x = controllers[2]?.me
@@ -38,7 +40,7 @@ angular.module('wk.chart').directive 'brushed', ($log,selectionSharing, timing) 
           if axis.isOrdinal()
             idxRange = [0, axis.scale().domain().length - 1]
 
-        for l in chart.layouts() when l.scales().hasScale(axis) #need to do it this way to ensure the right axis is chosen in case of several layouts in a container
+        for l in chart.layouts() when l.scales().getKind(axis.kind()).id() is axis.id()  #need to do it this way to ensure the right axis is chosen in case of several layouts w. different axis  in a container
           l.lifeCycle().brush(axis, true, idxRange) #no animation
         #timing.stop("brusher#{axis.id()}")
 
@@ -49,7 +51,8 @@ angular.module('wk.chart').directive 'brushed', ($log,selectionSharing, timing) 
         else
           _brushGroup = undefined
 
-      scope.$on '$destroy', () ->
+      chart.lifeCycle().on "destroy.#{_id}", () ->
         selectionSharing.unregister _brushGroup, brusher
+        chart.lifeCycle().on ".#{_id}", null
 
   }

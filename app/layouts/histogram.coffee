@@ -13,7 +13,7 @@
   @usesDimension y [type=linear, domainRange=extent]
   @usesDimension color [type=category20]
 ###
-angular.module('wk.chart').directive 'columnHistogram', ($log, barConfig, utils, wkChartMargins) ->
+angular.module('wk.chart').directive 'columnHistogramOld', ($log, barConfig, utils, wkChartMargins) ->
 
   sHistoCntr = 0
 

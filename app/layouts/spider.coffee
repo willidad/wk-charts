@@ -32,11 +32,25 @@ angular.module('wk.chart').directive 'spider', ($log, utils) ->
       #--- Tooltip Event Handlers --------------------------------------------------------------------------------------
 
       ttEnter = (data) ->
-        @layers = _data.map((d) ->  {name:_scaleList.x.value(d), value:_scaleList.y.formatValue(d[data]), color: {'background-color':_scaleList.color.scale()(data)}})
+        for d in _data
+          style = _scaleList.color.scale()(data)
+          @layers[_scaleList.x.value(d)] = {value:_scaleList.y.formatValue(d[data]), color: {fill:(if typeof style is 'string' then style else style.color)}}
 
       #--- Draw --------------------------------------------------------------------------------------------------------
 
       draw = (data, options, x, y, color) ->
+
+        setStyle = (d) ->
+          elem = d3.select(this)
+          #elem.style(_areaStyle)
+          style = color.scale()(d)
+          if typeof style is 'string'
+            elem.style({fill:'none', stroke:style, 'stroke-width':3})
+          else
+            cVal = style.color
+            style.stroke = cVal
+            elem.style(style)
+
         _data = data
         $log.log data
         # compute center of area
@@ -58,14 +72,14 @@ angular.module('wk.chart').directive 'spider', ($log, utils) ->
         axisG.call(axis).attr('transform', "translate(#{centerX},#{centerY-radius})")
         y.scale().range([0,radius])
 
-        lines = this.selectAll('.wk-chart-axis-line').data(data,(d) -> d.axis)
+        lines = this.selectAll('.wk-chart-axis-line').data(data,(d) -> x.value(d))
         lines.enter()
           .append('line').attr('class', 'wk-chart-axis-line')
           .style('stroke', 'darkgrey')
 
         lines
           .attr({x1:0, y1:0, x2:0, y2:radius})
-          .attr('transform',(d,i) -> "translate(#{centerX}, #{centerY})rotate(#{degr * i})")
+          .attr('transform',(d,i) -> "translate(#{centerX}, #{centerY})rotate(#{degr * i + 180})")
 
         lines.exit().remove()
 
@@ -77,7 +91,7 @@ angular.module('wk.chart').directive 'spider', ($log, utils) ->
 
         tickPath
           .attr('d',(d) ->
-            p = data.map((a, i) -> {x:Math.sin(arc*i) * y.scale()(d),y:Math.cos(arc*i) * y.scale()(d)})
+            p = data.map((a, i) -> {x:Math.sin(arc*i + Math.PI) * y.scale()(d),y:Math.cos(arc*i + Math.PI) * y.scale()(d)})
             tickLine(p) + 'Z')
           .attr('transform', "translate(#{centerX}, #{centerY})")
 
@@ -91,10 +105,11 @@ angular.module('wk.chart').directive 'spider', ($log, utils) ->
           .attr('text-anchor', 'middle')
         axisLabels
           .attr({
-              x: (d, i) -> centerX + Math.sin(arc * i) * (radius + textOffs)
-              y: (d, i) -> centerY + Math.cos(arc * i) * (radius + textOffs)
+              x: (d, i) -> centerX + Math.sin(arc * i + Math.PI) * (radius + textOffs)
+              y: (d, i) -> centerY + Math.cos(arc * i + Math.PI) * (radius + textOffs)
             })
           .text((d) -> x.value(d))
+        axisLabels.exit().remove()
 
         # draw data lines
 
@@ -102,17 +117,18 @@ angular.module('wk.chart').directive 'spider', ($log, utils) ->
 
         dataLine = this.selectAll('.wk-chart-data-line').data(y.layerKeys(data))
         dataLine.enter().append('path').attr('class', 'wk-chart-data-line')
-          .style({
-            stroke:(d) -> color.scale()(d)
-            fill:(d) -> color.scale()(d)
-            'fill-opacity': 0.2
-            'stroke-width': 2
-          })
+          #.style({
+          #  stroke:(d) -> color.scale()(d)
+          #  fill:(d) -> 'none' #color.scale()(d)
+          #  #'fill-opacity': 0.2
+          #  'stroke-width': 2
+          #})
           .call(_tooltip.tooltip)
         dataLine.attr('d', (d) ->
-            p = data.map((a, i) -> {x:Math.sin(arc*i) * y.scale()(a[d]),y:Math.cos(arc*i) * y.scale()(a[d])})
+            p = data.map((a, i) -> {x:Math.sin(arc*i + Math.PI) * y.scale()(a[d]),y:Math.cos(arc*i + Math.PI) * y.scale()(a[d])})
             dataPath(p) + 'Z'
           )
+          .each(setStyle)
           .attr('transform', "translate(#{centerX}, #{centerY})")
 
 
@@ -126,7 +142,11 @@ angular.module('wk.chart').directive 'spider', ($log, utils) ->
         _tooltip = layout.behavior().tooltip
         _tooltip.on "enter.#{_id}", ttEnter
 
-      layout.lifeCycle().on 'drawChart', draw
+      layout.lifeCycle().on "drawChart.#{_id}", draw
+
+      layout.lifeCycle().on "destroy.#{_id}", ->
+        layout.lifeCycle().on ".#{_id}", null
+        _tooltip.on ".#{_id}", null
 
   }
 

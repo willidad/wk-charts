@@ -15,6 +15,15 @@
     fill:none;
 }
 
+.wk-chart-area-path {
+    stroke-width:1!important;
+    shape-rendering: crispEdges;
+}
+
+.wk-charts-tt-marker {
+    stroke-width: 1!important;
+}
+
 .wk-chart-bar {
     shape-rendering: crispEdges;
 }
@@ -23,7 +32,6 @@
     fill:none;
     stroke:black;
 }
-
 
 .wk-chart-tooltip {
     background-color: rgba(255,255,255,0.8);
@@ -60,6 +68,7 @@
 
 .wk-chart-legend {
     background: rgba(255, 255, 255, 0.5);
+    pointer-events: none;
 }
 
 .wk-chart-legend .legend-title {
@@ -108,20 +117,25 @@ li.wk-chart-legend-shapeItem span {
     opacity:1;
 }
 
-.wk-chart-overlay .wk-chart-resize rect {
+.wk-chart-area .wk-chart-resize rect {
     stroke: black;
     fill: darkgrey;
     visibility: hidden;
 }
 
-.show-brush-handles .wk-chart-overlay .wk-chart-resize rect {
+.show-brush-handles .wk-chart-area .wk-chart-resize rect {
     visibility: visible;
 }
 
 .wk-chart-overlay .wk-chart-background {
     visibility: hidden
 }
-.wk-chart-overlay>.wk-chart-extent {
+.wk-chart-area .wk-chart-background {
+    visibility: hidden;
+    pointer-events:all;
+}
+
+.wk-chart-area>.wk-chart-extent {
     fill:lightgrey;
     fill-opacity:0.6;
 }
@@ -134,23 +148,29 @@ li.wk-chart-legend-shapeItem span {
     pointer-events: none;
 }
 
-.wk-chart-has-selected-items  .wk-chart-selectable.wk-chart-selected {
-    opacity:1!important;
-    stroke-width: 1px;
-}
-
-.wk-chart-has-selected-items  .wk-chart-selectable:not(.wk-chart-selected) {
-    opacity: 0.3!important;
-    stroke-opacity: 0.3;
-}
-
 .wk-chart-grid {
     stroke: lightgrey;
     shape-rendering: crispEdges;
 }
 
-.wk-chart-data-label {
-    font-size: 1.3em;
+.wk-chart-rect.wk-chart-selected {
+    stroke-width:10;
+    stroke-opacity: 0.4;
 }
 
+.wk-chart-svg-box {
+    width:1em;
+    height:calc(1.4em + 10px);
+    vertical-align: middle;
+}
+
+td.wk-chart-tt-svg-box {
+    padding: 0!important;
+}
+
+.wk-chart-legend-svg-box {
+    width:1em;
+    height:1.4em;
+    vertical-align: middle;
+}
 /*# sourceMappingURL=app.css.map*/

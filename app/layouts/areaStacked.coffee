@@ -14,7 +14,7 @@
   @usesDimension color [type=category20]
 ###
 
-angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipUtils) ->
+angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipHelperFactory, dataManagerFactory, markerFactory) ->
   stackedAreaCntr = 0
   return {
     restrict: 'A'
@@ -26,70 +26,64 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipUtils) 
       offset = 'zero'
       layers = null
       _showMarkers = false
-      layerKeys = []
-      layerData = []
-      layoutNew = []
-      layoutOld = []
-      layerKeysOld = []
+      _spline = false
+      stackLayout = []
       area = undefined
-      deletedSucc = {}
-      addedPred = {}
+      _areaStyle = undefined
       _tooltip = undefined
-      _ttHighlight = undefined
-      _circles = undefined
       _scaleList = {}
       scaleY = undefined
       offs = 0
       _id = 'areaStacked' + stackedAreaCntr++
+      _showOpacity = 0.5
 
-      #--- Tooltip Event Handlers --------------------------------------------------------------------------------------
+      xData = dataManagerFactory()
+      markers = markerFactory()
 
-      ttMoveData = (idx) ->
-        ttLayers = layerData.map((l) -> {name:l.key, value:_scaleList.y.formatValue(l.layer[idx].yy), color: {'background-color': l.color}})
-        @headerName = _scaleList.x.axisLabel()
-        @headerValue = _scaleList.x.formatValue(layerData[0].layer[idx].x)
-        @layers = @layers.concat(ttLayers)
+      layoutData = undefined
+      ttHelper = tooltipHelperFactory()
 
-      ttMoveMarker = (idx) ->
-        _circles = this.selectAll(".wk-chart-marker-#{_id}").data(layerData, (d) -> d.key)
-        _circles.enter().append('g').attr('class',"wk-chart-marker-#{_id}").call(tooltipUtils.styleTooltipMarker)
-        ###
-          .attr('r', if _showMarkers then 8 else 5)
-          .style('fill', (d)-> d.color)
-          .style('fill-opacity', 0.6)
-          .style('stroke', 'black')
-          .style('pointer-events','none')
-  ###
-        _circles.selectAll('circle').attr('cy', (d) -> scaleY(d.layer[idx].y + d.layer[idx].y0))
-        _circles.exit().remove()
+      #-----------------------------------------------------------------------------------------------------------------
 
-        this.attr('transform', "translate(#{_scaleList.x.scale()(layerData[0].layer[idx].x)+offs})")
-
-      #-------------------------------------------------------------------------------------------------------------------
-
-      getLayerByKey = (key, layout) ->
-        for l in layout
-          if l.key is key
-            return l
-
-      stackLayout = stack.values((d)->d.layer).y((d) -> d.yy)
+      stack
+        .values((d)->d.values)
+        .y((d) -> if d.layerAdded or d.layerDeleted then 0 else d.value)
+        .x((d) -> d.targetKey)
 
       #--- Draw --------------------------------------------------------------------------------------------------------
 
-      draw = (data, options, x, y, color) ->
-        #$log.log "rendering Area Chart"
+      setAnimationStart = (data, options, x, y, color) ->
+        xData.keyScale(x).valueScale(y).data(data)
+        if not xData.isInitial()
+          layoutData = xData.animationStartLayers()
+          drawPath.apply(this, [false, layoutData, options, x, y, color])
 
+      setAnimationEnd = (data, options, x, y, color) ->
+        markers.active(_showMarkers)
+        layoutData = xData.animationEndLayers()
+        drawPath.apply(this, [true, layoutData, options, x, y, color])
 
-        layerKeys = y.layerKeys(data)
-        deletedSucc = utils.diff(layerKeysOld, layerKeys, 1)
-        addedPred = utils.diff(layerKeys, layerKeysOld, -1)
+      drawPath = (doAnimate, data, options, x, y, color) ->
 
-        layerData = layerKeys.map((k) => {key: k, color:color.scale()(k), layer: data.map((d) -> {x: x.value(d), yy: +y.layerValue(d,k), y0: 0, data:d})}) # yy: need to avoid overwriting by layout calc -> see stack y accessor
-        layoutNew = stackLayout(layerData)
+        setStyle = (d) ->
+          elem = d3.select(this)
+          elem.style(_areaStyle)
+          style = color.scale()(d.layerKey)
+          if typeof style is 'string'
+            elem.style({fill:style, stroke:style})
+          else
+            cVal = style.color
+            style.fill = cVal
+            elem.style(style)
+
+        stackLayout = stack(data)
 
         offs = if x.isOrdinal() then x.scale().rangeBand() / 2 else 0
+        $log.log 'offset' ,offs
 
-        if _tooltip then _tooltip.data(data)
+        if _tooltip
+          _tooltip.data(data)
+          ttHelper.layout(data)
 
         if not layers
           layers = this.selectAll('.wk-chart-layer')
@@ -100,48 +94,59 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipUtils) 
         else scaleY = y.scale()
 
         area = d3.svg.area()
-          .x((d) ->  x.scale()(d.x))
+          .x((d) ->  x.scale()(d.targetKey))
           .y0((d) ->  scaleY(d.y0 + d.y))
           .y1((d) ->  scaleY(d.y0))
 
+        if _spline
+          area.interpolate('cardinal')
+
         layers = layers
-          .data(layoutNew, (d) -> d.key)
-
-        if layoutOld.length is 0
-          layers.enter()
-            .append('path').attr('class', 'wk-chart-area')
-            .style('fill', (d, i) -> color.scale()(d.key)).style('opacity', 0)
+          .data(stackLayout, (d) -> d.layerKey)
+        enter = layers.enter().append('g').attr('class', "wk-chart-layer")
+        enter
+          .append('path').attr('class', 'wk-chart-area-path')
             .style('pointer-events', 'none')
-            .style('opacity', 0.7)
-        else
-          layers.enter()
-            .append('path').attr('class', 'wk-chart-area')
-            .attr('d', (d) -> if addedPred[d.key] then getLayerByKey(addedPred[d.key], layoutOld).path else area(d.layer.map((p) ->  {x: p.x, y: 0, y0: 0})))
-            .style('fill', (d, i) -> color.scale()(d.key))
-            .style('pointer-events', 'none')
-            .style('opacity', 0.7)
+            .style('opacity', 0)
 
-        layers
+
+        pathLayers = layers.select('.wk-chart-area-path')
+          #.style('fill', (d, i) -> color.scale()(d.layerKey))
+          #.style('stroke', (d, i) -> color.scale()(d.layerKey))
+          #.style(_areaStyle)
           .attr('transform', "translate(#{offs})")
-          .transition().duration(options.duration)
-            .attr('d', (d) -> area(d.layer))
-            .style('fill', (d, i) -> color.scale()(d.key))
+          .each(setStyle)
 
+        updLayers = if doAnimate then pathLayers.transition().duration(options.duration) else pathLayers
 
-        layers.exit().transition().duration(options.duration)
-          .attr('d', (d) ->
-            succ = deletedSucc[d.key]
-            if succ then area(getLayerByKey(succ, layoutNew).layer.map((p) -> {x: p.x, y: 0, y0: p.y0})) else area(layoutNew[layoutNew.length - 1].layer.map((p) -> {x: p.x, y: 0, y0: p.y0 + p.y}))
-          )
+        updLayers
+          .attr('d', (d) -> area(d.values))
+          .style('opacity', _showOpacity)
+
+        layers.exit() #.transition().duration(options.duration)
           .remove()
 
-        layoutOld = layoutNew.map((d) -> {key: d.key, path: area(d.layer.map((p) -> {x: p.x, y: 0, y0: p.y + p.y0}))})
-        layerKeysOld = layerKeys
+        markers
+          .x((d) -> x.scale()(d.targetKey) + if x.isOrdinal() then x.scale().rangeBand() / 2 else 0)
+          .y((d) -> scaleY(d.y + d.y0))
+          .color( (d)->
+            style = color.scale()(d.layerKey)
+            return if typeof style is 'string' then style else style.color
+          )
+          .keyScale(x.scale())
+
+        layers.call(markers, doAnimate)
 
       brush = (axis, idxRange) ->
-        layers = this.selectAll(".wk-chart-area")
-        layers
-          .attr('d', (d) -> area(d.layer))
+        layers = this.selectAll(".wk-chart-area-path")
+        if axis.isOrdinal()
+          layers.attr('d', (d) -> area(d.values.slice(idxRange[0],idxRange[1] + 1)))
+            .attr('transform', "translate(#{axis.scale().rangeBand() / 2})")
+          markers.brush(this, idxRange)
+          ttHelper.brushRange(idxRange)
+        else
+          layers.attr('d', (d) -> area(d.values))
+          markers.brush(this)
 
       #--- Configuration and registration ------------------------------------------------------------------------------
 
@@ -151,12 +156,25 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipUtils) 
         @getKind('y').domainCalc('total').resetOnNewData(true)
         @getKind('x').resetOnNewData(true).domainCalc('extent')
         _tooltip = host.behavior().tooltip
+        ttHelper
+          .keyScale(_scaleList.x)
+          .valueScale(_scaleList.y)
+          .isStacked(true)
+          .colorScale(_scaleList.color)
+          .value((d) -> d.y + d.y0)
         _tooltip.markerScale(_scaleList.x)
-        _tooltip.on "enter.#{_id}", ttMoveData
-        _tooltip.on "moveData.#{_id}", ttMoveData
-        _tooltip.on "moveMarker.#{_id}", ttMoveMarker
+        _tooltip.on "enter.#{_id}", ttHelper.enter
+        _tooltip.on "moveData.#{_id}", ttHelper.moveData
+        _tooltip.on "moveMarker.#{_id}", ttHelper.moveMarkers
 
-      host.lifeCycle().on 'drawChart', draw
+      #host.lifeCycle().on "drawChart", draw
+      host.lifeCycle().on "brushDraw.#{_id}", brush
+      host.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
+      host.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
+
+      host.lifeCycle().on "destroy.#{_id}", ->
+        host.lifeCycle().on ".#{_id}", null
+        _tooltip.on ".#{_id}", null
 
       #--- Property Observers ------------------------------------------------------------------------------------------
 
@@ -174,13 +192,39 @@ angular.module('wk.chart').directive 'areaStacked', ($log, utils, tooltipUtils) 
           offset = "zero"
         stack.offset(offset)
         host.lifeCycle().update()
-
+      ###*
+        @ngdoc attr
+        @name areaStacked#markers
+        @values true, false
+        @param [markers=false] {boolean} - show a data maker icon for each data point
+      ###
       attrs.$observe 'markers', (val) ->
         if val is '' or val is 'true'
           _showMarkers = true
         else
           _showMarkers = false
+        host.lifeCycle().update()
+
+      ###*
+        @ngdoc attr
+        @name areaStacked#spline
+        @values true, false
+        @param [spline=false] {boolean} - interpolate the area shape using bSpline
+      ###
+      attrs.$observe 'spline', (val) ->
+        if val is '' or val is 'true'
+          _spline = true
+        else
+          _spline = false
+        host.lifeCycle().update()
+
+      ###*
+        @ngdoc attr
+        @name areaStacked#areaStyle
+        @param [areaStyle] {object} - Set the pie style for columns lines in the layout
+      ###
+      attrs.$observe 'areaStyle', (val) ->
+        if val
+          _areaStyle = scope.$eval(val)
   }
 
-#TODO implement enter / exit animations like in line
-#TODO implement external brushing optimizations

@@ -3,7 +3,7 @@
   @name brush
   @module wk.chart
   @restrict A
-  @element x, y, range-x, range-y or layout
+  @element x, y or layout
   @description
 
   enable brushing behavior
@@ -17,14 +17,15 @@
   Brush will be published under this name for consumption by other layouts
 ###
 angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior) ->
+  brushId = 0
   return {
     restrict: 'A'
-    require: ['^chart', '^layout', '?x', '?y','?rangeX', '?rangeY']
+    require: ['^chart', '^?layout', '?x', '?y']
     scope:
       ###*
         @ngdoc attr
         @name brush#brushExtent
-        @param brushExtent {array} Contains the start and end index into the data array for the brushed axis. Is undefined if brush is empty or is a xy (layout) brush
+        @param brushExtent {array} Contains the data array index of the start and end item of teh brush area. Updates when brush is moved and can be set to position the brush. An empty array ´[]´ resets the brush to empty.
       ###
       brushExtent: '='
 
@@ -63,21 +64,13 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       ###
       brushEnd: '&'
 
-      ###*
-        @ngdoc attr
-        @name brush#clearBrush
-        @param clearBrush {function} assigns a function that clears the brush selection when called via a bound scope variable.
-        * Usage: bind a scope variable to the attribute: `clear-selection="scopeVar"`. `brush` assigns a function to scopeVar that can be called to reset the brush, e.g. in a button: `<button ng-click="scopeVar()">Clear Brush</button>`
-      ###
-      clearBrush: "="
-
     link:(scope, element, attrs, controllers) ->
+      $log.log 'brush-scope', scope.$id
+      _id = brushId++
       chart = controllers[0].me
       layout = controllers[1]?.me
       x = controllers[2]?.me
       y = controllers[3]?.me
-      rangeX = controllers[4]?.me
-      rangeY = controllers[5]?.me
       xScale = undefined
       yScale = undefined
       _selectables = undefined
@@ -85,33 +78,38 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       _isAreaBrush = not x and not y
       _brushGroup = undefined
 
+      $log.log 'creating brush scope', scope.$id
+
       brush = chart.behavior().brush
 
-      if not x and not y and not rangeX and not rangeY
+      host = chart or layout
+
+      if not x and not y
         #layout brush, get x and y from layout scales
-        scales = layout.scales().getScales(['x', 'y'])
+        scales = host.scales().getScales(['x', 'y'])
         brush.x(scales.x)
         brush.y(scales.y)
       else
-        brush.x(x or rangeX)
-        brush.y(y or rangeY)
+        brush.x(x)
+        brush.y(y)
       brush.active(true)
 
-      scope.$watch 'clearBrush' , (val) ->
-        if attrs.clearBrush
-          scope.clearBrush = brush.clearBrush
-
-      attrs.$observe 'brush', (val) ->
+      attrs.$observe "brush", (val) ->
         if _.isString(val) and val.length > 0
           brush.brushGroup(val)
         else
           brush.brushGroup(undefined)
 
-      brush.events().on 'brushStart', () ->
-        scope.brushStart()
-        scope.$apply()
+      scope.$watch 'brushExtent', (newVal, oldVal) ->
+        if _.isArray(newVal) and newVal.length is 0 and _.isArray(oldVal) and oldVal.length isnt 0
+          brush.clearBrush()
 
-      brush.events().on 'brush', (idxRange, valueRange, domain) ->
+      brush.events().on "brushStart.#{_id}", () ->
+        if attrs.brushStart
+          scope.brushStart()
+          scope.$apply()
+
+      brush.events().on "brush.#{_id}", (idxRange, valueRange, domain) ->
         if attrs.brushExtent
           scope.brushExtent = idxRange
         if attrs.selectedValues
@@ -121,12 +119,19 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
         scope.selectedDomainChange({domain:domain})
         scope.$apply()
 
-      brush.events().on 'brushEnd', (idxRange, valueRange, domain) ->
-        scope.brushEnd({domain:domain})
-        scope.$apply()
+      brush.events().on "brushEnd.#{_id}", (idxRange, valueRange, domain) ->
+        if attrs.brushEnd
+          scope.brushEnd({domain:domain})
+          scope.$apply()
 
-      layout.lifeCycle().on 'drawChart.brush', (data) ->
+      chart.lifeCycle().on 'drawChart.brush', (data) ->
         brush.data(data)
 
+      host.lifeCycle().on 'destroy.brush', () ->
+        #scope.$apply()
+        brush.events().on ".#{_id}", null #deregister handlers
+        chart.lifeCycle().on ".#{_id}", null
+        scope.$destroy()
+        $log.log 'destroying brush scope', scope.$id
 
   }

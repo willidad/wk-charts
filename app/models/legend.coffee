@@ -14,8 +14,8 @@ angular.module('wk.chart').factory 'legend', ($log, $compile, $rootScope, $templ
     _position = 'top-right'
     _scale = undefined
     _templatePath = undefined
-    _legendScope = $rootScope.$new(true)
-    _template = undefined
+    _legendScope = undefined #$rootScope.$new(true)
+    _template = wkChartTemplates.legendTemplate()
     _parsedTemplate = undefined
     _containerDiv = undefined
     _legendDiv = undefined
@@ -37,7 +37,14 @@ angular.module('wk.chart').factory 'legend', ($log, $compile, $rootScope, $templ
     me.show = (val) ->
       if arguments.length is 0 then return _show
       else
+        if val is _show then return me # ensure scopes are only created when necessary
         _show = val
+        if _show
+          _legendScope = $rootScope.$new(true)
+          $log.log 'creating legend scope', _legendScope.$id
+          _parsedTemplate = $compile(_template)(_legendScope)
+        else
+          $log.log 'destroying legend scope', _legendScope.$id
         return me #to enable chaining
 
     me.showValues = (val) ->
@@ -75,8 +82,15 @@ angular.module('wk.chart').factory 'legend', ($log, $compile, $rootScope, $templ
       else
         _templatePath = path
         _template = $templateCache.get(_templatePath)
-        _parsedTemplate = $compile(_template)(_legendScope)
+        #_parsedTemplate = $compile(_template)(_legendScope)
         return me
+
+    _legendStyle = {}
+    me.legendStyle = (val) ->
+      if arguments.length is 0 then return _legendStyle
+      if _.isObject(val)
+        _.assign(_legendStyle, val)
+      return me
 
     me.draw = (data, options) ->
       _data = data
@@ -95,30 +109,43 @@ angular.module('wk.chart').factory 'legend', ($log, $compile, $rootScope, $templ
         s = _scale.scale()
         if me.layout()?.scales().layerScale()
           s = me.layout().scales().layerScale().scale()
+        colorScale = _scale.parent().scales().getKind('color').scale()
         if _scale.kind() isnt 'shape'
-          _legendScope.legendRows = layers.map((d) -> {value:d, color:{'background-color':s(d)}})
+          _legendScope.legendRows = layers.map((d) ->
+            cVal = colorScale(d)
+            if typeof cVal is 'string'
+                style =  {fill:cVal, stroke:cVal}
+            else
+              style = cVal
+              style.fill = cVal.color
+            {value:d, color:style})
         else
           _legendScope.legendRows = layers.map((d) -> {value:d, path:d3.svg.symbol().type(s(d)).size(80)()})
-          #$log.log _legendScope.legendRows
         _legendScope.showLegend = true
-        _legendScope.position = {
-          position: if _legendDiv then 'relative' else 'absolute'
-        }
+        _legendScope.legendStyle = me.legendStyle()
+        _legendScope.legendStyle.position = if _legendDiv then 'relative' else 'absolute'
 
         if not _legendDiv
           containerRect = _containerDiv.node().getBoundingClientRect()
-          chartAreaRect = _containerDiv.select('.wk-chart-overlay rect').node().getBoundingClientRect()
+          chartAreaRect = _containerDiv.select('.wk-chart-area .wk-chart-background').node().getBoundingClientRect()
           for p in _position.split('-')
-              _legendScope.position[p] = "#{Math.abs(containerRect[p] - chartAreaRect[p])}px"
+              _legendScope.legendStyle[p] = "#{Math.abs(containerRect[p] - chartAreaRect[p])}px"
         _legendScope.title = _title
       else
         _parsedTemplate.remove()
       return me
 
-    _parsedTemplate = $compile(wkChartTemplates.legendTemplate())(_legendScope)
+    #_parsedTemplate = $compile(wkChartTemplates.legendTemplate())(_legendScope)
 
     me.register = (layout) ->
       layout.lifeCycle().on "drawChart.#{_id}", me.draw
+      layout.lifeCycle().on "destroy.#{_id}", () ->
+        _legendScope.$destroy()
+        _parsedTemplate.remove()
+        _parsedTemplate = undefined
+        _containerDiv = undefined
+        _legendDiv = undefined
+        layout.lifeCycle().on ".#{_id}", null
       return me
 
     me.redraw = () ->

@@ -9,7 +9,7 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
     _chart = undefined
     _scaleList = scaleList()
     _showLabels = false
-    _layoutLifeCycle = d3.dispatch('configure', 'drawChart', 'prepareData', 'brush', 'redraw', 'drawAxis', 'update', 'updateAttrs', 'brushDraw')
+    _layoutLifeCycle = d3.dispatch('configure', 'drawChart', 'prepareData', 'brush', 'redraw', 'drawAxis', 'update', 'updateAttrs', 'brushDraw', 'destroy', 'objectsSelected', 'animationStartState', 'animationEndState')
 
     me = () ->
 
@@ -24,6 +24,12 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
         _chart.lifeCycle().on "configure.#{me.id()}", () -> _layoutLifeCycle.configure.apply(me.scales()) #passthrough
         _chart.lifeCycle().on "drawChart.#{me.id()}", me.draw # register for the drawing event
         _chart.lifeCycle().on "prepareData.#{me.id()}", me.prepareData
+
+        _chart.lifeCycle().on "animationStartState..#{me.id()}", me.animationStartState
+        _chart.lifeCycle().on "animationEndState..#{me.id()}", me.animationEndState
+        _chart.lifeCycle().on "destroy.#{me.id()}", () ->
+          _layoutLifeCycle.destroy() #passthrough
+          _chart.lifeCycle().on ".#{me.id()}", null #de-register all handlers
         return me
 
     me.scales = () ->
@@ -43,6 +49,13 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
       else
         _showLabels = trueFalse
         return me
+
+    _dataLabelStyle = {'font-size':'1.3em'}
+    me.dataLabelStyle = (val) ->
+      if arguments.length is 0 then return _dataLabelStyle
+      if _.isObject(val)
+        _.assign(_dataLabelStyle, val)
+      return me
 
     me.behavior = () ->
       me.chart().behavior()
@@ -74,8 +87,9 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
         duration: if notAnimated then 0 else me.chart().animationDuration()
       }
       args = [data, options]
-      for kind in ['x','y', 'color', 'size', 'shape', 'rangeX', 'rangeY']
-        args.push(_scaleList.getKind(kind))
+      for kind in ['x','y', 'color', 'size', 'shape']
+        scale = _scaleList.getKind(kind)
+        args.push(scale)
       return args
 
     #-------------------------------------------------------------------------------------------------------------------
@@ -85,14 +99,23 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
 
       _layoutLifeCycle.drawChart.apply(getDrawArea(), buildArgs(data, notAnimated))
 
-      _layoutLifeCycle.on 'redraw', me.redraw
-      _layoutLifeCycle.on 'update', me.chart().lifeCycle().update
-      _layoutLifeCycle.on 'drawAxis', me.chart().lifeCycle().drawAxis
-      _layoutLifeCycle.on 'updateAttrs', me.chart().lifeCycle().updateAttrs
+      _layoutLifeCycle.on "redraw.#{_id}", me.redraw
+      _layoutLifeCycle.on "update.#{_id}", me.chart().lifeCycle().update
+      _layoutLifeCycle.on "drawAxis.#{_id}", me.chart().lifeCycle().drawAxis
+      _layoutLifeCycle.on "updateAttrs.#{_id}", me.chart().lifeCycle().updateAttrs
 
-      _layoutLifeCycle.on 'brush', (axis, notAnimated, idxRange) ->
+      _layoutLifeCycle.on "brush.#{_id}", (axis, notAnimated, idxRange) ->
           _container.drawSingleAxis(axis)
           _layoutLifeCycle.brushDraw.apply(getDrawArea(), [axis, idxRange, _container.width(), _container.height()])
+          
+      _layoutLifeCycle.on "destroy.#{_id}", () ->
+        _layoutLifeCycle.on ".#{_id}", null
+
+    me.animationStartState = (data) ->
+      _layoutLifeCycle.animationStartState.apply(getDrawArea(), buildArgs(data, true))
+
+    me.animationEndState = (data) ->
+      _layoutLifeCycle.animationEndState.apply(getDrawArea(), buildArgs(data, false))
 
     return me
 

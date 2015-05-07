@@ -4,7 +4,7 @@ angular.module('wk.chart').directive 'svgIcon', ($log) ->
     restrict: 'E'
     template: '<svg ng-style="style"><path></path></svg>'
     scope:
-      path: "="
+      path: "@"
       width: "@"
     link: (scope, elem, attrs ) ->
       scope.style = {  # fix IE problem with interpolating style values
@@ -12,7 +12,10 @@ angular.module('wk.chart').directive 'svgIcon', ($log) ->
         width: scope.width + 'px'
         'vertical-align': 'middle'
       }
-      scope.$watch 'path', (val) ->
+      attrs.$observe 'path', (val) ->
         if val
           d3.select(elem[0]).select('path').attr('d', val).attr('transform', "translate(8,8)")
+
+      scope.$on '$destroy', () ->
+        $log.log 'svgIcon scope destroyed'
   }

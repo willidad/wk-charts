@@ -9,10 +9,10 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
     _extent = undefined
     _startPos = undefined
     _evTargetData = undefined
-    _area = undefined
+    _areaNode = undefined
     _chart = undefined
     _data = undefined
-    _areaSelection = undefined
+    _chartArea = undefined
     _areaBox = undefined
     _backgroundBox = undefined
     _container = undefined
@@ -27,6 +27,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
     _boundsIdx = undefined
     _boundsValues = undefined
     _boundsDomain = []
+    _lastLeftVal = _lastRightVal = _lastBottomVal = _lastTopVal = undefined
     _brushEvents = d3.dispatch('brushStart', 'brush', 'brushEnd')
 
     left = top = right = bottom = startTop = startLeft = startRight = startBottom = undefined
@@ -62,7 +63,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
         _extent.attr('width', _areaBox.width).attr('height', height).attr('x', 0).attr('y', top)
 
     hideBrushElements = () ->
-      d3.select(_area).selectAll('.wk-chart-resize').style('display', 'none')
+      d3.select(_areaNode).selectAll('.wk-chart-resize').style('display', 'none')
       _extent.attr('width',0).attr('height', 0).attr('x', 0).attr('y', 0).style('display', 'none')
 
     #-------------------------------------------------------------------------------------------------------------------
@@ -75,48 +76,53 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
           yHit = er.top < cr.bottom - cr.height / 3 and cr.top + cr.height / 3 < er.bottom
           d3.select(this).classed('wk-chart-selected', yHit and xHit)
         )
-      allSelected = _container.selectAll('.wk-chart-selected').data()
-      _container.classed('wk-chart-has-selected-items', allSelected.length > 0)
+      allSelected = _chartArea.selectAll('.wk-chart-selected').data()
+      _chartArea.classed('wk-chart-has-selected-items', allSelected.length > 0)
       return allSelected
 
     #-------------------------------------------------------------------------------------------------------------------
 
     setSelection = (left, right, top, bottom) ->
       if _brushX
+        if me.x().reverse()
+          s = left
+          left = right
+          right = s
         #test if selected elements are changed
-        _left = me.x().invert(left)
-        _right = me.x().invert(right)
-        if _boundsIdx[0] isnt _left or _boundsIdx[1] isnt _right
+        _leftVal = me.x().invert(left)
+        _rightVal = me.x().invert(right)
+        if _lastLeftVal isnt _leftVal or _lastRightVal isnt _rightVal
+          _lastRightVal = _rightVal
+          _lastLeftVal = _leftVal
+          _left = me.x().findIndex(_leftVal)
+          _right = me.x().findIndex(_rightVal)
           _boundsIdx = [_left, _right]
           # bounds have changed, update bounds values array
           if me.x().isOrdinal()
             _boundsValues = _data.map((d) -> me.x().value(d)).slice(_left, _right + 1)
           else
-            if me.x().kind() is 'rangeX'
-              if me.x().upperProperty()
-                _boundsValues = [me.x().lowerValue(_data[_left]), me.x().upperValue(_data[_right])]
-              else
-                step = me.x().lowerValue(_data[1]) - me.x().lowerValue(_data[0])
-                _boundsValues = [me.x().lowerValue(_data[_left]), me.x().lowerValue(_data[_right]) + step]
-            else
-              _boundsValues = [me.x().value(_data[_boundsIdx[0]]), me.x().value(_data[_right])]
+            _boundsValues = [me.x().value(_data[_boundsIdx[0]]), me.x().value(_data[_right])]
           _boundsDomain = _data.slice(_left, _right+ 1)
           _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain)
           selectionSharing.setSelection _boundsValues, _boundsIdx, _brushGroup
       if _brushY
         #test if selected elements are changed
-        _bottom = me.y().invert(bottom)
-        _top = me.y().invert(top)
-        if _boundsIdx[0] isnt _bottom or _boundsIdx[1] isnt _top
+        if me.y().reverse()
+          s = top
+          top = bottom
+          bottom = s
+        _bottomVal = me.y().invert(bottom)
+        _topVal = me.y().invert(top)
+        if _lastBottomVal isnt _bottomVal or _lastTopVal isnt _topVal
+          _lastBottomVal = _bottomVal
+          _lastTopVal = _topVal
+          _bottom = me.y().findIndex(_bottomVal)
+          _top = me.y().findIndex(_topVal)
           _boundsIdx = [_bottom, _top]
           if me.y().isOrdinal()
             _boundsValues = _data.map((d) -> me.y().value(d)).slice(_bottom, _top + 1)
           else
-            if me.y().kind() is 'rangeY'
-              step = me.y().lowerValue(_data[1]) - me.y().lowerValue(_data[0])
-              _boundsValues = [me.y().lowerValue(_data[_bottom]), me.y().lowerValue(_data[_top]) + step]
-            else
-              _boundsValues = [me.y().value(_data[_bottom]), me.y().value(_data[_top])]
+            _boundsValues = [me.y().value(_data[_bottom]), me.y().value(_data[_top])]
           _boundsDomain = _data.slice(_bottom, _top + 1)
           _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain)
           selectionSharing.setSelection _boundsValues, _boundsIdx, _brushGroup
@@ -134,7 +140,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       _boundsValues = []
       _boundsDomain = []
       _selectables.classed('wk-chart-selected', false)
-      _container.classed('wk-chart-has-selected-items', false)
+      _chartArea.classed('wk-chart-has-selected-items', false)
       selectionSharing.setSelection _boundsValues, _boundsIdx, _brushGroup
       _.delay(   # ensure digest cycle from button pressed is completed
           () ->
@@ -152,16 +158,18 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
     brushStart = () ->
       #register a mouse handlers for the brush
       d3.event.preventDefault()
-      _evTargetData = d3.select(d3.event.target).datum()
-      _ if not _evTargetData
+      _eventTarget = d3.select(d3.event.target)
+      _evTargetData = _eventTarget.datum()
+      if _eventTarget.classed('wk-chart-selectable')
         _evTargetData = {name:'forwarded'}
-      _areaBox = _area.getBBox()
-      _startPos = d3.mouse(_area)
+      _areaBox = _areaNode.getBBox()
+      _startPos = d3.mouse(_areaNode)
       startTop = top
       startLeft = left
       startRight = right
       startBottom = bottom
-      d3.select(_area).style('pointer-events','none').selectAll(".wk-chart-resize").style("display", null)
+      d3.select(_areaNode).selectAll(".wk-chart-resize").style("display", null)
+      d3.select(_areaNode).select('.wk-chart-selectable').style('pointer-events','none')
       _extent.style('display',null)
       d3.select('body').style('cursor', d3.select(d3.event.target).style('cursor'))
 
@@ -170,7 +178,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       _tooltip.hide(true)
       _boundsIdx = [undefined, undefined]
       _boundsDomain = [undefined]
-      _selectables = _container.selectAll('.wk-chart-selectable')
+      _selectables = _chartArea.selectAll('.wk-chart-selectable')
       _brushEvents.brushStart()
       timing.clear()
       timing.init()
@@ -182,7 +190,8 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
 
       d3.select($window).on 'mousemove.brush', null
       d3.select($window).on 'mouseup.brush', null
-      d3.select(_area).style('pointer-events','all').selectAll('.wk-chart-resize').style('display', null) # show the resize handles
+      d3.select(_areaNode).style('pointer-events','all').selectAll('.wk-chart-resize').style('display', null) # show the resize handles
+      d3.select(_areaNode).select('.wk-chart-selectable').style('pointer-events',null)
       d3.select('body').style('cursor', null)
       _tooltip.hide(false)
       _brushEvents.brushEnd(_boundsIdx, _boundsValues, _boundsDomain)
@@ -192,7 +201,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
 
     brushMove = () ->
       #$log.info 'brushmove'
-      pos = d3.mouse(_area)
+      pos = d3.mouse(_areaNode)
       deltaX = pos[0] - _startPos[0]
       deltaY = pos[1] - _startPos[1]
 
@@ -296,7 +305,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
         _brushY = me.y() and not me.x()
         # create the handler elements and register the handlers
         s.style({'pointer-events': 'all', cursor: 'crosshair'})
-        _extent = s.append('rect').attr({class:'wk-chart-extent', x:0, y:0, width:0, height:0}).style('cursor','move').datum({name:'extent'})
+        _extent = s.append('rect').attr({class:'wk-chart-extent', x:0, y:0, width:0, height:0}).style({'cursor':'move'}).datum({name:'extent'})
         # resize handles for the sides
         if _brushY or _brushXY
           s.append('g').attr('class', 'wk-chart-resize wk-chart-n').style({cursor:'ns-resize', display:'none'})
@@ -319,7 +328,8 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
           s.append('g').attr('class', 'wk-chart-resize wk-chart-se').style({cursor:'nwse-resize', display:'none'})
           .append('rect').attr({x: -3, y: -3, width:6, height:6}).datum({name:'se'})
         #register handler. Please note, brush wants the mouse down exclusively !!!
-        s.on 'mousedown.brush', brushStart
+        s.on 'mousedown.brush', brushStart  # de-registered by container when deleting chart area
+
         return me
 
     #--- Extent resize handler -----------------------------------------------------------------------------------------
@@ -327,7 +337,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
     resizeExtent = () ->
       if _areaBox
         #$log.info 'resizeHandler'
-        newBox = _area.getBBox()
+        newBox = _areaNode.getBBox()
         horizontalRatio = _areaBox.width / newBox.width
         verticalRatio = _areaBox.height / newBox.height
         top = top / verticalRatio
@@ -371,13 +381,17 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
         return me #to enable chaining
 
     me.area = (val) ->
-      if arguments.length is 0 then return _areaSelection
+      if arguments.length is 0 then return _chartArea
       else
-        if not _areaSelection
-          _areaSelection = val
-          _area = _areaSelection.node()
+        if val is undefined
+          _areaNode = undefined
+          _chartArea = undefined
+        else if not _chartArea
+          _chartArea = val
+          _areaNode = _chartArea.node()
           #_areaBox = _area.getBBox() need to get when calculating size to deal with resizing
-          me.brush(_areaSelection)
+          me.brush(_chartArea)
+          _selectables = _chartArea.selectAll('.wk-chart-selectable')
 
         return me #to enable chaining
 
@@ -385,7 +399,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       if arguments.length is 0 then return _container
       else
         _container = val
-        _selectables = _container.selectAll('.wk-chart-selectable')
+
         return me #to enable chaining
 
     me.data = (val) ->
