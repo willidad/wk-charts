@@ -19,7 +19,8 @@ var path         = require('path');
 
 var prod = true;
 
-var buildDir = './../wk-charts-build';
+//var buildDir = './../wk-charts-build';
+var buildDir = './../cpm4/frontend/src/main/webapp/vendor';
 
 function errorAlert(error){
   notify.onError({title: "Gulp Error", message: "<%= error.message %>", sound: "Sosumi"})(error);

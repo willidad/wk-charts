@@ -593,6 +593,14 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
         _.assign(_tickLabelStyle, val)
       return me
 
+    _tickLabelBackgroundStyle = {}
+    me.tickLabelBackgroundStyle = (val) ->
+      if arguments.length is 0 then return _tickLabelBackgroundStyle
+      if _.isObject(val)
+        _.assign(_tickLabelBackgroundStyle, val)
+      return me
+
+
     me.showLabel = (val) ->
       if arguments.length is 0 then return _showLabel
       else

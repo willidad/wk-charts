@@ -184,10 +184,14 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       axis = _container.select(".wk-chart-axis.wk-chart-#{dim.axisOrient()}")
       if axis.empty()
         axis = _container.insert('g','.wk-chart-area').attr('class', 'wk-chart-axis wk-chart-' + dim.axisOrient())
-        axis.append('rect').attr('class',"wk-chart-axis-select wk-chart-#{dim.axisOrient()}")
-          .style({opacity: 0, 'pointer-events': 'none'})
-      axis.transition().duration(_duration).call(dim.axis())
+        axisBg = axis.append('rect').attr('class',"wk-chart-axis-select wk-chart-#{dim.axisOrient()}")
+            .style({opacity: 0, 'pointer-events': 'none'})
+      else
+        axisBg = axis.select('rect.wk-chart-axis-select')
 
+      axis.transition().duration(_duration).call(dim.axis())
+      
+      # Customize the axis styling
       if dim.rotateTickLabels()
         axis.selectAll(".wk-chart-#{dim.axisOrient()}.wk-chart-axis text")
           .attr({dy:'0.35em'})
@@ -200,6 +204,33 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
           .attr('transform', null)
           .style('pointer-events', 'none')
           .style(dim.tickLabelStyle())
+
+      # Append background and the labels axis if necessary
+      # TODO: What to do with the transition?
+      ###
+      axis.transition().duration(_duration).call(dim.axis()).each("end", () ->
+        $log.info('Refreshing...')
+        axisBg.attr({ width: 0, height: 0 })
+        axisBg.attr(@getBBox())
+        axisBg.attr('fill', 'red')
+        axisBg.style({opacity: 1})
+        )
+
+      # Update label styles /w potential background
+      *###
+      axis.selectAll('g.tick').each(() -> 
+        tickBg = d3.select(@).select('rect.tick-bg')
+        if tickBg.empty()
+          tickBg = d3.select(@).insert('rect', ':first-child').attr('class', 'tick-bg')
+        (if dim.rotateTickLabels() then tickBg.attr('transform', (d)-> tickLabelsShift(dim)) else tickBg)
+          .attr(d3.select(@).select('text').node().getBBox())
+        ).style(dim.tickLabelBackgroundStyle())
+      
+
+
+
+      
+      
 
     _removeAxis = (orient) ->
       _container.select(".wk-chart-axis.wk-chart-#{orient}, .wk-chart-axis-select.wk-chart-#{orient}").remove()

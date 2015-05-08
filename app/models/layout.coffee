@@ -57,6 +57,13 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
         _.assign(_dataLabelStyle, val)
       return me
 
+    _dataLabelBackgroundStyle = {}
+    me.dataLabelBackgroundStyle = (val) ->
+      if arguments.length is 0 then return _dataLabelBackgroundStyle
+      if _.isObject(val)
+        _.assign(_dataLabelBackgroundStyle, val)
+      return me
+
     me.behavior = () ->
       me.chart().behavior()
 

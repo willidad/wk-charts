@@ -104,7 +104,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
       (if doAnimate then bars.transition().duration(options.duration) else bars)
           .attr('transform', (d) -> "translate(#{x.scale()(0)}, #{y.scale()(d.targetKey) + offset(d)}) scale(1,1)")
 
-      rect = bars.select('rect')
+      rect = bars.select('rect.wk-chart-rect')
         #.style('fill', (d) -> if color.property().length is 0 then color.scale()(d.layerKey) else color.map(d.data))
         #.style('stroke', (d) -> if color.property().length is 0 then color.scale()(d.layerKey) else color.map(d.data))
         #.style(_barStyle)
@@ -117,7 +117,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
       bars.exit()
         .remove()
 
-      bars.call(dataLabels, doAnimate, host.dataLabelStyle())
+      bars.call(dataLabels, doAnimate, host.dataLabelStyle(), host.dataLabelBackgroundStyle())
 
     brush = (axis, idxRange) ->
       bars
@@ -204,6 +204,16 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
     attrs.$observe 'labelStyle', (val) ->
       if val
         host.dataLabelStyle(scope.$eval(val))
+      host.lifeCycle().update()
+
+    ###*
+      @ngdoc attr
+      @name bars#labelBackgroundStyle
+      @param [labelBackgroundStyle] {object} Sets the backgorund style for attributes on the labels.
+    ###
+    attrs.$observe 'labelBackgroundStyle', (val) ->
+      if val
+        host.dataLabelBackgroundStyle(scope.$eval(val))
       host.lifeCycle().update()
 
     ###*

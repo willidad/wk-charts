@@ -134,6 +134,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
       tickInterval: propertyType.number
       tickFormat: propertyType.string
       tickLabelStyle: propertyType.object
+      tickLabelBackgroundStyle: propertyType.object
       axisFormatter: propertyType.object
     }
   }
@@ -200,6 +201,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
     key: 'labels$set'
     properties: {
       labelStyle: propertyType.object
+      labelBackgroundStyle: propertyType.object
     }
   }
   

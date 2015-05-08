@@ -244,6 +244,17 @@ angular.module('wk.chart').service 'scaleUtils', ($log, wkChartScales, utils) ->
 
     ###*
       @ngdoc attr
+      @name tickLabelBackgroundStyle
+      @usedBy dimension.x, dimension.y
+      @param [tickLabelBackgroundStyle] {object}
+    ###
+    attrs.$observe 'tickLabelBackgroundStyle', (val) ->
+      if val
+        me.tickLabelBackgroundStyle(scope.$eval(val))
+
+
+    ###*
+      @ngdoc attr
       @name grid
       @usedBy dimension.x, dimension.y, dimension.rangeX, dimension.rangeY
       @param [grid] {expression}
