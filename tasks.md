@@ -2,6 +2,7 @@ Defects
 
 Tooltips does not honor pie-style (probably true for all layout styles)
 
+
 Fixed
 -----
 
@@ -57,6 +58,8 @@ Fix: aa4565d tooltip marker circles cut at edge of chart area
 Fix: 8c71885 set drawpadding to 0
 Fix: 56206e3 Selection does not work for boxplot
 Fix: mapFunction attribute not available in color scale
+Fix: Line with ordinal scale and makers: line is offset from data point (Brushing -> Axis Brushing)
+
 
 Features Implemented
 --------------------
@@ -90,8 +93,6 @@ More general: Brush does not re-evaluate brush selection after a data update. Sh
 - Line / area charts w ordinal scales: brush selection corrupted after data update
 - Line / area charts w time scale: brush selection not updated after data change
 
-Brush highlighting does not honor range paddings
-
 More General: Tooltip and brush combined event handling does not work as desired
 - Tooltips / Brush: Tooltips are not shown when brush extend covers an item
 - Brush: when mousedown over an object, crosshair cursor is displayed but brush extent dragging is not triggered
@@ -119,5 +120,5 @@ Verify animation change impact on bubble and Scatter charts
 
 enable to show marker line independent of tooltips in line and area chart
 
-clickable axis lables for edit mode
+clickable axis labels for edit mode
 clickable line overlay in linecharts for edit mode

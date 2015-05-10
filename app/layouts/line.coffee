@@ -15,7 +15,7 @@
 
 
 ###
-angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManagerFactory, tooltipHelperFactory, markerFactory) ->
+angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManagerFactory, tooltipHelperFactory, markerFactory, timing) ->
   lineCntr = 0
   return {
     restrict: 'A'
@@ -42,6 +42,8 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
       #--- Draw --------------------------------------------------------------------------------------------------------
 
       setAnimationStart = (data, options, x, y, color) ->
+        timing.init()
+        timing.start('chart')
         xData.keyScale(x).valueScale(y).data(data)
         if not xData.isInitial()
           layoutData = xData.animationStartLayers()
@@ -51,6 +53,8 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
         markers.active(_showMarkers)
         layoutData = xData.animationEndLayers()
         drawPath.apply(this, [true, layoutData, options, x, y, color])
+        timing.stop('chart')
+        timing.report()
 
       drawPath = (doAnimate, data, options, x, y, color) ->
 
@@ -74,14 +78,13 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
         moveOutside = (options.width / data[0].values.length)*2
 
         line = d3.svg.line()
-
           .y((d) -> y.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
 
         if _spline
           line.interpolate('cardinal')
 
         if x.isOrdinal()
-          line.x((d) -> if d.highBorder then options.width + moveOutside else if d.lowBorder then -moveOutside else x.scale()(d.targetKey))
+          line.x((d) -> (if d.highBorder then options.width + moveOutside else if d.lowBorder then -moveOutside else x.scale()(d.targetKey)) + offset)
         else
           line.x((d) -> x.scale()(d.targetKey))
 
