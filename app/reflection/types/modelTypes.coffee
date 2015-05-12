@@ -62,7 +62,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
   #--- property Definitions --------------------------------------------------------------------------------------------
 
   markers = {markers:propertyType.bool}
-  donat = {donat:propertyType.bool}
+  donut = {donut:propertyType.bool}
   padding = {padding:propertyType.number}
   outerPadding = {outerPadding:propertyType.number}
   areaStacked = {areaStacked:propertyType.enum(['zero', 'silhouette','expand','wiggle'])}

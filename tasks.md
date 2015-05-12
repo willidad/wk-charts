@@ -1,6 +1,7 @@
 Defects
 
 Tooltips does not honor pie-style (probably true for all layout styles)
+Layout padding on shared axis does not work. Padding for 2nd axis is used by default, padding for 1st axis is ignored. (column overlayed shared axis)
 
 
 Fixed
@@ -58,7 +59,7 @@ Fix: aa4565d tooltip marker circles cut at edge of chart area
 Fix: 8c71885 set drawpadding to 0
 Fix: 56206e3 Selection does not work for boxplot
 Fix: mapFunction attribute not available in color scale
-Fix: Line with ordinal scale and makers: line is offset from data point (Brushing -> Axis Brushing)
+Fix: 07aa217 Line with ordinal scale and makers: line is offset from data point (Brushing -> Axis Brushing)
 
 
 Features Implemented
@@ -79,6 +80,7 @@ Implemented: 4f14cf2 Patterns for line, bar, column and range(bar/column) charts
 Implemented: a9bc925 Patterns for pie, range area charts
 Implemented: 5bf50bc Box Chart
 Implemented: 06b52be explicit styling for all charts, support for gradients, masks, and SVG element supported style properties.
+Implemented: separate left / right padding for all bar and column charts to allow flexible positioning of multiple layouts.
 
 Open
 ----
