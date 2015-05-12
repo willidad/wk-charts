@@ -154,7 +154,7 @@ angular.module('wk.chart').directive 'bars', ($log, utils, barConfig, dataLabelF
 
     ###*
     @ngdoc attr
-      @name bar#padding
+      @name bars#padding
       @values true, false, [padding-left, padding-right, outerPadding-left, outerPadding-right]
       @param [padding=true] {boolean | list}
       * Defines the inner and outer padding between the bars.

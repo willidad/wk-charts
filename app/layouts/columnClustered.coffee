@@ -181,7 +181,7 @@ angular.module('wk.chart').directive 'columnClustered', ($log, utils, barConfig,
 
       ###*
         @ngdoc attr
-        @name columnCluster#padding
+        @name columnClustered#padding
         @values true, false, [padding-left, padding-right, outerPadding-left, outerPadding-right]
         @param [padding=true] {boolean | list}
         * Defines the inner and outer padding between the columns.
