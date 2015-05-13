@@ -1,36 +1,40 @@
-angular.module('wk.chart').factory 'wkBar', ($log, utils, barConfig, dataLabelFactory, dataManagerFactory, tooltipHelperFactory) ->
-  sBarCntr = 0
-  
-  wkBar = () -> 
-    me = () ->
+angular.module('wk.chart').factory 'wkBarStacked', ($log, utils, barConfig, dataManagerFactory, tooltipHelperFactory) ->
+  stackedBarCntr = 0
+  wkBarStacked = ()->
+    me = ()->
 
-    _id = "bars#{sBarCntr++}"
     _layout = undefined
-    bars = null
-    barPaddingOld = 0
-    barOuterPaddingOld = 0
+    #$log.log 'linking Stacked bar'
+
+    _id = "stackedBar#{stackedBarCntr++}"
+
+    layers = null
+
+    _tooltip = undefined
     _scaleList = {}
     _selected = undefined
     _barStyle = {}
+
     config = _.clone(barConfig, true)
 
     xData = dataManagerFactory()
     ttHelper = tooltipHelperFactory()
-    dataLabels = dataLabelFactory()
-    _tooltip = undefined
+    stack = d3.layout.stack()
+    stack
+      .values((d)->d.values)
+      .y((d) -> if d.layerAdded or d.layerDeleted then 0 else d.targetValue)
+      .x((d) -> d.targetKey)
 
-    #--- Draw --------------------------------------------------------------------------------------------------------
+    #-----------------------------------------------------------------------------------------------------------------
 
     setAnimationStart = (data, options, x, y, color) ->
       xData.keyScale(y).valueScale(x).data(data, true)
       if not xData.isInitial()
         layoutData = xData.animationStartLayers()
-        #$log.debug layoutData
         drawPath.apply(this, [false, layoutData, options, x, y, color])
 
     setAnimationEnd = (data, options, x, y, color) ->
       layoutData = xData.animationEndLayers()
-      dataLabels.duration(options.duration).active(_layout.showDataLabels()) # needs to be here to ensure right opacity animation !
       drawPath.apply(this, [true, layoutData, options, x, y, color])
 
     drawPath = (doAnimate, data, options, x, y, color) ->
@@ -38,7 +42,7 @@ angular.module('wk.chart').factory 'wkBar', ($log, utils, barConfig, dataLabelFa
       setStyle = (d) ->
         elem = d3.select(this)
         elem.style(_barStyle)
-        style = if color.property().length is 0 then color.scale()(d.layerKey) else color.map(d.data)
+        style = color.scale()(d.layerKey)
         if typeof style is 'string'
           elem.style({fill:style, stroke:style})
         else
@@ -46,17 +50,17 @@ angular.module('wk.chart').factory 'wkBar', ($log, utils, barConfig, dataLabelFa
           style.fill = cVal
           elem.style(style)
 
-      _colorByKey = not color.property() and color.isOrdinal()
-      ttHelper.colorByKey(_colorByKey)
+      if not layers
+        layers = @selectAll(".wk-chart-layer")
+      #$log.debug "drawing stacked-bar"
 
-      if not bars
-        bars = @selectAll('.wk-chart-layer')
-      #$log.log "rendering stacked-bar"
+      barPadding = y.scale().rangeBand() / (1 - config.paddingLeft) * config.paddingLeft
+
+      stackLayout = stack(data)
+      layers = layers
+        .data(stackLayout, (d) -> d.layerKey)
 
       barHeight = y.scale().rangeBand()
-      barPadding = barHeight / (1 - config.paddingLeft) * config.paddingLeft
-      barOuterPadding = barHeight / (1 - config.outerPaddingLeft) * config.outerPaddingLeft
-      #$log.log 'barPadding', barPadding, data
 
       offset = (d) ->
         if y.reverse()
@@ -71,65 +75,61 @@ angular.module('wk.chart').factory 'wkBar', ($log, utils, barConfig, dataLabelFa
           if d.added then return barHeight + barPadding / 2
         return 0
 
-      bars = bars.data(data[0].values, (d, i) -> d.key)
+      layers.enter().append('g').attr('class', "wk-chart-layer")
+      layers.exit().remove()
 
-      enter = bars.enter().append('g').attr('class','wk-chart-layer')
-        .attr('transform', (d)-> "translate(#{x.scale()(0)}, #{y.scale()(d.targetKey) + offset(d)})")
-
-      enter.append('rect')
-        .attr('class', 'wk-chart-rect wk-chart-selectable')
-        .attr('height', (d) -> if d.added or d.deleted then 0 else barHeight)
+      bars = layers.selectAll('.wk-chart-rect')
+      bars = bars.data(
+        (d) -> d.values,
+        (d) -> d.key.toString() + '|' + d.layerKey.toString()
+        )
+      bars.enter().append('rect').attr('class','wk-chart-rect wk-chart-selectable')
+        .style('opacity', 0)
+        #.attr('fill', (d) -> color.scale()(d.layerKey))
         .style('opacity', 0)
         .call(_tooltip.tooltip)
         .call(_selected)
 
-      (if doAnimate then bars.transition().duration(options.duration) else bars)
-          .attr('transform', (d) -> "translate(#{x.scale()(0)}, #{y.scale()(d.targetKey) + offset(d)}) scale(1,1)")
-
-      rect = bars.select('rect.wk-chart-rect')
-        #.style('fill', (d) -> if color.property().length is 0 then color.scale()(d.layerKey) else color.map(d.data))
-        #.style('stroke', (d) -> if color.property().length is 0 then color.scale()(d.layerKey) else color.map(d.data))
-        #.style(_barStyle)
+      bars
         .each(setStyle)
-      (if doAnimate then rect.transition().duration(options.duration) else rect)
+
+      (if doAnimate then bars.transition().duration(options.duration) else bars)
+        .attr('x', (d) -> x.scale()(d.y0))
+        .attr('width', (d) -> x.scale()(d.y))
         .attr('height', (d) -> if d.added or d.deleted then 0 else barHeight)
-        .attr('width', (d) -> Math.abs(x.scale()(0) - x.scale()(d.targetValue)))
+        .attr('y', (d) -> y.scale()(d.targetKey) + offset(d))
         .style('opacity', 1)
 
-      bars.exit()
-        .remove()
-
-      bars.call(dataLabels, doAnimate, _layout.dataLabelStyle(), _layout.dataLabelBackgroundStyle())
+      bars.exit().remove()
 
     brush = (axis, idxRange) ->
-      bars
-        .attr('transform',(d) -> "translate(0, #{if (y = axis.scale()(d.key)) >= 0 then y else -1000})")
-          .selectAll('.wk-chart-rect')
+      bars = this.selectAll(".wk-chart-rect")
+      if axis.isOrdinal()
+        bars
+          .attr('y', (d) -> if (val = axis.scale()(d.key)) >= 0 then val else -1000)
           .attr('height', (d) -> axis.scale().rangeBand())
-      dataLabels.brush(bars)
+        ttHelper.brushRange(idxRange)
 
-    #--- Configuration and registration ------------------------------------------------------------------------------
+    #-----------------------------------------------------------------------------------------------------------------
 
     me.layout = (layout) -> 
       if arguments.length is 0 then return _layout
-      _layout = layout;
-
+      _layout = layout
       _layout.lifeCycle().on 'configure', ->
         _scaleList = @getScales(['x', 'y', 'color'])
-        @getKind('x').domainCalc('max').resetOnNewData(true)
+        @getKind('x').domainCalc('total').resetOnNewData(true)
         @getKind('y').resetOnNewData(true).rangePadding(config).scaleType('ordinal')
+        @layerScale('color')
         _tooltip = _layout.behavior().tooltip
         _selected = _layout.behavior().selected
+        _tooltip.on "enter.#{_id}", ttHelper.enter
         ttHelper
           .keyScale(_scaleList.y)
           .valueScale(_scaleList.x)
           .colorScale(_scaleList.color)
           .value((d) -> d.value)
-        _tooltip.on "enter.#{_id}", ttHelper.enter
-        dataLabels
-          .keyScale(_scaleList.y)
-          .valueScale(_scaleList.x)
 
+      #host.lifeCycle().on "drawChart", draw
       _layout.lifeCycle().on "brushDraw.#{_id}", brush
       _layout.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
       _layout.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
@@ -138,7 +138,6 @@ angular.module('wk.chart').factory 'wkBar', ($log, utils, barConfig, dataLabelFa
         _layout.lifeCycle().on ".#{_id}", null
         _tooltip.on ".#{_id}", null
       return me
-
 
     me.rangePadding = (config) ->
       if arguments.length is 0 then return _scaleList.y.rangePadding()
@@ -150,8 +149,5 @@ angular.module('wk.chart').factory 'wkBar', ($log, utils, barConfig, dataLabelFa
       _barStyle = val
       return me
 
-
-
     return me
-
-  return wkBar
+  return wkBarStacked

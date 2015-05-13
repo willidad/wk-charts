@@ -1,15 +1,15 @@
-angular.module('wk.chart').factory 'wkGauge', ($log, $compile, $rootScope, $templateCache, wkChartTemplates) ->
+angular.module('wk.chart').factory 'wkGauge', ($log, utils) ->
   wkGauge = () ->
     me = () ->
-
+    _layout = undefined 
     initalShow = true
+
     #-----------------------------------------------------------------------------------------------------------------
-    me.draw = (data, options, x, y, color) ->
+
+    draw = (data, options, x, y, color) ->
       $log.info 'drawing Gauge Chart'
 
       dat = [data]
-
-      debugger;
 
       yDomain = y.scale().domain()
       colorDomain = angular.copy(color.scale().domain())
@@ -60,21 +60,16 @@ angular.module('wk.chart').factory 'wkGauge', ($log, $compile, $rootScope, $temp
       initalShow = false
 
     #-----------------------------------------------------------------------------------------------------------------
-    _layout = undefined
-    me.layout = (layout) ->
+
+
+    me.layout = (layout) -> 
       if arguments.length is 0 then return _layout
-      else
-        _layout = layout
-        _layout.lifeCycle().on 'configure', ->
-          this.requiredScales(['y', 'color'])
-          @getKind('color').resetOnNewData(true)
+      _layout = layout
+      _layout.lifeCycle().on 'configure', ->
+        this.requiredScales(['y', 'color'])
+        @getKind('color').resetOnNewData(true)
 
-        _layout.lifeCycle().on 'drawChart', me.draw  
-        return me
-
+      _layout.lifeCycle().on 'drawChart', draw
+      return me
     return me
-
-  return wkGauge;
-
-
-
+  return wkGauge

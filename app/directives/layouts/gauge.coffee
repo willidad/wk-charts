@@ -15,17 +15,14 @@
 
 
 ###
-angular.module('wk.chart').directive 'gauge', ($log, utils, wkGauge) ->
+angular.module('wk.chart').directive 'gauge', (wkGauge, $log, utils) ->
   return {
     restrict: 'A'
     require: '^layout'
-    controller: ($scope, $attrs) ->
-      $scope.me = wkGauge()
-      return me
-      
     link: (scope, element, attrs, controller) ->
-      layout = controller.me
-      scope.me.layout(layout)
+      host = controller.me
+      model = wkGauge()
+      model.layout(host)
   }
 
   #todo refector
