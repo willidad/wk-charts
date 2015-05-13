@@ -72,7 +72,7 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig, data
           layers = @selectAll(".wk-chart-layer")
         #$log.debug "drawing stacked-bar"
 
-        barPadding = y.scale().rangeBand() / (1 - config.padding) * config.padding
+        barPadding = y.scale().rangeBand() / (1 - config.paddingLeft) * config.paddingLeft
 
         stackLayout = stack(data)
         layers = layers
@@ -155,33 +155,26 @@ angular.module('wk.chart').directive 'barStacked', ($log, utils, barConfig, data
         _tooltip.on ".#{_id}", null
 
       ###*
-          @ngdoc attr
-          @name barStacked#padding
-          @values true, false, [padding, outerPadding]
-          @param [padding=true] {boolean | list}
-      * Defines the inner and outer padding between the bars.
-      *
-      * `padding` and `outerPadding` are measured in % of the total bar space occupied, i.e. a padding of 20 implies a bar height of 80%, padding 50 implies bar and space have the same size.
-      *
-      * `padding` is 10, `outerPadding` is 0 unless explicitly specified differently.
-      *
-      * Setting `padding="false"` is equivalent to [0,0]
+        @ngdoc attr
+        @name barStacked#padding
+        @values true, false, [padding-left, padding-right, outerPadding-left, outerPadding-right]
+        @param [padding=true] {boolean | list}
+        * Defines the inner and outer padding between the bars.
+        *
+        * paddings are measured in % of the total bar space occupied, i.e. a padding of 20 implies a bar width of 80%, padding 50 implies column and space have the same size.
+        *
+        * similar to CSS padding definitions the padding attribute allows for a couple of shortcuts:
+        *
+        * - n,m implies both, paddings are n, both outerPaddings are m
+        * - n implies all paddings are set to n,
+        * - n,m, o implies left padding is n, right padding is m, outerPaddings are o
+        *
+        * Default `padding` is 10, `outerPadding` is 0.
+        *
+        * Setting `padding="false"` is equivalent to [0,0]
       ###
       attrs.$observe 'padding', (val) ->
-        if val is 'false'
-          config.padding = 0
-          config.outerPadding = 0
-        else if val is 'true'
-          config = _.clone(barConfig, true)
-        else
-          values = utils.parseList(val)
-          if values
-            if values.length is 1
-              config.padding = values[0]/100
-              config.outerPadding = values[0]/100
-            if values.length is 2
-              config.padding = values[0]/100
-              config.outerPadding = values[1]/100
+        config = utils.parsePadding(val, config, barConfig)
         _scaleList.y.rangePadding(config)
         host.lifeCycle().update()
 

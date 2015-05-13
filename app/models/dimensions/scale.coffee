@@ -17,8 +17,10 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
     _lowerProperty = ''
     _upperProperty = ''
     _range = undefined
-    _rangePadding = 0.3
-    _rangeOuterPadding = 0.3
+    _rangePaddingLeft = 0.1
+    _rangePaddingRight = 0.1
+    _rangeOuterPaddingLeft = 0
+    _rangeOuterPaddingRight = 0
     _inputFormatString = undefined
     _inputFormatFn = (data) -> if isNaN(+data) or _.isDate(data) then data else +data
 
@@ -360,16 +362,25 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
       else
         _range = range
         if _isOrdinal and me.kind() in ['x','y']
-            _scale.rangeBands(range, _rangePadding, _rangeOuterPadding)  # if ordinal, set range only for horizontal and vertical dimensions
+          if _scaleType isnt 'ordinalPadding'
+            _scale.rangeBands(range, _rangePaddingLeft, _rangeOuterPaddingLeft)  # if ordinal, set range only for horizontal and vertical dimensions
+          else
+            _scale.rangeBands(range)
         else if not (_scaleType in ['category10', 'category20', 'category20b', 'category20c']) #ordinal scales with pre-et range
           _scale.range(range)
         return me
 
     me.rangePadding = (config) ->
-      if arguments.length is 0 then return {padding:_rangePadding, outerPadding:_rangeOuterPadding}
+      if arguments.length is 0 then return {paddingLeft:_rangePaddingLeft, paddingRight:_rangePaddingRight, outerPaddingLeft:_rangeOuterPaddingLeft, outerPaddingRight:_rangeOuterPaddingRight}
       else
-        _rangePadding = config.padding
-        _rangeOuterPadding = config.outerPadding
+        _rangePaddingLeft = config.paddingLeft
+        _rangePaddingRight = config.paddingRight
+        _rangeOuterPaddingLeft = config.outerPaddingLeft
+        _rangeOuterPaddingRight = config.outerPaddingRight
+
+        if _scaleType is 'ordinalPadding'
+          _scale.padding(_rangePaddingLeft, _rangePaddingRight);
+          _scale.outerPadding(_rangeOuterPaddingLeft, _rangeOuterPaddingRight)
         return me
 
     #--- property related attributes -----------------------------------------------------------------------------------
