@@ -47,8 +47,7 @@ angular.module('wk.chart').directive 'barClustered', (wkBarClustered, $log, util
         * Setting `padding="false"` is equivalent to [0,0]
       ###
       attrs.$observe 'padding', (val) ->
-        config = utils.parsePadding(val, config, barConfig)
-        model.rangePadding(config)
+        model.rangePadding(val)
         host.lifeCycle().update()
 
       ###*

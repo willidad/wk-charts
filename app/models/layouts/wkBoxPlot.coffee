@@ -237,7 +237,8 @@ angular.module('wk.chart').factory 'wkBoxPlot', ($log, utils, barConfig, dataMan
         _tooltip.on ".#{_id}", null
       return me
 
-    me.rangePadding = (config) ->
+    me.rangePadding = (val) ->
+      config = utils.parsePadding(val, config, barConfig)
       if arguments.length is 0 then return _scaleList.y.rangePadding()
       _scaleList.x.rangePadding(config)
       return me

@@ -44,9 +44,9 @@ angular.module('wk.chart').directive 'boxPlot', (wkBoxPlot, $log, utils, barConf
       * Setting `padding="false"` is equivalent to [0,0]
     ###
     attrs.$observe 'padding', (val) ->
-        config = utils.parsePadding(val, config, barConfig)
-        model.rangePadding(config)
-        host.lifeCycle().update()
+      model.rangePadding(val)
+      model.rangePadding(config)
+      host.lifeCycle().update()
 
     ###*
         @ngdoc attr

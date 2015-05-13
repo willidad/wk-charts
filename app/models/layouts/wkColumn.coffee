@@ -91,7 +91,7 @@ angular.module('wk.chart').factory 'wkColumn', ($log, utils, barConfig, dataMana
         .attr('y', (d) -> Math.min(y.scale()(0), y.scale()(d.targetValue)))
         .style('opacity', 1)
 
-      columns.call(dataLabels, doAnimate, host.dataLabelStyle())
+      columns.call(dataLabels, doAnimate, _layout.dataLabelStyle())
 
       columns.exit()
       .remove()
@@ -133,7 +133,8 @@ angular.module('wk.chart').factory 'wkColumn', ($log, utils, barConfig, dataMana
         _tooltip.on ".#{_id}", null
       return me
 
-    me.rangePadding = (config) ->
+    me.rangePadding = (val) ->
+      config = utils.parsePadding(val, config, barConfig)
       if arguments.length is 0 then return _scaleList.y.rangePadding()
       _scaleList.x.rangePadding(config)
       return me
