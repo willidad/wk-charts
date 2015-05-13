@@ -36,23 +36,11 @@ angular.module('wk.chart').directive 'geoMap', (wkGeoMap, $log, utils) ->
           @name geoMap#projection
           @param projection {object} sets the projection attributes for the map defined in `geojson`
       ###
-
-      # TODO: Move projection
       scope.$watch 'projection', (val) ->
         if val isnt undefined
           $log.log 'setting Projection params', val
-          if d3.geo.hasOwnProperty(val.projection)
-            _projection = d3.geo[val.projection]()
-            _projection.center(val.center).scale(val.scale).rotate(val.rotate).clipAngle(val.clipAngle)
-            _idProp = val.idMap
-            if _projection.parallels
-              _projection.parallels(val.parallels)
-            _scale = _projection.scale()
-            _rotate = _projection.rotate()
-            _path = d3.geo.path().projection(_projection)
-            _zoom.projection(_projection)
-
-            layout.lifeCycle().update()
+          model.projection(val)
+          layout.lifeCycle().update()
 
       , true #deep watch
 
@@ -63,7 +51,7 @@ angular.module('wk.chart').directive 'geoMap', (wkGeoMap, $log, utils) ->
       ###
       scope.$watch 'geojson', (val) ->
         if val isnt undefined and val isnt ''
-          _geoJson = val
+          model.geoJson(val)
           layout.lifeCycle().update()
 
 

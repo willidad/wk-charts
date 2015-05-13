@@ -51,12 +51,13 @@ angular.module('wk.chart').factory 'wkGeoMap', ($log, utils) ->
         elem = d3.select(this)
         val = _dataMapping.get(d.properties[_idProp[0]])
         style = color.map(val)
-        if typeof style is 'string'
-          elem.style({fill:style, stroke:style})
-        else
-          cVal = style.color
-          style.fill = cVal
-          elem.style(style)
+        if style
+          if typeof style is 'string'
+            elem.style({fill:style, stroke:style})
+          else
+            cVal = style.color
+            style.fill = cVal
+            elem.style(style)
 
       _width = options.width
       _height = options.height
@@ -82,6 +83,27 @@ angular.module('wk.chart').factory 'wkGeoMap', ($log, utils) ->
         pathSel.exit().remove()
 
     #-----------------------------------------------------------------------------------------------------------------
+
+    me.projection = (val) ->
+      $log.log 'setting Projection params', val
+      if d3.geo.hasOwnProperty(val.projection)
+        _projection = d3.geo[val.projection]()
+        _projection.center(val.center).scale(val.scale).rotate(val.rotate).clipAngle(val.clipAngle)
+        _idProp = val.idMap
+        if _projection.parallels
+          _projection.parallels(val.parallels)
+        _scale = _projection.scale()
+        _rotate = _projection.rotate()
+        _path = d3.geo.path().projection(_projection)
+        _zoom.projection(_projection)
+
+      return me
+
+    me.geoJson = (val) ->
+      _geoJson = val
+      return me
+
+
     me.layout = (layout) ->
       if arguments.length is 0 then return _layout
       _layout = layout
