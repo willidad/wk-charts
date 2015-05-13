@@ -29,7 +29,7 @@ angular.module('wk.chart').factory 'dataLabelFactory', ($log, wkChartMargins) ->
           .attr('transform', (d) -> 
             v1 = if d.added or d.deleted then 0 else barSize / 2
             v2 = _margin + if _valueAxis is 'x' then Math.abs(_valueScale.scale()(0) - _valueScale.scale()(d.targetValue)) else Math.min(_valueScale.scale()(0), _valueScale.scale()(d.targetValue))
-            return 'translate(' + (if _valueAxis is not 'x' then (v1 + ',' + v2) else  (v2 + ',' + v1) ) + ')'
+            return 'translate(' + (if _valueAxis is 'x' then (v2 + ',' + v1) else  (v1 + ',' + v2) ) + ')'
           )
         textBg = textGroup.append('rect').attr('class', 'wk-chart-data-label-bg')
         text = textGroup.append('text')
@@ -46,7 +46,7 @@ angular.module('wk.chart').factory 'dataLabelFactory', ($log, wkChartMargins) ->
         .attr('transform', (d) -> 
             v1 = if d.added or d.deleted then 0 else barSize / 2
             v2 = _margin + if _valueAxis is 'x' then Math.abs(_valueScale.scale()(0) - _valueScale.scale()(d.targetValue)) else Math.min(_valueScale.scale()(0), _valueScale.scale()(d.targetValue))
-            return 'translate(' + (if _valueAxis is not 'x' then (v1 + ',' + v2) else  (v2 + ',' + v1) ) + ')'
+            return 'translate(' + (if _valueAxis is 'x' then (v2 + ',' + v1) else  (v1 + ',' + v2) ) + ')'
         )
         .style('opacity', (d) -> if d.added or d.deleted or not _active then 0 else 1)
 

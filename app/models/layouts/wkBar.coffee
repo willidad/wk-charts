@@ -150,6 +150,11 @@ angular.module('wk.chart').factory 'wkBar', ($log, utils, barConfig, dataLabelFa
       _barStyle = val
       return me
 
+    me.barConfig = (val) ->
+      if arguments.length is 0 then return config
+      _.assign(config, val)
+      return me
+
 
 
     return me

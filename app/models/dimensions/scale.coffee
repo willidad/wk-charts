@@ -188,6 +188,11 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
       if arguments.length is 0 then return _kind
       else
         _kind = kind
+        if kind is 'x'
+          me.scaleType('linear')
+          me.resetOnNewData(true)
+          me.isHorizontal(true)
+
         return me
 
     me.parent = (parent) ->

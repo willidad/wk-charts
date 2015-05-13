@@ -223,8 +223,8 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
         if tickBg.empty()
           tickBg = d3.select(@).insert('rect', ':first-child').attr('class', 'tick-bg')
         (if dim.rotateTickLabels() then tickBg.attr('transform', (d)-> tickLabelsShift(dim)) else tickBg)
-          .attr(d3.select(@).select('text').node().getBBox())
-        ).style(dim.tickLabelBackgroundStyle())
+          .attr(d3.select(@).select('text').node().getBBox()).style(dim.tickLabelBackgroundStyle())
+        )
       
 
 

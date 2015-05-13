@@ -15,6 +15,8 @@ angular.module('wk.chart').factory 'wkLine', ($log, utils, barConfig, dataLabelF
     markers = undefined
     layoutData = undefined
 
+    dataLabels = dataLabelFactory()
+
     xData = dataManagerFactory()
     markers = markerFactory()
     ttHelper = tooltipHelperFactory()
@@ -103,6 +105,7 @@ angular.module('wk.chart').factory 'wkLine', ($log, utils, barConfig, dataLabelF
 
       layers.call(markers, doAnimate)
 
+
     brush = (axis, idxRange) ->
       lines = this.selectAll(".wk-chart-line")
       if axis.isOrdinal()
@@ -135,6 +138,11 @@ angular.module('wk.chart').factory 'wkLine', ($log, utils, barConfig, dataLabelF
         _tooltip.on "enter.#{_id}", ttHelper.enter
         _tooltip.on "moveData.#{_id}", ttHelper.moveData
         _tooltip.on "moveMarker.#{_id}", ttHelper.moveMarkers
+
+        dataLabels
+          .keyScale(_scaleList.x)
+          .valueScale(_scaleList.y)
+
 
       # host.lifeCycle().on "drawChart", draw ignore for now
       _layout.lifeCycle().on "brushDraw.#{_id}", brush
