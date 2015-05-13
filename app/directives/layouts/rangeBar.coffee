@@ -13,7 +13,7 @@
   @usesDimension y [type=linear, domainRange=extent]
   @usesDimension color [type=category20]
 ###
-angular.module('wk.chart').directive 'rangeBars', ($log, utils, barConfig, dataManagerFactory, markerFactory, tooltipHelperFactory)->
+angular.module('wk.chart').directive 'rangeBars', (wkRangeBar,$log, utils, barConfig, dataManagerFactory, markerFactory, tooltipHelperFactory)->
   sBarCntr = 0
   return {
   restrict: 'A'

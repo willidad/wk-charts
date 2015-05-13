@@ -60,7 +60,7 @@ gulp.task('wkChartsJs', function() {
   var templ = gulp.src('./wk.chart/**/*.jade')
       .pipe(plumber({errorHandler: errorAlert}))
       .pipe(jade({pretty:true, doctype:'html'}))
-      .pipe(tplCache({module:'wk.chart.templates'}));
+      .pipe(tplCache({module:'wk.chart.templates', standalone:true}));
 
   // Javascript components
   var js = gulp.src(['app/**/*.js', '!app/**/tests/*.js'],{base:'/'})
@@ -83,10 +83,10 @@ gulp.task('wkChartsJsProduction', function() {
         .pipe(coffee({bare:true, doctype:'html'}));
 
     // Jade templates
-    var templ = gulp.src('./app/**/*.jade')
+    var templ = gulp.src('./wk.chart/**/*.jade')
         .pipe(plumber({errorHandler: errorAlert}))
         .pipe(jade({pretty:true, doctype:'html'}))
-        .pipe(tplCache({module:'wk.chart'}));
+        .pipe(tplCache({module:'wk.chart.templates', standalone:true}));
 
     // Javascript components
     var js = gulp.src('./app/**/*.js',{base:'/'})

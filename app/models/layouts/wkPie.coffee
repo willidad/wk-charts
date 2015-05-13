@@ -1,4 +1,4 @@
-angular.module('wk.chart').directive 'pie', ($log, utils) ->
+angular.module('wk.chart').factory 'wkPie', ($log, utils) ->
   pieCntr = 0
 
   wkPie = ()->

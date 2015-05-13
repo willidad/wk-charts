@@ -12,9 +12,7 @@
   ** implemented as AngularJs Directives  -> defined as markup
   ** Angular data binding for data an chart attributes
 ###
-angular.module('wk.chart', [ 'wk.chart.templates' ])
-
-
+angular.module('wk.chart', ['wk.chart.templates'])
 
 ###*
    lists the ordinal scale objects,

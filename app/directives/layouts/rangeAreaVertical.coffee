@@ -1,4 +1,19 @@
+###*
+  @ngdoc layout
+  @name rangeAreaVertical
+  @module wk.chart
+  @restrict A
+  @area api
+  @element layout
+  @description
 
+  draws a range-area chart layout
+
+  @usesDimension x [type=linear, domainRange=extent] The horizontal dimension
+  @usesDimension y [type=linear, domainRange=extent]
+  @usesDimension color [type=category20]
+  @example
+###
 angular.module('wk.chart').directive 'rangeAreaVertical', (wkRangeAreaVertical, $log, utils, dataManagerFactory, markerFactory, tooltipHelperFactory) ->
   lineCntr = 0
   return {
