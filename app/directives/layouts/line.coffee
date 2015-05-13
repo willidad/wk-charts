@@ -65,7 +65,6 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
             style.stroke = cVal
             elem.style(style)
 
-        $log.debug 'data', data
         offset = if x.isOrdinal() then x.scale().rangeBand() / 2 else 0
         if _tooltip
           _tooltip.data(data)
@@ -81,7 +80,8 @@ angular.module('wk.chart').directive 'line', ($log, behavior, utils, dataManager
           line.interpolate('cardinal')
 
         if x.isOrdinal()
-          line.x((d) -> if d.highBorder then options.width + moveOutside else if d.lowBorder then -moveOutside else x.scale()(d.targetKey))
+          #line.x((d) -> if d.highBorder then options.width + moveOutside else if d.lowBorder then -moveOutside else x.scale()(d.targetKey))
+          line.x((d) -> x.scale()(d.targetKey) + offset)
         else
           line.x((d) -> x.scale()(d.targetKey))
 
