@@ -55,5 +55,5 @@ angular.module('wk.chart').directive 'barStacked', (wkBarStacked, $log, utils, b
       ###
       attrs.$observe 'barStyle', (val) ->
         if val
-          model.barStyle(barStyle)
+          model.barStyle(scope.$eval(val))
   }

@@ -58,6 +58,6 @@ angular.module('wk.chart').directive 'barClustered', (wkBarClustered, $log, util
       ###
       attrs.$observe 'barStyle', (val) ->
         if val
-          model.barStyle(val)
+          model.barStyle(scope.$eval(val))
   }
 
