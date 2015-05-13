@@ -108,7 +108,9 @@ angular.module('wk.chart').constant 'formatDefaults', {
 }
 
 angular.module('wk.chart').constant 'barConfig', {
-  padding: 0.1
-  outerPadding: 0
+  paddingLeft: 0.1
+  paddingRight: 0.1
+  outerPaddingLeft: 0
+  outerPaddingRight: 0
 }
 

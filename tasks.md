@@ -1,6 +1,8 @@
 Defects
 
 Tooltips does not honor pie-style (probably true for all layout styles)
+Layout padding on shared axis does not work. Padding for 2nd axis is used by default, padding for 1st axis is ignored. (column overlayed shared axis)
+
 
 Fixed
 -----
@@ -57,6 +59,8 @@ Fix: aa4565d tooltip marker circles cut at edge of chart area
 Fix: 8c71885 set drawpadding to 0
 Fix: 56206e3 Selection does not work for boxplot
 Fix: mapFunction attribute not available in color scale
+Fix: 07aa217 Line with ordinal scale and makers: line is offset from data point (Brushing -> Axis Brushing)
+
 
 Features Implemented
 --------------------
@@ -76,6 +80,7 @@ Implemented: 4f14cf2 Patterns for line, bar, column and range(bar/column) charts
 Implemented: a9bc925 Patterns for pie, range area charts
 Implemented: 5bf50bc Box Chart
 Implemented: 06b52be explicit styling for all charts, support for gradients, masks, and SVG element supported style properties.
+Implemented: separate left / right padding for all bar and column charts to allow flexible positioning of multiple layouts.
 
 Open
 ----
@@ -89,8 +94,6 @@ Dup: Tooltip on non-zero stacked area chart positions markers wrong
 More general: Brush does not re-evaluate brush selection after a data update. Should either clear selection or re-position brush to the old range points on new data
 - Line / area charts w ordinal scales: brush selection corrupted after data update
 - Line / area charts w time scale: brush selection not updated after data change
-
-Brush highlighting does not honor range paddings
 
 More General: Tooltip and brush combined event handling does not work as desired
 - Tooltips / Brush: Tooltips are not shown when brush extend covers an item
@@ -119,5 +122,5 @@ Verify animation change impact on bubble and Scatter charts
 
 enable to show marker line independent of tooltips in line and area chart
 
-clickable axis lables for edit mode
+clickable axis labels for edit mode
 clickable line overlay in linecharts for edit mode
