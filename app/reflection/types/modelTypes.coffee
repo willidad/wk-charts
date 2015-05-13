@@ -134,6 +134,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
       tickInterval: propertyType.number
       tickFormat: propertyType.string
       tickLabelStyle: propertyType.object
+      tickLabelBackgroundStyle: propertyType.object
       axisFormatter: propertyType.object
     }
   }
@@ -200,6 +201,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
     key: 'labels$set'
     properties: {
       labelStyle: propertyType.object
+      labelBackgroundStyle: propertyType.object
     }
   }
   
@@ -248,7 +250,7 @@ angular.module('wk.chart').service 'modelTypes', ($log, wkChartScales) ->
     rangeBars:          layout('rangeBars', false,[],[labels,selection])
     rangeColumn:        layout('rangeColumn', false,[],[labels,selection])
     histogram:          layout('histogram', false,[],[labels,selection])
-    pie:                layout('pie', false,[donat],[labels,selection])
+    pie:                layout('pie', false,[],[labels,selection])
     spider:             layout('spider', false,[],[selection])
     bubble:             layout('bubble', false,[],[selection, brush])
     scatter:            layout('scatter', false,[],[selection, brush])
