@@ -44,8 +44,7 @@ angular.module('wk.chart').directive 'barStacked', (wkBarStacked, $log, utils, b
         * Setting `padding="false"` is equivalent to [0,0]
       ###
       attrs.$observe 'padding', (val) ->
-        config = utils.parsePadding(val, config, barConfig)
-        model.rangePadding(config)
+        model.rangePadding(val)
         host.lifeCycle().update()
 
       ###*
@@ -55,5 +54,5 @@ angular.module('wk.chart').directive 'barStacked', (wkBarStacked, $log, utils, b
       ###
       attrs.$observe 'barStyle', (val) ->
         if val
-          model.barStyle(barStyle)
+          model.barStyle(scope.$eval(val))
   }
