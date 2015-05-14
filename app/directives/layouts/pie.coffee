@@ -14,7 +14,7 @@
 ###
 angular.module('wk.chart').directive 'pie', (wkPie, $log, utils) ->
   return {
-  restrict: 'EA'
+  restrict: 'A'
   require: '^layout'
   link: (scope, element, attrs, controller) ->
     layout = controller.me

@@ -8,9 +8,9 @@
 ###
 angular.module('wk.chart').provider 'wkChartTemplates', () ->
 
-  tooltipTemplateUrl = 'templates/toolTip.html'
-  legendTemplateUrl = 'templates/legend.html'
-  svgDefTemplateUrl = 'templates/patterns.html'
+  tooltipTemplateUrl = 'toolTip.html' #'templates/toolTip.html'
+  legendTemplateUrl = 'legend.html' #'templates/legend.html'
+  svgDefTemplateUrl = 'patterns.html' #'templates/patterns.html'
   ###*
     @ngdoc method
     @name wkChartTemplatesProvider#setTooltipTemplate

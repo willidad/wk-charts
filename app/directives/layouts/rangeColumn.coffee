@@ -44,7 +44,7 @@ angular.module('wk.chart').directive 'rangeColumn', (wkRangeColumn, $log, utils,
       * Setting `padding="false"` is equivalent to [0,0]
     ###
     attrs.$observe 'padding', (val) ->
-      config = utils.parsePadding(val, config, barConfig)
+      model.rangePadding(val)
       model.rangePadding(config)
       host.lifeCycle().update()
     ###*

@@ -26,7 +26,7 @@ angular.module('wk.chart').directive 'boxPlot', (wkBoxPlot, $log, utils, barConf
     
     ###*
       @ngdoc attr
-      @name column#padding
+      @name boxPlot#padding
       @values true, false, [padding-left, padding-right, outerPadding-left, outerPadding-right]
       @param [padding=true] {boolean | list}
       * Defines the inner and outer padding between the columns.
@@ -44,13 +44,13 @@ angular.module('wk.chart').directive 'boxPlot', (wkBoxPlot, $log, utils, barConf
       * Setting `padding="false"` is equivalent to [0,0]
     ###
     attrs.$observe 'padding', (val) ->
-        config = utils.parsePadding(val, config, barConfig)
-        model.rangePadding(config)
-        host.lifeCycle().update()
+      model.rangePadding(val)
+      model.rangePadding(config)
+      host.lifeCycle().update()
 
     ###*
         @ngdoc attr
-        @name rangeColumn#labels
+        @name boxPlot#labels
         @values true, false
         @param [labels=true] {boolean} controls the display of data labels for each of the bars.
     ###
@@ -63,7 +63,7 @@ angular.module('wk.chart').directive 'boxPlot', (wkBoxPlot, $log, utils, barConf
 
     ###*
       @ngdoc attr
-      @name rangeColumn#boxStyle
+      @name boxPlot#boxStyle
       @param [columnStyle] {object} - Set the line style for columns lines in the layout
     ###
     attrs.$observe 'boxStyle', (val) ->

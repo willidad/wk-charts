@@ -80,7 +80,7 @@ Implemented: 4f14cf2 Patterns for line, bar, column and range(bar/column) charts
 Implemented: a9bc925 Patterns for pie, range area charts
 Implemented: 5bf50bc Box Chart
 Implemented: 06b52be explicit styling for all charts, support for gradients, masks, and SVG element supported style properties.
-Implemented: separate left / right padding for all bar and column charts to allow flexible positioning of multiple layouts.
+Implemented: 9c77be8 separate left / right padding for all bar and column charts to allow flexible positioning of multiple layouts.
 
 Open
 ----
