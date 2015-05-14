@@ -97,6 +97,8 @@ angular.module('wk.chart').factory 'wkColumn', ($log, utils, barConfig, dataMana
       .remove()
 
     brush = (axis, idxRange) ->
+      debugger;
+
       columns
         .attr('transform',(d) -> "translate(#{if (x = axis.scale()(d.key)) >= 0 then x else -1000})")
         .selectAll('.wk-chart-rect')

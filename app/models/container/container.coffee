@@ -330,7 +330,6 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
               label.remove()
 
           # calculate space required for data labels
-
           if dataLabels[s.kind()]
             if s.isHorizontal()
               dataLabelWidth = wkChartMargins.dataLabelPadding.hor + measureText(s.formattedValue(data),  _container, 'wk-chart-data-label', l.dataLabelStyle()).width
