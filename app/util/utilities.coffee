@@ -41,7 +41,7 @@ angular.module('wk.chart').service 'utils', ($log) ->
   @parsePadding = (val, config, barConfig) ->
     if val is 'false'
       config.paddingLeft = config.paddingRight = 0
-      config.outerPaddingLeft = config.outerpaddingRight = 0
+      config.outerPaddingLeft = config.outerPaddingRight = 0
     else if val is 'true'
       config = _.clone(barConfig, true)
     else
@@ -49,14 +49,14 @@ angular.module('wk.chart').service 'utils', ($log) ->
       if values
         if values.length is 1
           config.paddingLeft = config.paddingRight = values[0] / 100
-          config.outerPaddingLeft = config.outerpaddingRight = values[0] / 100
+          config.outerPaddingLeft = config.outerPaddingRight = values[0] / 100
         else if values.length is 2
           config.paddingLeft = config.paddingRight = values[0] / 100
-          config.outerPaddingLeft = config.outerpaddingRight = values[1] / 100
+          config.outerPaddingLeft = config.outerPaddingRight = values[1] / 100
         else if values.length is 3
           config.paddingLeft = values[0] / 100
           config.paddingRight = values[1] / 100
-          config.outerPaddingLeft = config.outerpaddingRight = values[2] / 100
+          config.outerPaddingLeft = config.outerPaddingRight = values[2] / 100
         else if values.length is 4
           config.paddingLeft = values[0] / 100
           config.paddingRight = values[1] / 100

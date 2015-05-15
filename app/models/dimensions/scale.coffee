@@ -471,6 +471,9 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
       else
         val
 
+    me.parsedValue = (val) ->
+      return parsedValue(val)
+
     me.map = (data, layerKey) ->
       if layerKey
         if Array.isArray(data) then data.map((d) -> _scale(me.layerValue(data, layerKey))) else _scale(me.layerValue(data, layerKey))
