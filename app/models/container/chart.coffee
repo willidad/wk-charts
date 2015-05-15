@@ -167,6 +167,13 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
     me.behavior = () ->
       return _behavior
 
+    me.destroy = () ->
+      me.lifeCycle().on '.chart', null
+      me.container().element(undefined)
+      $log.log 'Destroying chart'
+      me.lifeCycle().destroy()
+      
+
     #--- Chart drawing life cycle --------------------------------------------------------------------------------------
 
     lifecycleFull = (data,noAnimation) ->
@@ -225,6 +232,7 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
     me.lifeCycle().on 'update.chart', (noAnimation) -> me.execLifeCycleFull(_data, noAnimation)
     me.lifeCycle().on 'updateAttrs', me.attributeChange
     me.lifeCycle().on 'rescaleDomains', _lifeCycle.scaleDomains(_data, true) #no animation
+
 
     #--- Initialization ------------------------------------------------------------------------------------------------
 
