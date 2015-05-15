@@ -52,7 +52,6 @@ angular.module('wk.chart').factory 'wkBar', ($log, utils, barConfig, dataLabelFa
       if not bars
         bars = @selectAll('.wk-chart-layer')
       #$log.log "rendering stacked-bar"
-
       barHeight = y.scale().rangeBand()
       barPadding = barHeight / (1 - config.paddingLeft) * config.paddingLeft
       barOuterPadding = barHeight / (1 - config.outerPaddingLeft) * config.outerPaddingLeft
@@ -141,8 +140,8 @@ angular.module('wk.chart').factory 'wkBar', ($log, utils, barConfig, dataLabelFa
 
 
     me.rangePadding = (val) ->
-      config = utils.parsePadding(val, config, barConfig)
       if arguments.length is 0 then return _scaleList.y.rangePadding()
+      config = utils.parsePadding(val, config, barConfig)
       _scaleList.y.rangePadding(config)
       return me
 
