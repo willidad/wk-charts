@@ -88,7 +88,7 @@ angular.module('wk.chart').provider 'wkChartScales', () ->
     _outerRight = 0;
     _domain = []
     _index = undefined;
-    _defaultBehavior = true;
+    _defaultBehavior = false;
     _range = []
     _rangeBand = 0
 
@@ -104,7 +104,7 @@ angular.module('wk.chart').provider 'wkChartScales', () ->
         d3Scale.range(x)
 
     me.domain = (x) ->
-      if !arguments.length then if _defaultBehavior then d3Scale.domain() else _domain;
+      if arguments.length is 0 then return _domain;
       d3Scale.domain(x);
       _domain = [];
       _index = d3.map();

@@ -350,19 +350,19 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       # adjust with ahd hight with padding required for markers
 
       for k, s of _chart.allScales().getOwned()
-        if not s.parentScale()
-          if s.kind() is 'x'
-            if dataLabels.x
-              s.range(if s.reverse() then  [_innerWidth - drawPadding - dataLabelWidth, drawPadding] else [drawPadding, _innerWidth - drawPadding- dataLabelWidth])
-            else
-              s.range(if s.reverse() then  [_innerWidth - drawPadding, drawPadding] else [drawPadding, _innerWidth - drawPadding])
-          else if s.kind() is 'y'
-            if dataLabels.y
-              s.range(if s.reverse() then  [dataLabelHeight + drawPadding, _innerHeight - drawPadding] else [_innerHeight - drawPadding ,dataLabelHeight + drawPadding])
-            else
-              s.range(if s.reverse() then  [drawPadding, _innerHeight - drawPadding ] else [_innerHeight - drawPadding, drawPadding])
-          if s.showAxis()
-            drawAxis(s)
+        #if not s.parentScale()
+        if s.kind() is 'x'
+          if dataLabels.x
+            s.range(if s.reverse() then  [_innerWidth - drawPadding - dataLabelWidth, drawPadding] else [drawPadding, _innerWidth - drawPadding- dataLabelWidth])
+          else
+            s.range(if s.reverse() then  [_innerWidth - drawPadding, drawPadding] else [drawPadding, _innerWidth - drawPadding])
+        else if s.kind() is 'y'
+          if dataLabels.y
+            s.range(if s.reverse() then  [dataLabelHeight + drawPadding, _innerHeight - drawPadding] else [_innerHeight - drawPadding ,dataLabelHeight + drawPadding])
+          else
+            s.range(if s.reverse() then  [drawPadding, _innerHeight - drawPadding ] else [_innerHeight - drawPadding, drawPadding])
+        if s.showAxis() and not s.parentScale()
+          drawAxis(s)
 
       #--- position frame elements -------------------------------------------------------------------------------------
 
