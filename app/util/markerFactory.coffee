@@ -50,7 +50,8 @@ angular.module('wk.chart').factory 'markerFactory', ($log, d3Animation) ->
           c = 'cx'
           v = _x
         if idxRange
-          _markerSelection.selectAll(".wk-chart-marker-#{_id}").attr(c,v).style('opacity', (d,i) -> if idxRange[0] <= i and i <= idxRange[1] then 1 else 0)
+          vOrd = (d, i) -> if idxRange[0] <= i and i <= idxRange[1] then v(d) else - 1000
+          _markerSelection.selectAll(".wk-chart-marker-#{_id}").attr(c,vOrd).style('opacity', (d,i) -> if idxRange[0] <= i and i <= idxRange[1] then 1 else 0)
         else
           domain = _keyScale.domain()
           _markerSelection.selectAll(".wk-chart-marker-#{_id}").attr(c, v).style('opacity', (d) -> if domain[0] <= d.key and d.key <= domain[1] then 1 else 0)

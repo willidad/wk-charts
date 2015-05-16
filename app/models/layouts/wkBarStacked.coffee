@@ -140,8 +140,8 @@ angular.module('wk.chart').factory 'wkBarStacked', ($log, utils, barConfig, data
       return me
 
     me.rangePadding = (val) ->
-      config = utils.parsePadding(val, config, barConfig)
       if arguments.length is 0 then return _scaleList.y.rangePadding()
+      config = utils.parsePadding(val, config, barConfig)
       _scaleList.y.rangePadding(config)
       return me
 

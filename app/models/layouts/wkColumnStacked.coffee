@@ -136,11 +136,10 @@ angular.module('wk.chart').factory 'wkColumnStacked', ($log, utils, barConfig, d
       return me
 
     me.rangePadding = (val) ->
-      config = utils.parsePadding(val, config, barConfig)
       if arguments.length is 0 then return _scaleList.y.rangePadding()
+      config = utils.parsePadding(val, config, barConfig)
       _scaleList.x.rangePadding(config)
       return me
-
 
     me.columnStyle = (val) ->
       if arguments.length is 0 then return _columnStyle

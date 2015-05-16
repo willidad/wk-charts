@@ -2,7 +2,9 @@ Defects
 
 Tooltips does not honor pie-style (probably true for all layout styles)
 Layout padding on shared axis does not work. Padding for 2nd axis is used by default, padding for 1st axis is ignored. (column overlayed shared axis)
-
+Brushing for all bar / column charts: any data update positions all bars/columns outside of brush window at pos 0 (NaN)
+Brushing for all bar / column charts: removing a element in the brushing area removes rects, but not axis entry 
+Brush all charts: Adding /deleting entries does not adjust brush overlay to reflect brush window
 
 Fixed
 -----
@@ -124,3 +126,6 @@ enable to show marker line independent of tooltips in line and area chart
 
 clickable axis labels for edit mode
 clickable line overlay in linecharts for edit mode
+invert brush area visual appearance (selected area should be transparent, non-selected greyed out)
+extent brush overlay into axis 
+brush handle tooltips showing exact border values. 

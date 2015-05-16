@@ -45,7 +45,6 @@ angular.module('wk.chart').directive 'rangeBars', (wkRangeBar,$log, utils, barCo
     ###
     attrs.$observe 'padding', (val) ->
       model.rangePadding(val)
-      model.rangePadding(config)
       host.lifeCycle().update()
 
     ###*

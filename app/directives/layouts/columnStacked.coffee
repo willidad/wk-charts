@@ -45,7 +45,6 @@ angular.module('wk.chart').directive 'columnStacked', (wkColumnStacked, $log, ut
       ###
       attrs.$observe 'padding', (val) ->
         model.rangePadding(val)
-        model.rangePadding(config)
         host.lifeCycle().update()
 
       ###*

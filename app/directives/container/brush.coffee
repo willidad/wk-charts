@@ -101,8 +101,10 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
           brush.brushGroup(undefined)
 
       scope.$watch 'brushExtent', (newVal, oldVal) ->
-        if _.isArray(newVal) and newVal.length is 0 and _.isArray(oldVal) and oldVal.length isnt 0
+        if _.isArray(newVal) and newVal.length is 0 # and _.isArray(oldVal) and oldVal.length isnt 0
           brush.clearBrush()
+        else
+          brush.setExtent(newVal)
 
       brush.events().on "brushStart.#{_id}", () ->
         if attrs.brushStart
@@ -110,8 +112,8 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
           scope.$apply()
 
       brush.events().on "brush.#{_id}", (idxRange, valueRange, domain) ->
-        if attrs.brushExtent
-          scope.brushExtent = idxRange
+        #if attrs.brushExtent
+        #  scope.brushExtent = idxRange
         if attrs.selectedValues
           scope.selectedValues = valueRange
         if attrs.selectedDomain

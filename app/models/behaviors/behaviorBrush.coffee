@@ -1,4 +1,4 @@
-angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSharing, timing) ->
+angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSharing, d3Animation) ->
 
   behaviorBrush = () ->
 
@@ -27,16 +27,25 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
     _boundsIdx = undefined
     _boundsValues = undefined
     _boundsDomain = []
-    _lastLeftVal = _lastRightVal = _lastBottomVal = _lastTopVal = undefined
+    _lastLeftVal = undefined
+    _lastRightVal = undefined
+    _lastBottomVal = undefined
+    _lastTopVal = undefined
     _brushEvents = d3.dispatch('brushStart', 'brush', 'brushEnd')
 
     left = top = right = bottom = startTop = startLeft = startRight = startBottom = undefined
 
     #--- Brush utility functions ----------------------------------------------------------------------------------------
 
-    positionBrushElements = (left, right, top, bottom) ->
-      width = right - left
-      height = bottom - top
+    getD3Selection = (s, animate) ->
+      if animate
+        _overlay.selectAll(s).transition().duration(d3Animation.duration)
+      else
+        _overlay.selectAll(s)
+
+    positionBrushElements = (left, right, top, bottom, animate) ->
+      width = Math.abs(right - left)
+      height = Math.abs(bottom - top)
 
       # position resize-handles into the right corners
       if _brushXY
@@ -50,22 +59,29 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
         _overlay.selectAll('.wk-chart-sw').attr('transform', "translate(#{left},#{bottom})")
         _extent.attr('width', width).attr('height', height).attr('x', left).attr('y', top)
       if _brushX
-        _overlay.selectAll('.wk-chart-w').attr('transform', "translate(#{left},0)").select('rect').attr('height', height)
-        _overlay.selectAll('.wk-chart-e').attr('transform', "translate(#{right},0)").select('rect').attr('height', height)
+        getD3Selection('.wk-chart-w', animate).attr('transform', "translate(#{left},0)").select('rect').attr('height', height)
+        getD3Selection('.wk-chart-e', animate).attr('transform', "translate(#{right},0)").select('rect').attr('height', height)
         _overlay.selectAll('.wk-chart-e').select('rect').attr('height', _areaBox.height)
         _overlay.selectAll('.wk-chart-w').select('rect').attr('height', _areaBox.height)
-        _extent.attr('width', width).attr('height', _areaBox.height).attr('x', left).attr('y', 0)
+        (if animate then _extent.transition().duration(d3Animation.duration) else _extent).attr('width', width).attr('height', _areaBox.height).attr('x', left).attr('y', 0)
       if _brushY
-        _overlay.selectAll('.wk-chart-n').attr('transform', "translate(0,#{top})").select('rect').attr('width', width)
-        _overlay.selectAll('.wk-chart-s').attr('transform', "translate(0,#{bottom})").select('rect').attr('width', width)
+        getD3Selection('.wk-chart-n', animate).attr('transform', "translate(0,#{top})").select('rect').attr('width', width)
+        getD3Selection('.wk-chart-s', animate).attr('transform', "translate(0,#{bottom})").select('rect').attr('width', width)
         _overlay.selectAll('.wk-chart-n').select('rect').attr('width', _areaBox.width)
         _overlay.selectAll('.wk-chart-s').select('rect').attr('width', _areaBox.width)
-        _extent.attr('width', _areaBox.width).attr('height', height).attr('x', 0).attr('y', top)
+        (if animate then _extent.transition().duration(d3Animation.duration) else _extent).attr('width', _areaBox.width).attr('height', height).attr('x', 0).attr('y', top)
 
     hideBrushElements = () ->
       d3.select(_areaNode).selectAll('.wk-chart-resize').style('display', 'none')
       _extent.attr('width',0).attr('height', 0).attr('x', 0).attr('y', 0).style('display', 'none')
 
+    showBrushElements = () ->
+      d3.select(_areaNode).selectAll(".wk-chart-resize").style("display", null)
+      _extent.style('display',null)
+
+    clearBrushElements = () ->
+      d3.select(_areaNode).selectAll(".wk-chart-resize.wk.chart-n>rect, .wk-chart-resize.wk.chart-s>rect").attr('x',0).attr('width', 0)
+      d3.select(_areaNode).selectAll(".wk-chart-resize.wk.chart-e>rect, .wk-chart-resize.wk.chart-e>rect").attr('y',0).attr('height', 0)
     #-------------------------------------------------------------------------------------------------------------------
 
     getSelectedObjects = () ->
@@ -99,7 +115,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
           _boundsIdx = [_left, _right]
           # bounds have changed, update bounds values array
           if me.x().isOrdinal()
-            _boundsValues = _data.map((d) -> me.x().value(d)).slice(_left, _right + 1)
+            _boundsValues = me.x().value(_data).slice(_left, _right + 1)
           else
             _boundsValues = [me.x().value(_data[_boundsIdx[0]]), me.x().value(_data[_right])]
           _boundsDomain = _data.slice(_left, _right+ 1)
@@ -120,7 +136,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
           _top = me.y().findIndex(_topVal)
           _boundsIdx = [_bottom, _top]
           if me.y().isOrdinal()
-            _boundsValues = _data.map((d) -> me.y().value(d)).slice(_bottom, _top + 1)
+            _boundsValues = me.y().value(_data).slice(_bottom, _top + 1)
           else
             _boundsValues = [me.y().value(_data[_bottom]), me.y().value(_data[_top])]
           _boundsDomain = _data.slice(_bottom, _top + 1)
@@ -134,6 +150,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
           _boundsDomain = newDomain
           _brushEvents.brush(_boundsIdx, _boundsValues, _boundsDomain)
           selectionSharing.setSelection _boundsValues, _boundsIdx, _brushGroup
+      #$log.info 'Brush Bounds:', _boundsValues[0], _boundsValues[_boundsValues.length - 1], _boundsValues
 
     clearSelection = () ->
       _boundsIdx = []
@@ -149,11 +166,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
         , 20
       )
 
-
-
     #--- BrushStart Event Handler --------------------------------------------------------------------------------------
-
-
 
     brushStart = () ->
       #register a mouse handlers for the brush
@@ -168,29 +181,25 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       startLeft = left
       startRight = right
       startBottom = bottom
-      d3.select(_areaNode).selectAll(".wk-chart-resize").style("display", null)
       d3.select(_areaNode).select('.wk-chart-selectable').style('pointer-events','none')
-      _extent.style('display',null)
       d3.select('body').style('cursor', d3.select(d3.event.target).style('cursor'))
+      #showBrushElements()
 
       d3.select($window).on('mousemove.brush', brushMove).on('mouseup.brush', brushEnd)
-
       _tooltip.hide(true)
       _boundsIdx = [undefined, undefined]
       _boundsDomain = [undefined]
       _selectables = _chartArea.selectAll('.wk-chart-selectable')
       _brushEvents.brushStart()
-      timing.clear()
-      timing.init()
+      #timing.clear()
+      #timing.init()
 
     #--- BrushEnd Event Handler ----------------------------------------------------------------------------------------
 
     brushEnd = () ->
       #de-register handlers
-
       d3.select($window).on 'mousemove.brush', null
       d3.select($window).on 'mouseup.brush', null
-      d3.select(_areaNode).style('pointer-events','all').selectAll('.wk-chart-resize').style('display', null) # show the resize handles
       d3.select(_areaNode).select('.wk-chart-selectable').style('pointer-events',null)
       d3.select('body').style('cursor', null)
       _tooltip.hide(false)
@@ -204,6 +213,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       pos = d3.mouse(_areaNode)
       deltaX = pos[0] - _startPos[0]
       deltaY = pos[1] - _startPos[1]
+      showBrushElements()
 
       # this elaborate code is needed to deal with scenarios when mouse moves fast and the events do not hit x/y + delta
       # does not hi the 0 point maye there is a more elegant way to write this, but for now it works :-)
@@ -405,7 +415,19 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
     me.data = (val) ->
       if arguments.length is 0 then return _data
       else
+        _lastLeftVal = _lastRightVal = _lastTopVal = _lastBottomVal = undefined;
         _data = val
+        # verify that current brush extent can be meaningfully mapped into new data, depending on scale type.
+        if _brushX and _x.isOrdinal()
+          _boundsValues = _.intersection(_x.value(_data), _boundsValues)
+        if _brushY and _y.isOrdinal()
+          _boundsValues = _.intersection(_y.value(_data), _boundsValues)
+
+        if _boundsValues and _boundsValues.length > 0
+          me.setExtent([_boundsValues[0], _boundsValues[_boundsValues.length - 1]], true) # do not parse
+        else
+          me.clearBrush()
+
         return me #to enable chaining
 
     me.brushGroup = (val) ->
@@ -427,6 +449,56 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
     me.extent = () ->
       return _boundsIdx
 
+    me.setExtent = (val, noParse) ->
+      if _.isArray(val) and val.length is 2
+        start = val[0]
+        end = val[1]
+        startPos = undefined
+        endPos = undefined
+        _areaBox = _areaNode.getBBox()
+        # scale values to get the pixel position of the selected start/end elements
+        if _brushX
+          left = _x.scale()(if noParse then start else _x.parsedValue(start)) + if _x.isOrdinal() then _x.scale().rangeBand() / 2 else 0
+          right = _x.scale()(if noParse then end else _x.parsedValue(end)) + if _x.isOrdinal() then _x.scale().rangeBand() / 2 else 0
+          if _x.reverse()
+            v = left
+            left = right
+            right = v
+          if not _.isFinite(left)
+            left = 0
+            $log.info 'setting left to 0'
+          if not _.isFinite(right)
+            right = _areaBox.width
+            $log.info 'setting right to ', right
+          top = 0
+          bottom = _areaBox.height
+          _.delay(() -> # ensure digest cycle form button pressed is completed
+            positionBrushElements(left, right, top, bottom, noParse)
+            setSelection(left, right, top, bottom)
+            showBrushElements()
+          )
+        else if _brushY
+          top = _y.scale()(if noParse then end else _y.parsedValue(end)) + if _y.isOrdinal() then _y.scale().rangeBand() / 2 else 0
+          bottom = _y.scale()(if noParse then start else _y.parsedValue(start)) + if _y.isOrdinal() then _y.scale().rangeBand() / 2 else 0
+          if _y.reverse()
+            v = top
+            top = bottom
+            bottom = v
+          if not _.isFinite(top)
+            top = 0
+            $log.info 'setting top to 0'
+          if not _.isFinite(bottom)
+            bottom = _areaBox.height
+            $log.info 'setting bottom to ', bottom
+          left = 0
+          right = _areaBox.width
+          _.delay(() -> # ensure digest cycle form button pressed is completed
+            positionBrushElements(left ,right ,top, bottom, noParse)
+            setSelection(left, right, top, bottom)
+            showBrushElements()
+          )
+      return me
+
     me.events = () ->
       return _brushEvents
 
@@ -437,6 +509,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
       console.log 'Brush cleared'
       hideBrushElements()
       clearSelection()
+      clearBrushElements();
 
 
     return me
