@@ -62,7 +62,7 @@ angular.module('wk.chart').factory 'wkAreaStacked', ($log, utils, tooltipHelperF
       stackLayout = stack(data)
 
       offs = if x.isOrdinal() then x.scale().rangeBand() / 2 else 0
-      $log.log 'offset' ,offs
+      #$log.log 'offset' ,offs
 
       if _tooltip
         _tooltip.data(data)

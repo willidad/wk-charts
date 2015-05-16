@@ -55,10 +55,10 @@ angular.module('wk.chart').factory 'wkAreaVertical', ($log, utils, tooltipHelper
         _tooltip.data(data)
         ttHelper.layout(data)
 
-      area = d3.svg.area() # tricky. Draw this like a horizontal chart and then rotate and position it.
-        .x((d) -> -y.scale()(d.targetKey))
-        .y((d) -> x.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
-        .y1((d) ->  x.scale()(0))
+      area = d3.svg.area()
+        .y((d) -> y.scale()(d.targetKey))
+        .x((d) -> x.scale()(if d.layerAdded or d.layerDeleted then 0 else d.value))
+        .x1((d) ->  x.scale()(0))
 
       if _spline
         area.interpolate('cardinal')
@@ -73,7 +73,7 @@ angular.module('wk.chart').factory 'wkAreaVertical', ($log, utils, tooltipHelper
         .style('pointer-events', 'none')
 
       path = layers.select('.wk-chart-area-path')
-        .attr('transform', "translate(0,#{offset})rotate(-90)") #rotate and position chart
+        .attr('transform', "translate(0,#{offset})") #position chart
         #.style(_areaStyle)
         #.style('stroke', (d) -> color.scale()(d.layerKey))
         #.style('fill', (d) -> color.scale()(d.layerKey))
@@ -104,7 +104,7 @@ angular.module('wk.chart').factory 'wkAreaVertical', ($log, utils, tooltipHelper
         areaPath.attr('d', (d) ->
           null
           area(d.values.slice(idxRange[0],idxRange[1] + 1)))
-        .attr('transform', "translate(0,#{axis.scale().rangeBand() / 2})rotate(-90)")
+        .attr('transform', "translate(0,#{axis.scale().rangeBand() / 2})")
         markers.brush(this, idxRange)
         ttHelper.brushRange(idxRange)
       else

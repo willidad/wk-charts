@@ -98,7 +98,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
         _elementSelection.selectAll('.wk-chart-axis-select, .wk-chart-label-text, .wk-chart-data-label, .wk-chart-layer, .wk-chart-innerArc, .wk-chart-legend, .wk-chart-overlay, .wk-chart-bubble, .wk-chart-shape')
           .style('cursor','pointer')
           .on('click', (d) ->
-            $log.log 'clicked', d3.select(this).attr('class'), d
+            #$log.log 'clicked', d3.select(this).attr('class'), d
             _chart.lifeCycle().editSelected(d3.select(this).attr('class'), d)
           )
       else
@@ -225,12 +225,6 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
         (if dim.rotateTickLabels() then tickBg.attr('transform', (d)-> tickLabelsShift(dim)) else tickBg)
           .attr(d3.select(@).select('text').node().getBBox()).style(dim.tickLabelBackgroundStyle())
         )
-      
-
-
-
-      
-      
 
     _removeAxis = (orient) ->
       _container.select(".wk-chart-axis.wk-chart-#{orient}, .wk-chart-axis-select.wk-chart-#{orient}").remove()
@@ -355,19 +349,19 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       # adjust with ahd hight with padding required for markers
 
       for k, s of _chart.allScales().getOwned()
-        if not s.parentScale()
-          if s.kind() is 'x'
-            if dataLabels.x
-              s.range(if s.reverse() then  [_innerWidth - drawPadding - dataLabelWidth, drawPadding] else [drawPadding, _innerWidth - drawPadding- dataLabelWidth])
-            else
-              s.range(if s.reverse() then  [_innerWidth - drawPadding, drawPadding] else [drawPadding, _innerWidth - drawPadding])
-          else if s.kind() is 'y'
-            if dataLabels.y
-              s.range(if s.reverse() then  [dataLabelHeight + drawPadding, _innerHeight - drawPadding] else [_innerHeight - drawPadding ,dataLabelHeight + drawPadding])
-            else
-              s.range(if s.reverse() then  [drawPadding, _innerHeight - drawPadding ] else [_innerHeight - drawPadding, drawPadding])
-          if s.showAxis()
-            drawAxis(s)
+        #if not s.parentScale()
+        if s.kind() is 'x'
+          if dataLabels.x
+            s.range(if s.reverse() then  [_innerWidth - drawPadding - dataLabelWidth, drawPadding] else [drawPadding, _innerWidth - drawPadding- dataLabelWidth])
+          else
+            s.range(if s.reverse() then  [_innerWidth - drawPadding, drawPadding] else [drawPadding, _innerWidth - drawPadding])
+        else if s.kind() is 'y'
+          if dataLabels.y
+            s.range(if s.reverse() then  [dataLabelHeight + drawPadding, _innerHeight - drawPadding] else [_innerHeight - drawPadding ,dataLabelHeight + drawPadding])
+          else
+            s.range(if s.reverse() then  [drawPadding, _innerHeight - drawPadding ] else [_innerHeight - drawPadding, drawPadding])
+        if s.showAxis() and not s.parentScale()
+          drawAxis(s)
 
       #--- position frame elements -------------------------------------------------------------------------------------
 

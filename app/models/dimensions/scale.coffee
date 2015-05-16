@@ -273,6 +273,9 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
         else if wkChartScales.hasOwnProperty(type)
           _scaleType = type
           _scale = wkChartScales[type]()
+          if type is 'ordinalPadding'
+            _scale.padding(_rangePaddingLeft, _rangePaddingRight)
+            _scale.outerPadding(_rangeOuterPaddingLeft, _rangeOuterPaddingRight)
         else
           $log.error 'Error: illegal scale type:', type
 
@@ -476,6 +479,9 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
       else
         val
 
+    me.parsedValue = (val) ->
+      return parsedValue(val)
+
     me.map = (data, layerKey) ->
       if layerKey
         if Array.isArray(data) then data.map((d) -> _scale(me.layerValue(data, layerKey))) else _scale(me.layerValue(data, layerKey))
@@ -677,7 +683,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
     me.register = () ->
       me.chart().lifeCycle().on "scaleDomains.#{me.id()}", (data) ->
         if me.parentScale()
-          _scale = me.parentScale().scale()
+          _scale.domain(me.parentScale().scale().domain())
         else
           if me.resetOnNewData()
             # ensure robust behavior in case of problematic definitions

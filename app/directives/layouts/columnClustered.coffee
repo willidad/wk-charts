@@ -48,7 +48,6 @@ angular.module('wk.chart').directive 'columnClustered', (wkColumnClustered, $log
       ###
       attrs.$observe 'padding', (val) ->
         model.rangePadding(val)
-        model.rangePadding(config)
         host.lifeCycle().update()
 
       ###*
