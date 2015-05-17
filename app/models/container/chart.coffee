@@ -114,17 +114,10 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
         if not _ownedScales.hasScale(s) and ps = _ownedScales.getKind(s.kind(), s.orientation())
           s.parentScale(ps)
           # clone relevant parent scale attributes to layout specific scale. This overrides all layout specific scale settings except property and padding
-          #ps.rangePadding(s.rangePadding())
-          #if s.reverse()
-          #  ps.reverse(true)
-          #else
-          #  if ps.reverse()
-          #    s.reverse(true)
           s.scaleType(ps.scaleType())
           s.dataFormat(ps.dataFormat())
           s.showAxis(false)
           s.showGrid(false)
-
 
     me.animationDuration = (val) ->
       if arguments.length is 0 then return _animationDuration

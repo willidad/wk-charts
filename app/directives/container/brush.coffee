@@ -81,6 +81,7 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       $log.log 'creating brush scope', scope.$id
 
       brush = chart.behavior().brush
+      axisBrush = chart.behavior().axisBrush;
 
       host = chart or layout
 
@@ -90,8 +91,8 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
         brush.x(scales.x)
         brush.y(scales.y)
       else
-        brush.x(x)
-        brush.y(y)
+        brush.x(x).y(y)
+        axisBrush.x(x).y(y)
       brush.active(true)
 
       attrs.$observe "brush", (val) ->
