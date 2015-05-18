@@ -120,7 +120,8 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
           #else
           #  if ps.reverse()
           #    s.reverse(true)
-          s.scaleType(ps.scaleType())
+          
+          #s.scaleType(ps.scaleType())
           s.dataFormat(ps.dataFormat())
           s.showAxis(false)
           s.showGrid(false)
