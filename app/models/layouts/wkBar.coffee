@@ -40,7 +40,7 @@ angular.module('wk.chart').factory 'wkBar', ($log, utils, barConfig, dataLabelFa
         elem.style(_barStyle)
         style = if color.property().length is 0 then color.scale()(d.layerKey) else color.map(d.data)
         if typeof style is 'string'
-          elem.style({fill:style, stroke:style})
+          elem.style({fill:style})
         else
           cVal = style.color
           style.fill = cVal

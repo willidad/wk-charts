@@ -44,7 +44,7 @@ angular.module('wk.chart').factory 'wkColumnStacked', ($log, utils, barConfig, d
         elem.style(_columnStyle)
         style = color.scale()(d.layerKey)
         if typeof style is 'string'
-          elem.style({fill:style, stroke:style})
+          elem.style({fill:style})
         else
           cVal = style.color
           style.fill = cVal

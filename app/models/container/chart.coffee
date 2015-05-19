@@ -116,6 +116,7 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
           # clone relevant parent scale attributes to layout specific scale. This overrides all layout specific scale settings except property and padding
           s.scaleType(ps.scaleType())
           s.dataFormat(ps.dataFormat())
+          s.reverse(ps.reverse())
           s.showAxis(false)
           s.showGrid(false)
 

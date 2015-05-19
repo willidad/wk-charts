@@ -282,6 +282,8 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       _gridArea = _container.append('g').attr('class', 'wk-chart-grid-lines')
       _chartArea = _container.append('g').attr('class', 'wk-chart-area')
       _chartArea.append('rect').style('visibility', 'hidden').attr('class', 'wk-chart-background').datum({name:'background'})
+      _container.append('g').attr('class','wk-chart-axis wk-chart-bottom') #TODO position container for other axis after chart area to get right z-order !!
+      _container.append('g').attr('class','wk-chart-axis wk-chart-left')
       #_chartArea.append('rect').attr({class:'wk-chart-extent', x:0, y:0, width:0, height:0}).style('cursor','move').datum({name:'extent'})
       _container.append('g').attr('class','wk-chart-marker-area')
 

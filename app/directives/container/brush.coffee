@@ -93,7 +93,7 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
       else
         brush.x(x).y(y)
         axisBrush.x(x).y(y)
-      brush.active(true)
+      brush.active(false)
 
       attrs.$observe "brush", (val) ->
         if _.isString(val) and val.length > 0

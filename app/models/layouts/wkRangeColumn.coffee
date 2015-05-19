@@ -40,7 +40,7 @@ angular.module('wk.chart').factory 'wkRangeColumn', ($log, utils, barConfig, dat
         elem.style(_columnStyle)
         style = color.scale()(d.layerKey)
         if typeof style is 'string'
-          elem.style({fill:style, stroke:style})
+          elem.style({fill:style})
         else
           cVal = style.color
           style.fill = cVal
@@ -74,7 +74,7 @@ angular.module('wk.chart').factory 'wkRangeColumn', ($log, utils, barConfig, dat
       range = this.selectAll('.wk-chart-rect')
         .data(rangeData[0].values, (d) -> d.key)
       range.enter().append('rect')
-        .attr('class','wk-chart-rect')
+        .attr('class','wk-chart-rect wk-chart-selectable')
         .style('opacity', 0)
         #.style('fill', color.scale()(range[0].layerKey))
         .call(_tooltip.tooltip)

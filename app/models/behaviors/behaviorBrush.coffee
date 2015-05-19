@@ -73,7 +73,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, selectionSha
 
     hideBrushElements = () ->
       d3.select(_areaNode).selectAll('.wk-chart-resize').style('display', 'none')
-      _extent.attr('width',0).attr('height', 0).attr('x', 0).attr('y', 0).style('display', 'none')
+      #_extent.attr('width',0).attr('height', 0).attr('x', 0).attr('y', 0).style('display', 'none')
 
     showBrushElements = () ->
       d3.select(_areaNode).selectAll(".wk-chart-resize").style("display", null)

@@ -15,7 +15,7 @@ angular.module('wk.chart').factory 'wkColumn', ($log, utils, barConfig, dataMana
     ttHelper = tooltipHelperFactory()
     dataLabels = dataLabelFactory()
     _tooltip = undefined
-    _columnStyle = {'stroke-width':1}
+    _columnStyle = {}
 
     #--- Draw --------------------------------------------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ angular.module('wk.chart').factory 'wkColumn', ($log, utils, barConfig, dataMana
         elem.style(_columnStyle)
         style = if color.property().length is 0 then color.scale()(d.layerKey) else color.map(d.data)
         if typeof style is 'string'
-          elem.style({fill:style, stroke:style})
+          elem.style({fill:style})
         else
           cVal = style.color
           style.fill = cVal

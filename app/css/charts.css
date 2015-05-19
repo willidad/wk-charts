@@ -14,8 +14,15 @@
 
 .wk-chart-axis .tick-bg, .wk-chart-data-label .wk-chart-data-label-bg {
     fill: transparent;
+    pointer-events:none;
 }
 
+.wk-chart-axis text {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
 
 .wk-chart-line {
     fill:none;
@@ -146,7 +153,7 @@ li.wk-chart-legend-shapeItem span {
     fill-opacity:0.6;
 }
 
-.wk-chart-data-label {
+.wk-chart-data-label, .wk-chart-label-text {
     user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -159,9 +166,15 @@ li.wk-chart-legend-shapeItem span {
     shape-rendering: crispEdges;
 }
 
-.wk-chart-rect.wk-chart-selected {
-    stroke-width:10;
-    stroke-opacity: 0.4;
+rect.wk-chart-selected {
+    stroke-width:2;
+    stroke-opacity: 1;
+    stroke:black;
+}
+
+.wk-chart-rect.wk-chart-not-selected,
+.wk-chart-box.wk-chart-not-selected {
+    fill-opacity: 0.6;
 }
 
 .wk-chart-svg-box {
@@ -184,19 +197,22 @@ td.wk-chart-tt-svg-box {
     fill: green;
 }
 
-.wk-chart-axis-brush-line-left,
-.wk-chart-axis-brush-line-right {
+.wk-chart-axis-brush-line {
     fill: lightgrey;
 }
 
-.wk-chart-axis-brush-box-left > rect,
-.wk-chart-axis-brush-box-right > rect {
+.wk-chart-axis-brush-box > rect {
     stroke: lightgrey;
     fill:white;
 }
 
-.wk-chart-axis-brush-box-left > text,
-.wk-chart-axis-brush-box-right > text {
+.wk-chart-axis-brush-box {
     font-size: 15px;
 }
+
+.wk-chart-axis-brush {
+    opacity: 0.15;
+}
+
+
 /*# sourceMappingURL=app.css.map*/

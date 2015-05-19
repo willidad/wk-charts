@@ -54,7 +54,7 @@ angular.module('wk.chart').factory 'wkBarClustered', ($log, utils, barConfig, da
         elem.style(_barStyle)
         style = color.scale()(d.layerKey)
         if typeof style is 'string'
-          elem.style({fill:style, stroke:style})
+          elem.style({fill:style})
         else
           cVal = style.color
           style.fill = cVal
