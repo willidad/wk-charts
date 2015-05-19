@@ -245,6 +245,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       gridLines.enter().append('line').attr('class', "wk-chart-grid wk-chart-#{kind}")
         .style('pointer-events', 'none')
         .style('opacity',0)
+      targetOpacity = if s.gridStyle() and s.gridStyle().opacity then s.gridStyle().opacity else 1
       gridLines.style(s.gridStyle())
       if kind is 'y'
         gridLines.transition().duration(duration)
@@ -254,7 +255,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
             y1:(d) -> if s.isOrdinal() then d + offset else s.scale()(d),
             y2:(d) -> if s.isOrdinal() then d + offset else s.scale()(d)
           })
-          .style('opacity',1)
+          .style('opacity',targetOpacity)
       else
         gridLines.transition().duration(duration)
           .attr({
@@ -263,7 +264,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
             x1:(d) -> if s.isOrdinal() then d + offset else s.scale()(d),
             x2:(d) -> if s.isOrdinal() then d + offset else s.scale()(d)
           })
-        .style('opacity',1)
+        .style('opacity',targetOpacity)
       gridLines.exit().transition().duration(duration).style('opacity',0).remove()
 
     #--- Build the container -------------------------------------------------------------------------------------------
