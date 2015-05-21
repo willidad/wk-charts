@@ -13,8 +13,8 @@ angular.module('wk.chart').provider 'wkChartScales', () ->
     me.invert = (val) ->
       return val
 
-    me.domain = d3.scale.domain
-    me.range = d3.scale.domain
+    me.domain = d3Scale.domain
+    me.range = d3Scale.domain
 
     return me
 

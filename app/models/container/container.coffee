@@ -299,7 +299,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
 
       #--- get sizing of frame components before positioning them -------------------------------------------------------
 
-      axisRect = {top:{height:0, width:0},bottom:{height:0, width:0},left:{height:0, width:0},right:{height:0, width:0}}
+      axisRect = {top:{height:0, width:500, x: 0, y: 0},bottom:{height:0, width:500, x: 0, y: 0},left:{height:500, width:0, x: 0, y: 0},right:{height:500, width:0, x: 0, y: 0}}
       labelHeight = {top:0 ,bottom:0, left:0, right:0}
       dataLabelRect = {width:0, height:0}
       dataLabels = {}
@@ -331,10 +331,34 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
             else
               dataLabelHeight = wkChartMargins.dataLabelPadding.vert + measureText(s.formattedValue(data), _container, 'wk-chart-data-label', l.dataLabelStyle()).height
 
-      #--- compute size of the drawing area  ---------------------------------------------------------------------------
-      _frameHeight = titleAreaHeight + axisRect.top.height + labelHeight.top + axisRect.bottom.height + labelHeight.bottom + _margin.top + _margin.bottom
+      bottomLeftMargin = Math.abs(axisRect.bottom.x);
+      bottomRightMargin = axisRect.bottom.width + axisRect.bottom.x - 500;
+      bottomHeight = axisRect.bottom.height;
 
-      _frameWidth = axisRect.right.width + labelHeight.right + axisRect.left.width + labelHeight.left + _margin.left + _margin.right
+      topLeftMargin = Math.abs(axisRect.top.x);
+      topRightMargin = axisRect.top.width + axisRect.top.x - 500;
+      topHeight = axisRect.top.height;
+
+      # TODO: For left/right top and bottom, this still has to be fixed.
+      # Problem is that getAxisRect draws the axis in the wrong default direction(top to bottom, but most charts use it bottom to top)
+      leftTopMargin = Math.abs(axisRect.left.y);
+      leftBottomMargin = axisRect.left.height + axisRect.left.y - 500;
+      leftWidth = axisRect.left.width;
+
+      rightTopMargin = axisRect.right.height - 500;
+      rightBottomMargin = axisRect.right.height + axisRect.right.y - 500;
+      rightWidth = axisRect.right.width;
+
+      actualLeftMargin = Math.max(Math.max(bottomLeftMargin, topLeftMargin), leftWidth);
+      actualRightMargin = Math.max(Math.max(bottomRightMargin, topRightMargin), rightWidth);
+      actualTopMargin = Math.max(Math.max(leftTopMargin, rightTopMargin), topHeight);
+      actualBottomMargin = Math.max(Math.max(leftBottomMargin, rightBottomMargin), bottomHeight);
+
+
+      #--- compute size of the drawing area  ---------------------------------------------------------------------------
+      _frameHeight = titleAreaHeight + actualTopMargin + labelHeight.top + actualBottomMargin + labelHeight.bottom + _margin.top + _margin.bottom
+
+      _frameWidth = actualLeftMargin + labelHeight.right + actualRightMargin + labelHeight.left + _margin.left + _margin.right
 
       if _frameHeight < _height
         _innerHeight = _height - _frameHeight
@@ -366,8 +390,8 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
 
       #--- position frame elements -------------------------------------------------------------------------------------
 
-      leftMargin = axisRect.left.width + labelHeight.left + _margin.left
-      topMargin = titleAreaHeight + axisRect.top.height  + labelHeight.top + _margin.top
+      leftMargin = actualLeftMargin + labelHeight.left + _margin.left
+      topMargin = titleAreaHeight + actualTopMargin  + labelHeight.top + _margin.top
 
       _spacedContainer = _container.attr('transform', "translate(#{leftMargin}, #{topMargin})")
       _svg.select("#wk-chart-clip-#{_containerId} rect").attr('width', _innerWidth).attr('height', _innerHeight)
