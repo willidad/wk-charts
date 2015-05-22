@@ -1,6 +1,7 @@
 angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, selectionSharing, d3Animation) ->
 
   behaviorAxisBrush = () ->
+    _labelInAxis = false
     _area = undefined
     _container = undefined
     _chart = undefined;
@@ -198,7 +199,6 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, selectio
               lv = hv = newKeys[0]
             lvp = _axis.scale()(lv) + _axis.scale().rangeBand() / 2
             hvp = _axis.scale()(hv) + _axis.scale().rangeBand() / 2
-            $log.info lvp, hvp, _pos1, _pos2, lv, hv
             if lvp < hvp and _pos1 < _pos2 or lvp > hvp and _pos1 > _pos2 #ensure pos1, pos2 order stays as before
               _pos1 = lvp
               _pos1Value = lv
@@ -231,7 +231,9 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, selectio
 
     setText = (selector, text) ->
       s = _container.select(selector)
-      rect = s.select('text').text(text).node().getBBox()
+      rect = s.select('text').attr('transform', 'translate(5,2)').text(text).node().getBBox()
+      rect.width += 10
+      rect.height += 3
       return s.select('rect').attr(rect).node().getBBox()
 
     positionBrush = (animate) ->
@@ -251,14 +253,16 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, selectio
         sel('.wk-chart-brush-extent-marker').attr(_brushAxis, Math.min(_pos1, _pos2)).attr(_brushAttr, Math.abs(_pos2 - _pos1))
         sel('.wk-chart-brush-line1').attr(_brushAxis, _pos1 - 3)
         sel('.wk-chart-brush-line2').attr(_brushAxis, _pos2)
-        t1Size = setText('.wk-chart-brush-label1',_axis.formatValue(_pos1Value))
-        t2Size = setText('.wk-chart-brush-label2',_axis.formatValue(_pos2Value))
+        t1Size = setText('.wk-chart-brush-label1',_axis.formatValue(getAxisValue(Math.min(_pos1,_pos2))))
+        t2Size = setText('.wk-chart-brush-label2',_axis.formatValue(getAxisValue(Math.max(_pos1,_pos2))))
         if _horizontal
-          sel('.wk-chart-brush-label1').attr('transform', "translate(#{Math.min(Math.max(_pos1 - t1Size.width / 2, 0), _scaleWidth - t1Size.width)}, 0)")
-          sel('.wk-chart-brush-label2').attr('transform', "translate(#{Math.min(Math.max(_pos2 - t2Size.width / 2, 0), _scaleWidth - t2Size.width)}, 0)")
+          lPos = if _labelInAxis then _scaleHeight + 4 else 0
+          sel('.wk-chart-brush-label1').attr('transform', "translate(#{Math.min(Math.max(Math.min(_pos1, _pos2) - t1Size.width, 0), _scaleWidth - t1Size.width)}, #{lPos})")
+          sel('.wk-chart-brush-label2').attr('transform', "translate(#{Math.min(Math.max(Math.max(_pos1, _pos2), 0), _scaleWidth - t2Size.width)}, #{lPos})")
         else
-          sel('.wk-chart-brush-label1').attr('transform', "translate(#{_scaleWidth - t1Size.width}, #{Math.min(Math.max(_pos1, t1Size.height / 2),_scaleHeight - t1Size.height / 2)})")
-          sel('.wk-chart-brush-label2').attr('transform', "translate(#{_scaleWidth - t2Size.width}, #{Math.min(Math.max(_pos2, t2Size.height / 2),_scaleHeight - t2Size.height / 2)})")
+          lPos = if _labelInAxis then -t1Size.width else _scaleWidth - t1Size.width
+          sel('.wk-chart-brush-label1').attr('transform', "translate(#{lPos}, #{Math.min(Math.max(Math.min(_pos1, _pos2) - t1Size.height / 2, t1Size.height / 2),_scaleHeight - t1Size.height / 2)})")
+          sel('.wk-chart-brush-label2').attr('transform', "translate(#{lPos}, #{Math.min(Math.max(Math.max(_pos1, _pos2) + t1Size.height / 2, t2Size.height / 2),_scaleHeight - t2Size.height / 2)})")
         setSelection()
 
     brushDispatch = () ->

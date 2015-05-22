@@ -215,11 +215,12 @@ td.wk-chart-tt-svg-box {
 
 .wk-chart-brush-label1 > rect, .wk-chart-brush-label2 > rect {
     stroke: lightgrey;
-    fill:white;
+    fill: #424242;
 }
 
 .wk-chart-brush-label1, .wk-chart-brush-label2 {
     font-size: 15px;
+    fill:white;
 }
 
 
