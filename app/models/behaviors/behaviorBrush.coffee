@@ -124,7 +124,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
     me.setExtent = () ->
 
     getAxisValue = (pos) ->
-      if _horizontal then _x.invert(pos) else _y.invert(pos)
+      _axis.value(_data[_axis.findIndex(_axis.invert(pos))])
 
     mousePos = () ->
       p = if _horizontal then d3.mouse(_area.node())[0] else d3.mouse(_area.node())[1]
@@ -202,7 +202,6 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
         pos1Idx = _axis.findIndex(pos1Value)
         pos2Idx = _axis.findIndex(pos2Value)
         _idxRange = [Math.min(pos1Idx, pos2Idx), Math.max(pos1Idx, pos2Idx)]
-        $log.info 'idxRange', _idxRange
         _selectedDomain = _data.slice(_idxRange[0], _idxRange[1] + 1)
         _brushEvents.brush(_idxRange, _selectedKeys, _selectedDomain)
 
