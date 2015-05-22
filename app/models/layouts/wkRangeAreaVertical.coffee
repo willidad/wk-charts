@@ -102,17 +102,6 @@ angular.module('wk.chart').factory 'wkRangeAreaVertical', ($log, utils, dataMana
         .color((d) -> color.scale()(d.layerKey))
       layers.call(markers, doAnimate)
 
-    brush = (axis, idxRange) ->
-      rangeArea = this.selectAll(".wk-chart-area-path")
-      if axis.isOrdinal()
-        rangeArea.attr('d', (d) -> area(d.values.slice(idxRange[0],idxRange[1] + 1)))
-        .attr('transform', "translate(#{axis.scale().rangeBand() / 2})")
-        markers.brush(this, idxRange)
-        ttHelper.brushRange(idxRange)
-      else
-        rangeArea.attr('d', (d) -> area(d.values))
-        markers.brush(this, idxRange)
-
     #--- Configuration and registration ------------------------------------------------------------------------------
 
     me.layout = (layout) ->
@@ -134,8 +123,6 @@ angular.module('wk.chart').factory 'wkRangeAreaVertical', ($log, utils, dataMana
         _tooltip.on "moveData.#{_id}", ttHelper.moveData
         _tooltip.on "moveMarker.#{_id}", ttHelper.moveMarkers
 
-      #host.lifeCycle().on "drawChart", draw
-      #_layout.lifeCycle().on "brushDraw.#{_id}", brush
       _layout.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
       _layout.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
 

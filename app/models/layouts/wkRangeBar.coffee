@@ -97,12 +97,6 @@ angular.module('wk.chart').factory 'wkRangeBar', ($log, utils, barConfig, dataMa
       layers.exit()
       .remove()
 
-    brush = (axis, idxRange) ->
-      this.selectAll('.wk-chart-rect')
-        .attr('transform',(d) -> "translate(0, #{if (y = axis.scale()(d.targetKey)) >= 0 then y else -1000})")
-        .selectAll('.wk-chart-rect')
-          .attr('height', (d) -> axis.scale().rangeBand())
-
     #--- Configuration and registration ------------------------------------------------------------------------------
     me.layout = (layout) ->
       if arguments.length is 0 then return _layout
@@ -121,8 +115,6 @@ angular.module('wk.chart').factory 'wkRangeBar', ($log, utils, barConfig, dataMa
         _selected = _layout.behavior().selected
         _tooltip.on "enter.#{_id}", ttHelper.enter
 
-      #host.lifeCycle().on "drawChart", draw
-      #_layout.lifeCycle().on "brushDraw.#{_id}", brush
       _layout.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
       _layout.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
 

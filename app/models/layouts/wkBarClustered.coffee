@@ -124,16 +124,6 @@ angular.module('wk.chart').factory 'wkBarClustered', ($log, utils, barConfig, da
       barPaddingOld = clusterPadding
       barOuterPaddingOld = barOuterPadding
 
-    drawBrush = (axis, idxRange) ->
-      clusterY.rangeBands([0,axis.scale().rangeBand()], 0, 0)
-      height = clusterY.rangeBand()
-      bars = this.selectAll(".wk-chart-rect")
-      if axis.isOrdinal()
-        bars
-        .attr('y', (d) -> if (val = axis.scale()(d.targetKey)) >= 0 then val + clusterY(d.layerKey) else -1000)
-        .attr('height', (d) -> height)
-        ttHelper.brushRange(idxRange)
-
     #-------------------------------------------------------------------------------------------------------------------
     me.layout = (layout) ->
       if arguments.length is 0 then return _layout
@@ -153,7 +143,6 @@ angular.module('wk.chart').factory 'wkBarClustered', ($log, utils, barConfig, da
           .value((d) -> d.value)
 
       #host.lifeCycle().on "drawChart", draw
-      #_layout.lifeCycle().on "brushDraw.#{_id}", drawBrush
       _layout.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
       _layout.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
 

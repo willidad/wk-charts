@@ -102,17 +102,6 @@ angular.module('wk.chart').factory 'wkLineVertical', ($log, utils, tooltipHelper
 
       layers.call(markers, doAnimate)
 
-    brush = (axis, idxRange) ->
-      layers = this.selectAll(".wk-chart-line")
-      if axis.isOrdinal()
-        layers.attr('d', (d) -> line(d.values.slice(idxRange[0],idxRange[1] + 1)))
-            .attr('transform', "translate(0,#{axis.scale().rangeBand() / 2})")
-        markers.brush(this, idxRange)
-        ttHelper.brushRange(idxRange)
-      else
-        layers.attr('d', (d) -> line(d.value))
-        markers.brush(this)
-
     #--- Configuration and registration ------------------------------------------------------------------------------
     me.layout = (layout) ->
       if arguments.length is 0 then return _layout
@@ -133,8 +122,6 @@ angular.module('wk.chart').factory 'wkLineVertical', ($log, utils, tooltipHelper
         _tooltip.on "moveData.#{_id}", ttHelper.moveData
         _tooltip.on "moveMarker.#{_id}", ttHelper.moveMarkers
 
-      #host.lifeCycle().on "drawChart", draw
-      #_layout.lifeCycle().on "brushDraw.#{_id}", brush
       _layout.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
       _layout.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
 

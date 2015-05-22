@@ -96,13 +96,6 @@ angular.module('wk.chart').factory 'wkColumn', ($log, utils, barConfig, dataMana
       columns.exit()
       .remove()
 
-    brush = (axis, idxRange) ->
-      columns
-        .attr('transform',(d) -> "translate(#{if (x = axis.scale()(d.key)) >= 0 then x else -1000})")
-        .selectAll('.wk-chart-rect')
-        .attr('width', (d) -> axis.scale().rangeBand())
-      dataLabels.brush(columns)
-
     #--- Configuration and registration ------------------------------------------------------------------------------
 
     me.layout = (layout) ->
@@ -124,7 +117,6 @@ angular.module('wk.chart').factory 'wkColumn', ($log, utils, barConfig, dataMana
           .valueScale(_scaleList.y)
         _tooltip.on "enter.#{_id}", ttHelper.enter
 
-      #_layout.lifeCycle().on "brushDraw.#{_id}", brush
       _layout.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
       _layout.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
 

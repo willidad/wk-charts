@@ -101,13 +101,6 @@ angular.module('wk.chart').factory 'wkBar', ($log, utils, barConfig, dataLabelFa
 
       bars.call(dataLabels, doAnimate, _layout.dataLabelStyle(), _layout.dataLabelBackgroundStyle())
 
-    brush = (axis, idxRange) ->
-      bars
-        .attr('transform',(d) -> "translate(0, #{if (y = axis.scale()(d.key)) >= 0 then y else -1000})")
-          .selectAll('.wk-chart-rect')
-          .attr('height', (d) -> axis.scale().rangeBand())
-      dataLabels.brush(bars)
-
     #--- Configuration and registration ------------------------------------------------------------------------------
 
     me.layout = (layout) -> 
@@ -130,7 +123,6 @@ angular.module('wk.chart').factory 'wkBar', ($log, utils, barConfig, dataLabelFa
           .keyScale(_scaleList.y)
           .valueScale(_scaleList.x)
 
-      #_layout.lifeCycle().on "brushDraw.#{_id}", brush
       _layout.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
       _layout.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
 

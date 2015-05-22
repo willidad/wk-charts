@@ -97,16 +97,7 @@ angular.module('wk.chart').factory 'wkColumnStacked', ($log, utils, barConfig, d
 
       bars.exit().remove()
 
-    brush = (axis, idxRange) ->
-      bars = this.selectAll(".wk-chart-rect")
-      if axis.isOrdinal()
-        bars
-        .attr('x', (d) -> if (val = axis.scale()(d.key)) >= 0 then val else -1000)
-        .attr('width', (d) -> axis.scale().rangeBand())
-        ttHelper.brushRange(idxRange)
-
     #-----------------------------------------------------------------------------------------------------------------
-
 
     me.layout = (layout) ->
       if arguments.length is 0 then return _layout
@@ -125,8 +116,6 @@ angular.module('wk.chart').factory 'wkColumnStacked', ($log, utils, barConfig, d
         .colorScale(_scaleList.color)
         .value((d) -> d.value)
 
-      #host.lifeCycle().on 'drawChart', draw
-      #_layout.lifeCycle().on "brushDraw.#{_id}", brush
       _layout.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
       _layout.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
 
