@@ -1,6 +1,6 @@
-angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, d3Animation) ->
+angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation) ->
 
-  behaviorAxisBrush = () ->
+  behaviorBrush = () ->
     _labelInAxis = false
     _area = undefined
     _container = undefined
@@ -49,7 +49,7 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, d3Animat
     me.chart = (val) ->
       if arguments.length is 0 then return _chart
       _chart = val
-      _chart.lifeCycle().on 'drawAxis.axisBrush', resizeExtent
+      _chart.lifeCycle().on 'drawAxis.brush', resizeExtent
       return me
 
     me.tooltip = (tt) ->
@@ -83,7 +83,7 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, d3Animat
         _cursor = 'ns-resize'
       return me
 
-    me.axisBrush = (s) -> # expects axis selector
+    me.brush = (s) -> # expects axis selector
       return me
 
     me.container = (val, axisSizing, scaleWidth, scaleHeight) ->
@@ -108,7 +108,7 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, d3Animat
         _container.select('.wk-chart-brush-extent-marker').attr('x', -axisSizing.left.width - 3).attr('width', axisSizing.left.width + 3)
         _container.selectAll('.wk-chart-brush-label-text').attr('dy', '.31em')
 
-      _area.on('mousedown.axisBrush', brushDispatch)
+      _area.on('mousedown.brush', brushDispatch)
       return me
 
     me.data = (data) ->
@@ -314,8 +314,8 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, d3Animat
       setPos2(_startPos)
       positionBrush()
       w = d3.select($window)
-      w.on('mousemove.axisBrush', brushMove)
-      w.on('mouseup.axisBrush', brushEnd)
+      w.on('mousemove.brush', brushMove)
+      w.on('mouseup.brush', brushEnd)
       d3.select('body').style('cursor', 'crosshair')
 
     extentStart = (d) ->
@@ -325,8 +325,8 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, d3Animat
       _pos1Start = _pos1
       _pos2Start = _pos2
       w = d3.select($window)
-      w.on('mousemove.axisBrush', extentMove)
-      w.on('mouseup.axisBrush', brushEnd)
+      w.on('mousemove.brush', extentMove)
+      w.on('mouseup.brush', brushEnd)
       d3.select('body').style('cursor', 'move')
 
     handle1Start = (d) ->
@@ -334,8 +334,8 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, d3Animat
       _tooltip.hide(true)
       w = d3.select($window)
       _lastPos = mousePos()
-      w.on('mousemove.axisBrush', handle1Move)
-      w.on('mouseup.axisBrush', brushEnd)
+      w.on('mousemove.brush', handle1Move)
+      w.on('mouseup.brush', brushEnd)
       d3.select('body').style('cursor', _cursor)
 
     handle2Start = (d) ->
@@ -343,8 +343,8 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, d3Animat
       _tooltip.hide(true)
       w = d3.select($window)
       _lastPos = mousePos()
-      w.on('mousemove.axisBrush', handle2Move)
-      w.on('mouseup.axisBrush', brushEnd)
+      w.on('mousemove.brush', handle2Move)
+      w.on('mouseup.brush', brushEnd)
       d3.select('body').style('cursor', _cursor)
 
     brushMove = (d) ->
@@ -387,10 +387,10 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, d3Animat
       if _tooltip
         _tooltip.hide(false)
       w = d3.select($window)
-      w.on('mousemove.axisBrush', undefined)
-      w.on('mouseup.axisBrush', undefined)
+      w.on('mousemove.brush', undefined)
+      w.on('mouseup.brush', undefined)
       d3.select('body').style('cursor', undefined)
       _brushEvents.brushEnd(_idxRange, _selectedKeys, _selectedDomain)
 
     return me
-  return behaviorAxisBrush
+  return behaviorBrush
