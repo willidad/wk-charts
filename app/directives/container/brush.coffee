@@ -16,7 +16,7 @@
   @param brush {string} Brush name
   Brush will be published under this name for consumption by other layouts
 ###
-angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior) ->
+angular.module('wk.chart').directive 'brush', ($log, behavior) ->
   brushId = 0
   return {
     restrict: 'A'
@@ -80,28 +80,14 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
 
       $log.log 'creating brush scope', scope.$id
 
-      brush = chart.behavior().brush
-      axisBrush = chart.behavior().axisBrush;
+      brush = chart.behavior().brush;
 
       host = chart or layout
 
-      if not x and not y
-        #layout brush, get x and y from layout scales
-        scales = host.scales().getScales(['x', 'y'])
-        brush.x(scales.x)
-        brush.y(scales.y)
-      else
-        brush.x(x).y(y)
-        axisBrush.x(x).y(y)
-      brush.active(false)
+      brush.x(x).y(y)
+      #brush.active(false)
 
-      attrs.$observe "brush", (val) ->
-        if _.isString(val) and val.length > 0
-          brush.brushGroup(val)
-        else
-          brush.brushGroup(undefined)
-
-      scope.$watch 'brushExtent', (newVal, oldVal) ->
+      scope.$watch 'brushExtent', (newVal) ->
         if _.isArray(newVal) and newVal.length is 0 # and _.isArray(oldVal) and oldVal.length isnt 0
           brush.clearBrush()
         else
@@ -113,8 +99,6 @@ angular.module('wk.chart').directive 'brush', ($log, selectionSharing, behavior)
           scope.$apply()
 
       brush.events().on "brush.#{_id}", (idxRange, valueRange, domain) ->
-        #if attrs.brushExtent
-        #  scope.brushExtent = idxRange
         if attrs.selectedValues
           scope.selectedValues = valueRange
         if attrs.selectedDomain

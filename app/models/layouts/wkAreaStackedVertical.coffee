@@ -149,7 +149,7 @@ angular.module('wk.chart').factory 'wkAreaStackedVertical', ($log, utils, toolti
         _tooltip.on "moveData.#{_id}", ttHelper.moveData
         _tooltip.on "moveMarker.#{_id}", ttHelper.moveMarkers
 
-      _layout.lifeCycle().on "brushDraw.#{_id}", brush
+      #_layout.lifeCycle().on "brushDraw.#{_id}", brush
       _layout.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
       _layout.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
 

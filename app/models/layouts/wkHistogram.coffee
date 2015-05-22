@@ -121,7 +121,7 @@ angular.module('wk.chart').factory 'wkHistogram', ($log, barConfig, utils, wkCha
         _tooltip.on "enter.#{_id}", ttEnter
 
       _layout.lifeCycle().on 'drawChart', draw
-      _layout.lifeCycle().on 'brushDraw', brush
+      #_layout.lifeCycle().on 'brushDraw', brush
       return me
     return me
   return wkHistogram

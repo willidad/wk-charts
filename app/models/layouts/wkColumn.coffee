@@ -124,7 +124,7 @@ angular.module('wk.chart').factory 'wkColumn', ($log, utils, barConfig, dataMana
           .valueScale(_scaleList.y)
         _tooltip.on "enter.#{_id}", ttHelper.enter
 
-      _layout.lifeCycle().on "brushDraw.#{_id}", brush
+      #_layout.lifeCycle().on "brushDraw.#{_id}", brush
       _layout.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
       _layout.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
 

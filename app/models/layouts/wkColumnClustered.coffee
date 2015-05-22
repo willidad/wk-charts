@@ -152,7 +152,7 @@ angular.module('wk.chart').factory 'wkColumnClustered', ($log, utils, barConfig,
           .value((d) -> d.value)
 
       #host.lifeCycle().on 'drawChart', draw
-      _layout.lifeCycle().on "brushDraw.#{_id}", drawBrush
+      #_layout.lifeCycle().on "brushDraw.#{_id}", drawBrush
       _layout.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
       _layout.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
 

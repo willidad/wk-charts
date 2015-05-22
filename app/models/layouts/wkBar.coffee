@@ -130,7 +130,7 @@ angular.module('wk.chart').factory 'wkBar', ($log, utils, barConfig, dataLabelFa
           .keyScale(_scaleList.y)
           .valueScale(_scaleList.x)
 
-      _layout.lifeCycle().on "brushDraw.#{_id}", brush
+      #_layout.lifeCycle().on "brushDraw.#{_id}", brush
       _layout.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
       _layout.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
 

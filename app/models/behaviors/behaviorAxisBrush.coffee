@@ -1,4 +1,4 @@
-angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, selectionSharing, d3Animation) ->
+angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, d3Animation) ->
 
   behaviorAxisBrush = () ->
     _labelInAxis = false
@@ -8,6 +8,7 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, selectio
     _tooltip = undefined;
     _x = undefined
     _y = undefined
+    _data = []
     _horizontal = true;
     _axis = undefined;
     _brushAxis = 'x';
@@ -18,18 +19,12 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, selectio
     _axisG = undefined
     _chartAreaBg = undefined
     _brushElements = undefined
-    _axisBG = undefined
-    _box1 = undefined
-    _box2 = undefined
-    _text1 = undefined
-    _text2 = undefined
-    _box1Bg = undefined
-    _box2Bg = undefined
-    _fullSize = undefined
     _scaleWidth = 0;
     _scaleHeight = 0;
 
+    _idxRange = []
     _selectedKeys = []
+    _selectedDomain = []
 
     _startPos = undefined
     _pos1 = undefined
@@ -42,6 +37,7 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, selectio
     _pos2Value = ''
     _empty = true
 
+    _brushEvents = d3.dispatch('brushStart', 'brush', 'brushEnd')
 
     me = {}
 
@@ -115,6 +111,18 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, selectio
       _area.on('mousedown.axisBrush', brushDispatch)
       return me
 
+    me.data = (data) ->
+      if arguments.length is 0 then return _data
+      _data = data
+
+    me.events = () ->
+      _brushEvents
+
+    me.clearBrush = () ->
+      clearBrush()
+
+    me.setExtent = () ->
+
     getAxisValue = (pos) ->
       if _horizontal then _x.invert(pos) else _y.invert(pos)
 
@@ -178,14 +186,33 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, selectio
             i--
 
         if upperIdx >= lowerIdx or (_axis.isVertical() and upperIdx <= lowerIdx)
+          _idxRange = [lowerIdx, upperIdx]
           _selectedKeys = keys.slice(Math.min(lowerIdx, upperIdx), Math.max(lowerIdx,upperIdx) + 1)
+          _selectedDomain = _data.slice(Math.min(lowerIdx, upperIdx), Math.max(lowerIdx,upperIdx) + 1)
         else
+          _idxRange = []
           _selectedKeys = []
+          _selectedDomain = []
+        _brushEvents.brush(_idxRange, _selectedKeys, _selectedDomain)
+
         _container.selectAll('.wk-chart-selectable').each((d) -> d3.select(this).classed('wk-chart-selected', d.key in _selectedKeys).classed('wk-chart-not-selected', not (d.key in _selectedKeys)))
+      else
+        pos1Value = _axis.invert(_pos1)
+        pos2Value = _axis.invert(_pos2)
+        pos1Idx = _axis.findIndex(pos1Value)
+        pos2Idx = _axis.findIndex(pos2Value)
+        _idxRange = [Math.min(pos1Idx, pos2Idx), Math.max(pos1Idx, pos2Idx)]
+        $log.info 'idxRange', _idxRange
+        _selectedDomain = _data.slice(_idxRange[0], _idxRange[1] + 1)
+        _brushEvents.brush(_idxRange, _selectedKeys, _selectedDomain)
 
     clearSelection = () ->
       $log.log 'selection cleared'
       _container.selectAll('.wk-chart-selectable').classed('wk-chart-selected',false).classed('wk-chart-not-selected',false)
+      _idxRange = []
+      _selectedKeys = []
+      _selectedDomain = []
+      _brushEvents.brush(_idxRange, _selectedKeys, _selectedDomain)
 
     resizeExtent = (noAnimation) ->
       if _axis
@@ -276,6 +303,8 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, selectio
         handle2Start()
       else brushStart()
 
+      _brushEvents.brushStart()
+
     brushStart = (d) ->
       d3.event.stopPropagation()
       _brushElements.style({visibility: null, 'pointer-events': 'all'})
@@ -361,6 +390,7 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, selectio
       w.on('mousemove.axisBrush', undefined)
       w.on('mouseup.axisBrush', undefined)
       d3.select('body').style('cursor', undefined)
+      _brushEvents.brushEnd(_idxRange, _selectedKeys, _selectedDomain)
 
     return me
   return behaviorAxisBrush
