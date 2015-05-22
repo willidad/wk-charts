@@ -4,22 +4,20 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, selectio
     _area = undefined
     _container = undefined
     _chart = undefined;
+    _tooltip = undefined;
     _x = undefined
     _y = undefined
     _horizontal = true;
     _axis = undefined;
-    _axisName = 'x';
-    _axisAttr = 'width';
+    _brushAxis = 'x';
+    _brushAttr = 'width';
+    _fixAxis = 'y'
+    _fixAttr = 'height'
     _cursor = 'ew-resize'
     _axisG = undefined
-    _axisBox = undefined
-    _areaBox = undefined
+    _chartAreaBg = undefined
+    _brushElements = undefined
     _axisBG = undefined
-    _axisRect1 = undefined
-    _axisRect2 = undefined
-    _axisExtent = undefined
-    _handle1 = undefined
-    _handle2 = undefined
     _box1 = undefined
     _box2 = undefined
     _text1 = undefined
@@ -27,12 +25,17 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, selectio
     _box1Bg = undefined
     _box2Bg = undefined
     _fullSize = undefined
+    _scaleWidth = 0;
+    _scaleHeight = 0;
+
+    _selectedKeys = []
 
     _startPos = undefined
     _pos1 = undefined
     _pos2 = undefined
     _pos1Start = undefined
     _pos2Start = undefined
+    _lastPos = undefined
 
     _pos1Value = ''
     _pos2Value = ''
@@ -49,6 +52,12 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, selectio
     me.chart = (val) ->
       if arguments.length is 0 then return _chart
       _chart = val
+      _chart.lifeCycle().on 'drawAxis.axisBrush', resizeExtent
+      return me
+
+    me.tooltip = (tt) ->
+      if arguments.length is 0 then return _tooltip
+      _tooltip = tt
       return me
 
     me.x = (val) ->
@@ -57,8 +66,10 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, selectio
       if val
         _axis = _x
         _horizontal = true
-        _axisName = 'x'
-        _axisAttr = 'width'
+        _brushAxis= 'x'
+        _brushAttr = 'width'
+        _fixAxis = 'y'
+        _fixAttr = 'height'
         _cursor = 'ew-resize'
       return me
 
@@ -68,77 +79,57 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, selectio
       if val
         _axis = _y
         _horizontal = false
-        _axisName = 'y';
-        _axisAttr = 'height';
+        _brushAxis = 'y'
+        _brushAttr = 'height'
+        _fixAxis = 'x'
+        _fixAttr = 'width'
         _cursor = 'ns-resize'
       return me
 
     me.axisBrush = (s) -> # expects axis selector
       return me
 
-    me.container = (val) ->
+    me.container = (val, axisSizing, scaleWidth, scaleHeight) ->
       if arguments.length is 0 then return _container
       _container = val
-      # create brush elements
+      _scaleWidth = scaleWidth
+      _scaleHeight = scaleHeight
+
       if not _axis then return
-      _fullSize = not _axis.isOrdinal()
+
+      # create brush elements
       _axisG = _container.select(".wk-chart-axis.wk-chart-#{_axis.axisOrient()}")
-      _axisBox = _axisG.node().getBBox()
-      _areaBox = _area.node().getBBox()
-
-      _axisBG = _container.select('.wk-chart-axis-brush')
-      if _axisBG.empty()  # create the brush elements
-        _axisBG = _axisG.append('rect').attr('class','wk-chart-axis-bg').style('opacity', 0).style('cursor','crosshair')
-        _axisRect1 = _axisG.append('rect').attr('class','wk-chart-axis-brush').style('opacity', 0.05).style('cursor','crosshair').style('pointer-events', 'none')
-        _axisExtent = _axisG.append('rect').attr('class','wk-chart-axis-brush-extent').style('opacity', 0.2).style('cursor','move')
-        _axisRect2 = _axisG.append('rect').attr('class','wk-chart-axis-brush').style('opacity', 0.05).style('cursor','crosshair').style('pointer-events', 'none')
-        _handle1 = _axisG.append('rect').attr('class','wk-chart-axis-brush-line').style('cursor',_cursor)
-        _handle2 = _axisG.append('rect').attr('class','wk-chart-axis-brush-line').style('cursor',_cursor)
-        _box1 = _axisG.append('g').attr('class','wk-chart-axis-brush-box')
-        _box2Bg = _box1.append('rect')
-        _box2 = _axisG.append('g').attr('class','wk-chart-axis-brush-box')
-        _box1Bg = _box2.append('rect')
-
+      _chartAreaBg = _container.select('.wk-chart-background').node()
+      _brushElements = _container.selectAll('.wk-chart-brush')
+      _container.selectAll('.wk-chart-brush-line1, .wk-chart-brush-line2').attr(_brushAttr, 3).style('cursor', _cursor)
       if _horizontal
-        _axisBG.attr({x:0, y:0, height:_axisBox.height + 3, width:_areaBox.width})
-        _axisRect1.attr('height', _axisBox.height + 3 + if _fullSize then _areaBox.height else 0).attr('y', if _fullSize then -_areaBox.height else 0)
-        _axisRect2.attr('height', _axisBox.height + 3 + if _fullSize then _areaBox.height else 0).attr('y', if _fullSize then -_areaBox.height else 0)
-        _axisExtent.attr('height', _axisBox.height + 3)
-        _handle1.attr({y:-_areaBox.height, width: 3, height:_areaBox.height + _axisBox.height + 6})
-        _handle2.attr({y:-_areaBox.height, width: 3, height:_areaBox.height + _axisBox.height + 6})
-        _text1 = _box1.append('text').attr('class','wk-chart-axis-brush-text').attr('text-anchor', 'left').attr('dy', '.71em')
-        _text2 = _box2.append('text').attr('class','wk-chart-axis-brush-text').attr('text-anchor', 'left').attr('dy', '.71em')
+        _brushElements.attr('y',0).attr('height', _scaleHeight + axisSizing.bottom.height + 3)
+        _container.select('.wk-chart-brush-extent-marker').attr('y', _scaleHeight).attr('height', axisSizing.bottom.height + 3)
+        _container.selectAll('.wk-chart-brush-label-text').attr('dy', '.71em')
       else
-        _axisBG.attr({x:-_axisBox.width, y:0, height:_areaBox.height + 3, width:_axisBox.width})
-        _axisRect1.attr('x', -_axisBox.width - 6).attr('width', _axisBox.width + 3 + if _fullSize then _areaBox.width else 0)
-        _axisRect2.attr('x', -_axisBox.width - 6).attr('width', _axisBox.width + 3 + if _fullSize then _areaBox.width else 0)
-        _axisExtent.attr('x', -_axisBox.width - 6).attr('width', _axisBox.width + 3)
-        _handle1.attr({x:-_axisBox.width - 6, height: 3, width:_areaBox.width + _axisBox.width + 6})
-        _handle2.attr({x:-_axisBox.width - 6, height: 3, width:_areaBox.width + _axisBox.width + 6})
-        _text1 = _box1.append('text').attr('class','wk-chart-axis-brush-text').attr('text-anchor', 'left').attr('dy', '.31em')
-        _text2 = _box2.append('text').attr('class','wk-chart-axis-brush-text').attr('text-anchor', 'left').attr('dy', '.31em')
+        _brushElements.attr('x', -axisSizing.left.width - 3).attr('width', axisSizing.left.width + _scaleWidth +  3)
+        _container.select('.wk-chart-brush-extent-marker').attr('x', -axisSizing.left.width - 3).attr('width', axisSizing.left.width + 3)
+        _container.selectAll('.wk-chart-brush-label-text').attr('dy', '.31em')
 
-      _axisBG.on('mousedown.axisBrushSet', brushStart)
-      _axisExtent.on('mousedown.axisBrushExtent', extentStart)
-      _handle1.on('mousedown.axisBrushLeft', leftStart)
-      _handle2.on('mousedown.axisBrushRight', rightStart)
-
+      _area.on('mousedown.axisBrush', brushDispatch)
       return me
 
-    getAxisValue = (value) ->
-      if _horizontal then _x.formatValue(_x.invert(value)) else _y.formatValue(_y.invert(value))
+    getAxisValue = (pos) ->
+      if _horizontal then _x.invert(pos) else _y.invert(pos)
+
+    mousePos = () ->
+      p = if _horizontal then d3.mouse(_area.node())[0] else d3.mouse(_area.node())[1]
+      if p < 0 then 0 else if p > limit() then limit(p) else p
 
     limit = (pos) ->
-      if _horizontal then _areaBox.width else _areaBox.height
+      if _horizontal then _scaleWidth else _scaleHeight
 
     setPos1 = (pos) ->
-      if pos >= 0 and pos <= limit()
-        _pos1 = pos
+      _pos1 = pos
       _pos1Value = getAxisValue(_pos1)
 
     setPos2 = (pos) ->
-      if pos >= 0 and pos <= limit()
-        _pos2 = pos
+      _pos2 = pos
       _pos2Value = getAxisValue(_pos2)
 
     setSelection = () ->
@@ -191,91 +182,181 @@ angular.module('wk.chart').factory 'behaviorAxisBrush', ($log, $window, selectio
           _selectedKeys = []
         _container.selectAll('.wk-chart-selectable').each((d) -> d3.select(this).classed('wk-chart-selected', d.key in _selectedKeys).classed('wk-chart-not-selected', not (d.key in _selectedKeys)))
 
-    positionBrush = () ->
-      _axisRect1.attr(_axisName, 0).attr(_axisAttr, Math.min(_pos1, _pos2))
-      _axisRect2.attr(_axisName, Math.max(_pos1, _pos2)).attr(_axisAttr, _areaBox.width - Math.max(_pos1, _pos2))
-      _axisExtent.attr(_axisName, Math.min(_pos1, _pos2)).attr(_axisAttr, Math.abs(_pos2 - _pos1))
-      _handle1.attr(_axisName, _pos1)
-      _handle2.attr(_axisName, _pos2)
-      _text1.text(_pos1Value)
-      _box1Rect = _text1.node().getBBox()
-      _box1Bg.attr(_box1Rect)
-      _text2.text(_pos2Value)
-      _box2Rect = _text2.node().getBBox()
-      _box2Bg.attr(_box2Rect)
-      if _horizontal
-        _box1.attr('transform', "translate(#{Math.min(Math.max(_pos1 - _box1Rect.width / 2, 0),_areaBox.width - _box1Rect.width)}, #{-_areaBox.height})")
-        _box2.attr('transform', "translate(#{Math.min(Math.max(_pos2 - _box2Rect.width / 2, 0),_areaBox.width - _box2Rect.width)}, #{-_areaBox.height})")
+    clearSelection = () ->
+      $log.log 'selection cleared'
+      _container.selectAll('.wk-chart-selectable').classed('wk-chart-selected',false).classed('wk-chart-not-selected',false)
+
+    resizeExtent = (noAnimation) ->
+      if _axis
+        if _axis.isOrdinal()
+          newKeys = _.intersection(_selectedKeys, _axis.scale().domain())
+          if newKeys.length > 0
+            if newKeys.length > 1
+              lv = newKeys[0]
+              hv = newKeys[newKeys.length - 1]
+            else
+              lv = hv = newKeys[0]
+            lvp = _axis.scale()(lv) + _axis.scale().rangeBand() / 2
+            hvp = _axis.scale()(hv) + _axis.scale().rangeBand() / 2
+            $log.info lvp, hvp, _pos1, _pos2, lv, hv
+            if lvp < hvp and _pos1 < _pos2 or lvp > hvp and _pos1 > _pos2 #ensure pos1, pos2 order stays as before
+              _pos1 = lvp
+              _pos1Value = lv
+              _pos2 = hvp
+              _pos2Value = hv
+            else
+              _pos2 = lvp
+              _pos2Value = lv
+              _pos1 = hvp
+              _pos1Value = hv
+            positionBrush(not noAnimation)
+          else
+            clearBrush()
+        else
+          if _pos1Value and _pos2Value
+            _pos1 = _axis.scale()(_pos1Value)
+            _pos2 = _axis.scale()(_pos2Value)
+            positionBrush(not noAnimation)
+
+
+    clearBrush = () ->
+      _pos1 = 0
+      _pos2 = 0
+      _brushElements.style({visibility: 'hidden', 'pointer-events' : 'none'})
+      d3.select('body').style('cursor', undefined)
+      clearSelection()
+      brushEnd()
+
+      _empty = true;
+
+    setText = (selector, text) ->
+      s = _container.select(selector)
+      rect = s.select('text').text(text).node().getBBox()
+      return s.select('rect').attr(rect).node().getBBox()
+
+    positionBrush = (animate) ->
+      if (_pos1 is 0 and _pos2 is limit()) or (_pos1 is 0 and _pos2 is 0) or (_pos1 is limit() and _pos2 is limit())
+        #full range is selected, hide brush
+        clearBrush()
       else
-        _box1.attr('transform', "translate(#{_areaBox.width - _box1Rect.width}, #{Math.min(Math.max(_pos1, _box1Rect.height / 2),_areaBox.height - _box1Rect.height / 2)})")
-        _box2.attr('transform', "translate(#{_areaBox.width - _box2Rect.width}, #{Math.min(Math.max(_pos2, _box1Rect.height / 2),_areaBox.height - _box2Rect.height / 2)})")
-      setSelection()
+        sel = (s) ->
+          if typeof s is 'string'
+            s = _container.selectAll(s)
+          if animate then s.transition().duration(300) else s
 
-    mousePos = () ->
-      if _horizontal then d3.mouse(_axisBG.node())[0] else d3.mouse(_axisBG.node())[1]
+        empty = false;
+        sel('.wk-chart-brush-rect1').attr(_brushAxis, 0).attr(_brushAttr, Math.min(_pos1, _pos2))
+        sel('.wk-chart-brush-rect2').attr(_brushAxis, Math.max(_pos1, _pos2)).attr(_brushAttr, (if _horizontal then _scaleWidth else _scaleHeight) - Math.max(_pos1, _pos2))
+        sel('.wk-chart-brush-extent').attr(_brushAxis, Math.min(_pos1, _pos2)).attr(_brushAttr, Math.abs(_pos2 - _pos1))
+        sel('.wk-chart-brush-extent-marker').attr(_brushAxis, Math.min(_pos1, _pos2)).attr(_brushAttr, Math.abs(_pos2 - _pos1))
+        sel('.wk-chart-brush-line1').attr(_brushAxis, _pos1 - 3)
+        sel('.wk-chart-brush-line2').attr(_brushAxis, _pos2)
+        t1Size = setText('.wk-chart-brush-label1',_axis.formatValue(_pos1Value))
+        t2Size = setText('.wk-chart-brush-label2',_axis.formatValue(_pos2Value))
+        if _horizontal
+          sel('.wk-chart-brush-label1').attr('transform', "translate(#{Math.min(Math.max(_pos1 - t1Size.width / 2, 0), _scaleWidth - t1Size.width)}, 0)")
+          sel('.wk-chart-brush-label2').attr('transform', "translate(#{Math.min(Math.max(_pos2 - t2Size.width / 2, 0), _scaleWidth - t2Size.width)}, 0)")
+        else
+          sel('.wk-chart-brush-label1').attr('transform', "translate(#{_scaleWidth - t1Size.width}, #{Math.min(Math.max(_pos1, t1Size.height / 2),_scaleHeight - t1Size.height / 2)})")
+          sel('.wk-chart-brush-label2').attr('transform', "translate(#{_scaleWidth - t2Size.width}, #{Math.min(Math.max(_pos2, t2Size.height / 2),_scaleHeight - t2Size.height / 2)})")
+        setSelection()
 
+    brushDispatch = () ->
+      # see which element is being hit in case it is emitted from a chart element
+      p = mousePos();
+      if p > _pos1 - 4 and p <= _pos1
+        handle1Start()
+      else if p > _pos1 and p < _pos2
+        extentStart()
+      else if p >= _pos2 and p < _pos2 + 4
+        handle2Start()
+      else brushStart()
 
     brushStart = (d) ->
+      d3.event.stopPropagation()
+      _brushElements.style({visibility: null, 'pointer-events': 'all'})
+      _tooltip.hide(true)
       _startPos = mousePos()
+      setPos1(_startPos)
+      setPos2(_startPos)
+      positionBrush()
       w = d3.select($window)
-
       w.on('mousemove.axisBrush', brushMove)
       w.on('mouseup.axisBrush', brushEnd)
       d3.select('body').style('cursor', 'crosshair')
 
     extentStart = (d) ->
+      d3.event.stopPropagation()
+      _tooltip.hide(true)
       _startPos = mousePos()
       _pos1Start = _pos1
       _pos2Start = _pos2
       w = d3.select($window)
-      w.on('mousemove.axisBrushExtent', extentMove)
+      w.on('mousemove.axisBrush', extentMove)
       w.on('mouseup.axisBrush', brushEnd)
       d3.select('body').style('cursor', 'move')
 
-    leftStart = (d) ->
+    handle1Start = (d) ->
+      d3.event.stopPropagation()
+      _tooltip.hide(true)
       w = d3.select($window)
-      w.on('mousemove.axisBrushLeft', leftMove)
+      _lastPos = mousePos()
+      w.on('mousemove.axisBrush', handle1Move)
       w.on('mouseup.axisBrush', brushEnd)
-      d3.select('body').style('cursor', 'ew-resize')
+      d3.select('body').style('cursor', _cursor)
 
-    rightStart = (d) ->
+    handle2Start = (d) ->
+      d3.event.stopPropagation()
+      _tooltip.hide(true)
       w = d3.select($window)
-      w.on('mousemove.axisBrushRight', rightMove)
+      _lastPos = mousePos()
+      w.on('mousemove.axisBrush', handle2Move)
       w.on('mouseup.axisBrush', brushEnd)
-      d3.select('body').style('cursor', 'ew-resize')
+      d3.select('body').style('cursor', _cursor)
 
     brushMove = (d) ->
+      d3.event.stopPropagation()
       p = mousePos()
       setPos1(Math.min(_startPos, p))
       setPos2(Math.max(_startPos, p))
       positionBrush()
 
     extentMove = (d) ->
+      d3.event.stopPropagation()
       delta = mousePos() - _startPos
-      if not (_pos1Start + delta <= 0 or _pos2Start + delta > limit())
-        setPos1(_pos1Start + delta)
-        setPos2(_pos2Start + delta)
-        positionBrush()
+      if _pos1Start + delta >= 0 and _pos2Start + delta <= limit()
+        p1 = _pos1Start + delta
+        p2 = _pos2Start + delta
+      else if delta <= 0
+        p1 = 0
+        p2 = _pos2Start - _pos1Start
+      else
+        p2 = limit()
+        p1 = limit() - (_pos2Start - _pos1Start)
 
-    leftMove = (d) ->
+      setPos1(p1)
+      setPos2(p2)
+      positionBrush()
+
+    handle1Move = (d) ->
+      d3.event.stopPropagation()
       p = mousePos()
       setPos1(p)
       positionBrush()
 
-    rightMove = (d) ->
+    handle2Move = (d) ->
+      d3.event.stopPropagation()
       p = mousePos()
       setPos2(p)
       positionBrush()
 
     brushEnd = (d) ->
+      if _tooltip
+        _tooltip.hide(false)
       w = d3.select($window)
       w.on('mousemove.axisBrush', undefined)
-      w.on('mousemove.axisBrushExtent', undefined)
-      w.on('mousemove.axisBrushLeft', undefined)
-      w.on('mousemove.axisBrushRight', undefined)
       w.on('mouseup.axisBrush', undefined)
       d3.select('body').style('cursor', undefined)
-
 
     return me
   return behaviorAxisBrush

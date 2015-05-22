@@ -175,7 +175,6 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
         _data = data
         _scope.filteredData = data                    # put data on scope so tooltip and legend can access it
         _scope.scales = _allScales
-        me.prepareScaleHierarchy()
         _lifeCycle.prepareData(data, noAnimation)    # calls the registered layout types
         _lifeCycle.animationStartState(data)         # call after prepareData to ensure scales are set up correctly
         _lifeCycle.scaleDomains(data, noAnimation)   # calls registered the scales

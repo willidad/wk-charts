@@ -255,6 +255,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
     me.scaleType = (type) ->
       if arguments.length is 0 then return _scaleType
       else
+        typeChange = type isnt _scaleType
         if d3.scale.hasOwnProperty(type) # support the full list of d3 scale types
           _scale = d3.scale[type]()
           _scaleType = type
@@ -273,6 +274,9 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
             _scale.outerPadding(_rangeOuterPaddingLeft, _rangeOuterPaddingRight)
         else
           $log.error 'Error: illegal scale type:', type
+          return
+        if typeChange
+          me.chart().prepareScaleHierarchy()
 
         _isOrdinal = _.has(_scale,'rangeBand') #_scaleType in ['ordinal', 'category10', 'category20', 'category20b', 'category20c']
         if _range
@@ -469,7 +473,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
 
 
     me.formatValue = (val) ->
-      if _outputFormatString and val and  (val.getUTCDate or not isNaN(val))
+      if _outputFormatString and val and  (_.isDate(val) or _.isFinite(val))
         _outputFormatFn(val)
       else
         val

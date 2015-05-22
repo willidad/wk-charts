@@ -17,7 +17,7 @@
     pointer-events:none;
 }
 
-.wk-chart-axis text {
+.wk-chart-axis text, .wk-chart-brush text {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -153,7 +153,7 @@ li.wk-chart-legend-shapeItem span {
     fill-opacity:0.6;
 }
 
-.wk-chart-data-label, .wk-chart-label-text {
+.wk-chart-data-label, .wk-chart-label-text, .wk-chart-legend, .wk-chart-tooltip {
     user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -193,26 +193,35 @@ td.wk-chart-tt-svg-box {
     vertical-align: middle;
 }
 
-.wk-chart-axis-brush-extent {
+.wk-chart-brush-extent-marker {
     fill: green;
+    opacity:0.3;
 }
 
-.wk-chart-axis-brush-line {
-    fill: lightgrey;
+.wk-chart-brush-line1, .wk-chart-brush-line2 {
+    stroke: darkgrey;
+    stroke-width: 1;
+    fill: white;
 }
 
-.wk-chart-axis-brush-box > rect {
+.wk-chart-brush-extent {
+    opacity: 0;
+}
+
+.wk-chart-brush-rect1, .wk-chart-brush-rect2 {
+    opacity: 0.3;
+    fill:lightgrey;
+}
+
+.wk-chart-brush-label1 > rect, .wk-chart-brush-label2 > rect {
     stroke: lightgrey;
     fill:white;
 }
 
-.wk-chart-axis-brush-box {
+.wk-chart-brush-label1, .wk-chart-brush-label2 {
     font-size: 15px;
 }
 
-.wk-chart-axis-brush {
-    opacity: 0.15;
-}
 
 
 /*# sourceMappingURL=app.css.map*/

@@ -14,9 +14,10 @@ angular.module('wk.chart').factory 'behavior', ($log, $window, behaviorTooltip, 
       _tooltip.area(chartArea)
       _selection.area(chartArea)
 
-    container = (container) ->
+    container = (container, axisSizing, width, height) ->
       _brush.container(container)
-      _axisBrush.container(container)
+      _axisBrush.container(container, axisSizing, width, height)
+      _axisBrush.tooltip(_tooltip)
       _tooltip.container(container)
 
     chart = (chart) ->
