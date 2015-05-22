@@ -121,7 +121,14 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
     me.clearBrush = () ->
       clearBrush()
 
-    me.setExtent = () ->
+    me.setExtent = (val) ->
+      if _.isArray(val) and val.length is 2
+        p1 = _axis.scale()(_axis.parsedValue(val[0]))
+        p2 = _axis.scale()(_axis.parsedValue(val[1]))
+        _pos1 = Math.min(p1, p2)
+        _pos2 = Math.max(p1,p2)
+        _brushElements.style({visibility: null, 'pointer-events': 'all'})
+        positionBrush()
 
     getAxisValue = (pos) ->
       _axis.value(_data[_axis.findIndex(_axis.invert(pos))])
