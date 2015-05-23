@@ -194,7 +194,7 @@ td.wk-chart-tt-svg-box {
 }
 
 .wk-chart-brush-extent-marker {
-    fill: green;
+    fill: #8cee8c;
     opacity:0.3;
 }
 
@@ -204,7 +204,7 @@ td.wk-chart-tt-svg-box {
     fill: white;
 }
 
-.wk-chart-brush-extent {
+.wk-chart-brush-extent { 
     opacity: 0;
 }
 
