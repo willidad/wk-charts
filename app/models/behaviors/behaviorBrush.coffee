@@ -391,7 +391,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
 
     brushEnd = (d) ->
       if _tooltip
-        _tooltip.hide(false)
+        _.defer(() -> _tooltip.hide(false))
       w = d3.select($window)
       w.on('mousemove.brush', undefined)
       w.on('mouseup.brush', undefined)
