@@ -204,13 +204,14 @@ td.wk-chart-tt-svg-box {
     fill: white;
 }
 
-.wk-chart-brush-extent { 
-    opacity: 0;
+.wk-chart-brush-extent {
+    opacity: 1;
+    fill:none;
 }
 
 .wk-chart-brush-rect1, .wk-chart-brush-rect2 {
-    opacity: 0.3;
-    fill:lightgrey;
+    opacity: 1;
+    fill:none;
 }
 
 .wk-chart-brush-label1 > rect, .wk-chart-brush-label2 > rect {

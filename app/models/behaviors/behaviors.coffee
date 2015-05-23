@@ -20,5 +20,8 @@ angular.module('wk.chart').factory 'behavior', ($log, $window, behaviorTooltip, 
       _brush.chart(chart)
       _tooltip.chart(chart)
 
-    return {tooltip:_tooltip, selected:_selection, brush: _brush, chartArea:chartArea, container:container, chart:chart}
+    svg = (svg) ->
+      _brush.svg(svg)
+
+    return {tooltip:_tooltip, selected:_selection, brush: _brush, chartArea:chartArea, container:container, chart:chart, svg:svg}
   return behavior

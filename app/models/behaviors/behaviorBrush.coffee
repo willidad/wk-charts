@@ -6,6 +6,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
     _container = undefined
     _chart = undefined;
     _tooltip = undefined;
+    _svg = undefined
     _x = undefined
     _y = undefined
     _data = []
@@ -19,6 +20,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
     _axisG = undefined
     _chartAreaBg = undefined
     _brushElements = undefined
+    _brushVisible = undefined
     _scaleWidth = 0;
     _scaleHeight = 0;
 
@@ -55,6 +57,11 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
     me.tooltip = (tt) ->
       if arguments.length is 0 then return _tooltip
       _tooltip = tt
+      return me
+
+    me.svg = (val) ->
+      if arguments.length is 0 then return _svg
+      _svg = val
       return me
 
     me.x = (val) ->
@@ -97,18 +104,19 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
       # create brush elements
       _axisG = _container.select(".wk-chart-axis.wk-chart-#{_axis.axisOrient()}")
       _chartAreaBg = _container.select('.wk-chart-background').node()
-      _brushElements = _container.selectAll('.wk-chart-brush')
+      _brushElements = _svg.selectAll('.wk-chart-brush')
+      _brushVisible = _svg.selectAll('.wk-chart-brush-vis')
       _container.selectAll('.wk-chart-brush-line1, .wk-chart-brush-line2').attr(_brushAttr, 3).style('cursor', _cursor)
       if _horizontal
         _brushElements.attr('y',0).attr('height', _scaleHeight + axisSizing.bottom.height + 3)
-        _container.select('.wk-chart-brush-extent-marker').attr('y', _scaleHeight).attr('height', axisSizing.bottom.height + 3)
+        _container.selectAll('.wk-chart-brush-extent-marker').attr('y', _scaleHeight).attr('height', axisSizing.bottom.height + 3)
         _container.selectAll('.wk-chart-brush-label-text').attr('dy', '.71em')
       else
         _brushElements.attr('x', -axisSizing.left.width - 3).attr('width', axisSizing.left.width + _scaleWidth +  3)
-        _container.select('.wk-chart-brush-extent-marker').attr('x', -axisSizing.left.width - 3).attr('width', axisSizing.left.width + 3)
+        _container.selectAll('.wk-chart-brush-extent-marker').attr('x', -axisSizing.left.width - 3).attr('width', axisSizing.left.width + 3)
         _container.selectAll('.wk-chart-brush-label-text').attr('dy', '.31em')
 
-      _area.on('mousedown.brush', brushDispatch)
+      _container.on('mousedown.brush', brushDispatch)
       return me
 
     me.data = (data) ->
@@ -255,7 +263,10 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
     clearBrush = () ->
       _pos1 = 0
       _pos2 = 0
-      _brushElements.style({visibility: 'hidden', 'pointer-events' : 'none'})
+      _brushVisible.style({visibility: 'hidden', 'pointer-events' : 'none'})
+      _svg.selectAll('.wk-chart-brush-extent').attr(_brushAxis, 0).attr(_brushAttr, if _horizontal then _scaleWidth else _scaleHeight)
+      _svg.selectAll('.wk-chart-brush-rect1').attr(_brushAttr, 0)
+      _svg.selectAll('.wk-chart-brush-rect2').attr(_brushAxis, if _horizontal then _scaleWidth else _scaleHeight).attr(_brushAttr, 0)
       d3.select('body').style('cursor', undefined)
       clearSelection()
       brushEnd()
@@ -276,7 +287,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
       else
         sel = (s) ->
           if typeof s is 'string'
-            s = _container.selectAll(s)
+            s = _svg.selectAll(s)
           if animate then s.transition().duration(300) else s
 
         empty = false;
@@ -313,7 +324,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
 
     brushStart = (d) ->
       d3.event.stopPropagation()
-      _brushElements.style({visibility: null, 'pointer-events': 'all'})
+      _brushVisible.style({visibility: null, 'pointer-events': 'all'})
       _tooltip.hide(true)
       _startPos = mousePos()
       setPos1(_startPos)
