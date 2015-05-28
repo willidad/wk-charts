@@ -260,6 +260,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
     me.scaleType = (type) ->
       if arguments.length is 0 then return _scaleType
       else
+        typeChange = type isnt _scaleType
         if d3.scale.hasOwnProperty(type) # support the full list of d3 scale types
           _scale = d3.scale[type]()
           _scaleType = type
@@ -278,6 +279,9 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
             _scale.outerPadding(_rangeOuterPaddingLeft, _rangeOuterPaddingRight)
         else
           $log.error 'Error: illegal scale type:', type
+          return
+        if typeChange
+          me.chart().prepareScaleHierarchy()
 
         _isOrdinal = _.has(_scale,'rangeBand') #_scaleType in ['ordinal', 'category10', 'category20', 'category20b', 'category20c']
         if _range
@@ -474,7 +478,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
 
 
     me.formatValue = (val) ->
-      if _outputFormatString and val and  (val.getUTCDate or not isNaN(val))
+      if _outputFormatString and val and  (_.isDate(val) or _.isFinite(val))
         _outputFormatFn(val)
       else
         val
@@ -502,7 +506,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
 
       if _.has(me.scale(),'invert') # i.e. the d3 scale supports the inverse calculation: linear, log, pow, sqrt
         interv = (_scale.range()[1] - _scale.range()[0]) / _chart.getData().length
-        return _scale.invert(mappedValue - interv/2) # ensure the marker flips in teh middle between the data points
+        return _scale.invert(mappedValue - interv/2) # ensure the marker flips in the middle between the data points
         # NOTE: THIS VERSION DOES NOT RETURN A INDEX INTO THE DATA ANYMORE. FINDING THE DATA REFERENCE IS LEFT TO THE CONSUMER OF THE RESULT
 
       if _.has(me.scale(),'invertExtent') # d3 supports this for quantize, quantile, threshold. returns the range that gets mapped to the value

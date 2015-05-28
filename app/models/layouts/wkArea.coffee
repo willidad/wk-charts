@@ -90,19 +90,6 @@ angular.module('wk.chart').factory 'wkArea', ($log, utils, tooltipHelperFactory,
         .keyScale(x.scale())
       layers.call(markers, doAnimate)
 
-    brush = (axis, idxRange) ->
-      lines = this.selectAll(".wk-chart-area-path")
-      if axis.isOrdinal()
-        lines.attr('d', (d) ->
-          null
-          area(d.values.slice(idxRange[0],idxRange[1] + 1)))
-          .attr('transform', "translate(#{axis.scale().rangeBand() / 2})")
-        markers.brush(this, idxRange)
-        ttHelper.brushRange(idxRange)
-      else
-        lines.attr('d', (d) -> area(d.values))
-        markers.brush(this)
-
     #--- Configuration and registration ------------------------------------------------------------------------------
     me.layout = (layout) -> 
       if arguments.length is 0 then return _layout
@@ -124,7 +111,6 @@ angular.module('wk.chart').factory 'wkArea', ($log, utils, tooltipHelperFactory,
         _tooltip.on "moveMarker.#{_id}", ttHelper.moveMarkers
 
       #host.lifeCycle().on 'drawChart', draw
-      _layout.lifeCycle().on "brushDraw.#{_id}", brush
       _layout.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
       _layout.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
 
