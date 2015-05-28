@@ -288,20 +288,14 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       _defs.append('clipPath').attr('id', "wk-chart-clip-#{_containerId}").append('rect')
       mask = _defs.append('mask').attr('id', "wk-chart-brush-mask-#{_containerId}")
       mask.append('rect').attr('class', 'wk-chart-brush wk-chart-brush-rect1').style('fill', 'rgba(255,255,255,0.5)')
-      mask.append('rect').attr('class', 'wk-chart-brush wk-chart-brush-extent').style('fill', '#ffffff')
+      mask.append('rect').attr('class', 'wk-chart-brush wk-chart-brush-extent').style('fill', '#ffffff').attr('width', 2000).attr('height',2000) # ensure initial visibility
       mask.append('rect').attr('class', 'wk-chart-brush wk-chart-brush-rect2').style('fill', 'rgba(255,255,255,0.5)')
 
       _container= _svg.append('g').attr('class','wk-chart-container')
-      #_overlay = _container.append('g').attr('class', 'wk-chart-overlay').style('pointer-events', 'all')
-      #_overlay.append('rect').style('visibility', 'hidden').attr('class', 'wk-chart-background').datum({name:'background'})
       _gridArea = _container.append('g').attr('class', 'wk-chart-grid-lines')
 
       _chartArea = _container.append('g').attr('class', 'wk-chart-area')
       _chartArea.append('rect').style('visibility', 'hidden').attr('class', 'wk-chart-background').style('pointer-events', 'all').datum({name:'background'})
-      #_chartArea.append('rect').attr('class', 'wk-chart-brush wk-chart-brush-rect1').style({visibility:'hidden', 'pointer-events': 'none', cursor:'crosshair'})
-      #_chartArea.append('rect').attr('class', 'wk-chart-brush wk-chart-brush-extent').style({visibility:'hidden', 'pointer-events': 'none', cursor:'move'})
-      #_chartArea.append('rect').attr('class', 'wk-chart-brush wk-chart-brush-rect2').style({visibility:'hidden', 'pointer-events': 'none', cursor:'crosshair'})
-
       _chartArea.append('rect').attr('class', 'wk-chart-brush wk-chart-brush-vis wk-chart-brush-extent-marker').style({visibility:'hidden', 'pointer-events': 'none'})
 
       _container.append('g').attr('class','wk-chart-marker-area')
@@ -397,7 +391,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       _spacedContainer = _container.attr('transform', "translate(#{leftMargin}, #{topMargin})")
       _svg.select("#wk-chart-clip-#{_containerId} rect").attr('width', _innerWidth).attr('height', _innerHeight)
       _maxDim = Math.max(_innerWidth, _innerHeight)
-      _svg.selectAll('defs>mask>rect').attr({'x':-_maxDim, y:-_maxDim, height:_maxDim * 2, width: _maxDim * 2}) # tricky. need to ensure that mask is big enough to cover area vertical before translation
+      _svg.selectAll('defs>mask>rect.wk-chart-pattern-mask').attr({'x':-_maxDim, y:-_maxDim, height:_maxDim * 2, width: _maxDim * 2}) # tricky. need to ensure that mask is big enough to cover area vertical before translation
       _spacedContainer.select('.wk-chart-area>.wk-chart-background').attr('width', _innerWidth).attr('height', _innerHeight)
       _spacedContainer.select('.wk-chart-area')#.style('clip-path', "url(#wk-chart-clip-#{_containerId})")
 

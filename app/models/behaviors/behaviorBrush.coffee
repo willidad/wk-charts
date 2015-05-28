@@ -139,7 +139,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
         positionBrush()
 
     getAxisValue = (pos) ->
-      _axis.value(_data[_axis.findIndex(_axis.invert(pos))])
+      _axis.value(_axis.find(_axis.invert(pos)))
 
     mousePos = () ->
       p = if _horizontal then d3.mouse(_area.node())[0] else d3.mouse(_area.node())[1]
@@ -288,25 +288,28 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
         sel = (s) ->
           if typeof s is 'string'
             s = _svg.selectAll(s)
-          if animate then s.transition().duration(300) else s
+          if animate then s.transition().duration(d3Animation.duration) else s
 
         empty = false;
-        sel('.wk-chart-brush-rect1').attr(_brushAxis, 0).attr(_brushAttr, Math.min(_pos1, _pos2))
-        sel('.wk-chart-brush-rect2').attr(_brushAxis, Math.max(_pos1, _pos2)).attr(_brushAttr, (if _horizontal then _scaleWidth else _scaleHeight) - Math.max(_pos1, _pos2))
-        sel('.wk-chart-brush-extent').attr(_brushAxis, Math.min(_pos1, _pos2)).attr(_brushAttr, Math.abs(_pos2 - _pos1))
-        sel('.wk-chart-brush-extent-marker').attr(_brushAxis, Math.min(_pos1, _pos2)).attr(_brushAttr, Math.abs(_pos2 - _pos1))
-        sel('.wk-chart-brush-line1').attr(_brushAxis, _pos1 - 3)
-        sel('.wk-chart-brush-line2').attr(_brushAxis, _pos2)
-        t1Size = setText('.wk-chart-brush-label1',_axis.formatValue(getAxisValue(Math.min(_pos1,_pos2))))
-        t2Size = setText('.wk-chart-brush-label2',_axis.formatValue(getAxisValue(Math.max(_pos1,_pos2))))
+        _attrLimit = if _horizontal then _scaleWidth else _scaleHeight
+        _minPos = Math.max(Math.min(_pos1, _pos2), 0)
+        _maxPos = Math.min(Math.max(_pos1, _pos2), _attrLimit)
+        sel('.wk-chart-brush-rect1').attr(_brushAxis, 0).attr(_brushAttr, _minPos)
+        sel('.wk-chart-brush-rect2').attr(_brushAxis, _maxPos).attr(_brushAttr, Math.abs(_attrLimit - _maxPos))
+        sel('.wk-chart-brush-extent').attr(_brushAxis, _minPos).attr(_brushAttr, Math.abs(_maxPos - _minPos))
+        sel('.wk-chart-brush-extent-marker').attr(_brushAxis, _minPos).attr(_brushAttr, Math.abs(_maxPos - _minPos))
+        sel('.wk-chart-brush-line1').attr(_brushAxis, _minPos-3)
+        sel('.wk-chart-brush-line2').attr(_brushAxis, _maxPos)
+        t1Size = setText('.wk-chart-brush-label1',_axis.formatValue(getAxisValue(_minPos)))
+        t2Size = setText('.wk-chart-brush-label2',_axis.formatValue(getAxisValue(_maxPos)))
         if _horizontal
           lPos = if _labelInAxis then _scaleHeight + 4 else 0
-          sel('.wk-chart-brush-label1').attr('transform', "translate(#{Math.min(Math.max(Math.min(_pos1, _pos2) - t1Size.width, 0), _scaleWidth - t1Size.width)}, #{lPos})")
-          sel('.wk-chart-brush-label2').attr('transform', "translate(#{Math.min(Math.max(Math.max(_pos1, _pos2), 0), _scaleWidth - t2Size.width)}, #{lPos})")
+          sel('.wk-chart-brush-label1').attr('transform', "translate(#{Math.min(Math.max(_minPos - t1Size.width, 0), _scaleWidth - t1Size.width)}, #{lPos})")
+          sel('.wk-chart-brush-label2').attr('transform', "translate(#{Math.min(Math.max(_maxPos, 0), _scaleWidth - t2Size.width)}, #{lPos})")
         else
           lPos = if _labelInAxis then -t1Size.width else _scaleWidth - t1Size.width
-          sel('.wk-chart-brush-label1').attr('transform', "translate(#{lPos}, #{Math.min(Math.max(Math.min(_pos1, _pos2) - t1Size.height / 2, t1Size.height / 2),_scaleHeight - t1Size.height / 2)})")
-          sel('.wk-chart-brush-label2').attr('transform', "translate(#{lPos}, #{Math.min(Math.max(Math.max(_pos1, _pos2) + t1Size.height / 2, t2Size.height / 2),_scaleHeight - t2Size.height / 2)})")
+          sel('.wk-chart-brush-label1').attr('transform', "translate(#{lPos}, #{Math.min(Math.max(_minPos - t1Size.height / 2, t1Size.height / 2),_scaleHeight - t1Size.height / 2)})")
+          sel('.wk-chart-brush-label2').attr('transform', "translate(#{lPos}, #{Math.min(Math.max(_maxPos + t1Size.height / 2, t2Size.height / 2),_scaleHeight - t2Size.height / 2)})")
         setSelection()
 
     brushDispatch = () ->
