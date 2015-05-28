@@ -73,10 +73,10 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       return _innerWidth
 
     me.scaleWidth = () ->
-      _innerWidth - drawPadding - dataLabelWidth
+      _innerWidth - drawPadding #- dataLabelWidth
 
     me.scaleHeight = () ->
-      _innerHeight - drawPadding - dataLabelHeight
+      _innerHeight - drawPadding #- dataLabelHeight
 
     me.margins = () ->
       return _margin

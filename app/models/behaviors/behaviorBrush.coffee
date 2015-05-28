@@ -307,9 +307,10 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
           sel('.wk-chart-brush-label1').attr('transform', "translate(#{Math.min(Math.max(_minPos - t1Size.width, 0), _scaleWidth - t1Size.width)}, #{lPos})")
           sel('.wk-chart-brush-label2').attr('transform', "translate(#{Math.min(Math.max(_maxPos, 0), _scaleWidth - t2Size.width)}, #{lPos})")
         else
-          lPos = if _labelInAxis then -t1Size.width else _scaleWidth - t1Size.width
-          sel('.wk-chart-brush-label1').attr('transform', "translate(#{lPos}, #{Math.min(Math.max(_minPos - t1Size.height / 2, t1Size.height / 2),_scaleHeight - t1Size.height / 2)})")
-          sel('.wk-chart-brush-label2').attr('transform', "translate(#{lPos}, #{Math.min(Math.max(_maxPos + t1Size.height / 2, t2Size.height / 2),_scaleHeight - t2Size.height / 2)})")
+          l1Pos = if _labelInAxis then -t1Size.width else _scaleWidth - t1Size.width
+          l2Pos = if _labelInAxis then -t2Size.width else _scaleWidth - t2Size.width
+          sel('.wk-chart-brush-label1').attr('transform', "translate(#{l1Pos}, #{Math.min(Math.max(_minPos - t1Size.height / 2, t1Size.height / 2),_scaleHeight - t1Size.height / 2)})")
+          sel('.wk-chart-brush-label2').attr('transform', "translate(#{l2Pos}, #{Math.min(Math.max(_maxPos + t1Size.height / 2, t2Size.height / 2),_scaleHeight - t2Size.height / 2)})")
         setSelection()
 
     brushDispatch = () ->
@@ -319,7 +320,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
         handle1Start()
       else if p > _pos1 and p < _pos2
         extentStart()
-      else if p >= _pos2 and p < _pos2 + 4
+      else if p >= _pos2 and p < _pos2 + 4 
         handle2Start()
       else brushStart()
 
