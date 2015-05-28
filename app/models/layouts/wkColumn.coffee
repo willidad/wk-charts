@@ -15,7 +15,7 @@ angular.module('wk.chart').factory 'wkColumn', ($log, utils, barConfig, dataMana
     ttHelper = tooltipHelperFactory()
     dataLabels = dataLabelFactory()
     _tooltip = undefined
-    _columnStyle = {'stroke-width':1}
+    _columnStyle = {}
 
     #--- Draw --------------------------------------------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ angular.module('wk.chart').factory 'wkColumn', ($log, utils, barConfig, dataMana
         elem.style(_columnStyle)
         style = if color.property().length is 0 then color.scale()(d.layerKey) else color.map(d.data)
         if typeof style is 'string'
-          elem.style({fill:style, stroke:style})
+          elem.style({fill:style})
         else
           cVal = style.color
           style.fill = cVal
@@ -96,15 +96,6 @@ angular.module('wk.chart').factory 'wkColumn', ($log, utils, barConfig, dataMana
       columns.exit()
       .remove()
 
-    brush = (axis, idxRange) ->
-      debugger;
-
-      columns
-        .attr('transform',(d) -> "translate(#{if (x = axis.scale()(d.key)) >= 0 then x else -1000})")
-        .selectAll('.wk-chart-rect')
-        .attr('width', (d) -> axis.scale().rangeBand())
-      dataLabels.brush(columns)
-
     #--- Configuration and registration ------------------------------------------------------------------------------
 
     me.layout = (layout) ->
@@ -126,7 +117,6 @@ angular.module('wk.chart').factory 'wkColumn', ($log, utils, barConfig, dataMana
           .valueScale(_scaleList.y)
         _tooltip.on "enter.#{_id}", ttHelper.enter
 
-      _layout.lifeCycle().on "brushDraw.#{_id}", brush
       _layout.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
       _layout.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
 

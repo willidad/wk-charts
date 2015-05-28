@@ -101,7 +101,7 @@ angular.module('wk.chart').constant 'maxTicks', 200
 angular.module('wk.chart').constant 'templateDir', 'templates/'
 
 angular.module('wk.chart').constant 'formatDefaults', {
-  date: '%x' # '%d.%m.%Y'
+  date: '%d.%m.%Y'
   number :  ',.2f'
 }
 

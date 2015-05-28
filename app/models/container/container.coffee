@@ -29,6 +29,8 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
     _behavior = undefined
     _duration = 0
     drawPadding = 0
+    dataLabelWidth = 0
+    dataLabelHeight = 0
 
     #--- Getter/Setter Functions ---------------------------------------------------------------------------------------
 
@@ -41,7 +43,6 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
         _chart = chart
         # register to lifecycle events
         _chart.lifeCycle().on "sizeContainer.#{me.id()}", me.drawChartFrame
-        #_chart.lifeCycle().on "drawAxis.#{me.id()}", me.drawChartFrame
         return me
 
     me.element = (elem) ->
@@ -70,6 +71,12 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
 
     me.width = () ->
       return _innerWidth
+
+    me.scaleWidth = () ->
+      _innerWidth - drawPadding - dataLabelWidth
+
+    me.scaleHeight = () ->
+      _innerHeight - drawPadding - dataLabelHeight
 
     me.margins = () ->
       return _margin
@@ -170,11 +177,11 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       axis.call(dim.axis())
 
       if dim.rotateTickLabels()
-        axis.selectAll("text")
+        axis.selectAll(".tick > text")
         .attr({dy:'0.35em'})
         .attr('transform', tickLabelsShift(dim))
         .style('text-anchor', tickLabelsAnchor(dim))
-      axis.selectAll('text').style(dim.tickLabelStyle())
+      axis.selectAll('.tick > text').style(dim.tickLabelStyle())
 
       box = axis.node().getBBox()
       axis.remove()
@@ -193,14 +200,14 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       
       # Customize the axis styling
       if dim.rotateTickLabels()
-        axis.selectAll(".wk-chart-#{dim.axisOrient()}.wk-chart-axis text")
+        axis.selectAll(".wk-chart-#{dim.axisOrient()}.wk-chart-axis .tick>text")
           .attr({dy:'0.35em'})
           .attr('transform', (d)-> tickLabelsShift(dim))
           .style('text-anchor', tickLabelsAnchor(dim))
           .style('pointer-events', 'none')
           .style(dim.tickLabelStyle())
       else
-        axis.selectAll(".wk-chart-#{dim.axisOrient()}.wk-chart-axis text")
+        axis.selectAll(".wk-chart-#{dim.axisOrient()}.wk-chart-axis .tick>text")
           .attr('transform', null)
           .style('pointer-events', 'none')
           .style(dim.tickLabelStyle())
@@ -270,6 +277,10 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
     #--- Build the container -------------------------------------------------------------------------------------------
     # build generic elements first
 
+    _genBrushLabel = () ->
+      this.append('rect')
+      this.append('text').attr('class','wk-chart-brush-label-text').attr('text-anchor','left')
+
     _genChartFrame = () ->
       _chartAreaDiv = _elementSelection.append('div').attr('class', 'wk-chart')
       _svg = _chartAreaDiv.append('svg').attr('class', 'wk-chart')
@@ -281,9 +292,19 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       #_overlay = _container.append('g').attr('class', 'wk-chart-overlay').style('pointer-events', 'all')
       #_overlay.append('rect').style('visibility', 'hidden').attr('class', 'wk-chart-background').datum({name:'background'})
       _gridArea = _container.append('g').attr('class', 'wk-chart-grid-lines')
+
       _chartArea = _container.append('g').attr('class', 'wk-chart-area')
-      _chartArea.append('rect').style('visibility', 'hidden').attr('class', 'wk-chart-background').datum({name:'background'})
-      #_chartArea.append('rect').attr({class:'wk-chart-extent', x:0, y:0, width:0, height:0}).style('cursor','move').datum({name:'extent'})
+      _chartArea.append('rect').style('visibility', 'hidden').attr('class', 'wk-chart-background').style('pointer-events', 'all').datum({name:'background'})
+      _chartArea.append('rect').attr('class', 'wk-chart-brush wk-chart-brush-rect1').style({visibility:'hidden', 'pointer-events': 'none', cursor:'crosshair'})
+      _chartArea.append('rect').attr('class', 'wk-chart-brush wk-chart-brush-extent').style({visibility:'hidden', 'pointer-events': 'none', cursor:'move'})
+      _chartArea.append('rect').attr('class', 'wk-chart-brush wk-chart-brush-rect2').style({visibility:'hidden', 'pointer-events': 'none', cursor:'crosshair'})
+      _chartArea.append('rect').attr('class', 'wk-chart-brush wk-chart-brush-line1').style({visibility:'hidden', 'pointer-events': 'none'})
+      _chartArea.append('rect').attr('class', 'wk-chart-brush wk-chart-brush-line2').style({visibility:'hidden', 'pointer-events': 'none'})
+      _chartArea.append('rect').attr('class', 'wk-chart-brush wk-chart-brush-extent-marker').style({visibility:'hidden', 'pointer-events': 'none'})
+      _chartArea.append('g').attr('class','wk-chart-brush wk-chart-brush-label1').call(_genBrushLabel)
+      _chartArea.append('g').attr('class','wk-chart-brush wk-chart-brush-label2').call(_genBrushLabel)
+      #_container.append('g').attr('class','wk-chart-axis wk-chart-bottom') #TODO position container for other axis after chart area to get right z-order !!
+      #_container.append('g').attr('class','wk-chart-axis wk-chart-left')
       _container.append('g').attr('class','wk-chart-marker-area')
 
     # start to build and size the elements from top to bottom
@@ -377,7 +398,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
         #if not s.parentScale()
         if s.kind() is 'x'
           if dataLabels.x
-            s.range(if s.reverse() then  [_innerWidth - drawPadding - dataLabelWidth, drawPadding] else [drawPadding, _innerWidth - drawPadding- dataLabelWidth])
+            s.range(if s.reverse() then  [_innerWidth - drawPadding - dataLabelWidth, drawPadding] else [drawPadding, _innerWidth - drawPadding - dataLabelWidth])
           else
             s.range(if s.reverse() then  [_innerWidth - drawPadding, drawPadding] else [drawPadding, _innerWidth - drawPadding])
         else if s.kind() is 'y'
@@ -398,7 +419,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       _maxDim = Math.max(_innerWidth, _innerHeight)
       _svg.selectAll('defs>mask>rect').attr({'x':-_maxDim, y:-_maxDim, height:_maxDim * 2, width: _maxDim * 2}) # tricky. need to ensure that mask is big enough to cover area vertical before translation
       _spacedContainer.select('.wk-chart-area>.wk-chart-background').attr('width', _innerWidth).attr('height', _innerHeight)
-      _spacedContainer.select('.wk-chart-area').style('clip-path', "url(#wk-chart-clip-#{_containerId})")
+      _spacedContainer.select('.wk-chart-area')#.style('clip-path', "url(#wk-chart-clip-#{_containerId})")
 
       _container.selectAll('.wk-chart-axis.wk-chart-right').attr('transform', "translate(#{_innerWidth}, 0)")
       _container.selectAll('.wk-chart-axis.wk-chart-bottom').attr('transform', "translate(0, #{_innerHeight})")
@@ -422,7 +443,7 @@ angular.module('wk.chart').factory 'container', ($log, $window, wkChartMargins, 
       _chartAreaDiv.style(_chart.backgroundStyle())
 
       _chart.behavior().chartArea(_chartArea)
-      _chart.behavior().container(_container)
+      _chart.behavior().container(_container, axisRect, me.scaleWidth(), me.scaleHeight())
 
       # register destroy event listener
 

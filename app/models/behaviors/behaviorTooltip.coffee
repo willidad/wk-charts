@@ -56,6 +56,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
 
     tooltipEnter = () ->
       if not _active or _hide then return
+
       # append data div
 
       _templScope.layers = {}
@@ -126,16 +127,14 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
     #--- Interface to brush --------------------------------------------------------------------------------------------
 
     forwardToBrush = (e) ->
-      # forward the mousdown event to the brush overlay to ensure that brushing can start at any point in the drawing area
+      # forward the mousedown event to the brush overlay to ensure that brushing can start at any point in the drawing area
 
-      brush_elm = _areaNode;
-      if d3.event.target isnt brush_elm #do not dispatch if target is overlay
-        new_click_event = new Event('mousedown');
-        new_click_event.pageX = d3.event.pageX;
-        new_click_event.clientX = d3.event.clientX;
-        new_click_event.pageY = d3.event.pageY;
-        new_click_event.clientY = d3.event.clientY;
-        brush_elm.dispatchEvent(new_click_event);
+      brush_elm = _container.select('.wk-chart-background').node()
+      eventCopy = document.createEvent("MouseEvents");
+      eventCopy.initMouseEvent('mousedown', true, true, d3.event.view, d3.event.detail,
+        d3.event.pageX || d3.event.layerX, d3.event.pageY || d3.event.layerY, d3.event.clientX, d3.event.clientY, d3.event.ctrlKey, d3.event.altKey,
+        d3.event.shiftKey, d3.event.metaKey, d3.event.button, d3.event.relatedTarget);
+      brush_elm.dispatchEvent(eventCopy);
 
     forwardToSelection = (e) ->
       # forward click event to selection module
@@ -148,8 +147,9 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
         _hide = val
         if _markerG
           _markerG.style('visibility', if _hide then 'hidden' else 'visible')
-        _templScope.ttHide = _hide
-        _templScope.$apply()
+        if _templScope
+          _templScope.ttHide = _hide
+          _templScope.$apply()
         return me #to enable chaining
 
 
@@ -270,8 +270,6 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
             .on 'mousemove.tooltip', tooltipMove
             .on 'mouseleave.tooltip', tooltipLeave
 
-        #if not s.empty() and not s.classed('wk-chart-area')
-        #  s.on 'mousedown.tooltip', forwardToBrush
 
     return me
 

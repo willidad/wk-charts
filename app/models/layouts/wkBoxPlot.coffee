@@ -37,13 +37,13 @@ angular.module('wk.chart').factory 'wkBoxPlot', ($log, utils, barConfig, dataMan
 
     drawPath = (doAnimate, data, options, x, y, color) ->
 
-      setStyle = (s, key) ->
+      setStyle = (s, key, noStroke) ->
         s.each((d) ->
           elem = d3.select(this)
           elem.style(_boxStyle)
           style = color.scale()(d[key].property)
           if typeof style is 'string'
-            elem.style({fill:style, stroke:style})
+            elem.style(if noStroke then {fill:style} else {fill:style, stroke:style})
           else
             cVal = style.color
             style.fill = cVal
@@ -101,16 +101,12 @@ angular.module('wk.chart').factory 'wkBoxPlot', ($log, utils, barConfig, dataMan
         .attr('class', 'wk-chart-box-uq wk-chart-selectable')
         .classed('wk-chart-hidden', true)
         .style('opacity', 0)
-        .style('fill', 'white')
-        .style('stroke', 'black')
         .call(_tooltip.tooltip)
 
       boxEnter.append('rect')
         .attr('class', 'wk-chart-box-lq  wk-chart-selectable')
         .classed('wk-chart-hidden', true)
         .style('opacity', 0)
-        .style('fill', 'white')
-        .style('stroke', 'black')
         .call(_tooltip.tooltip)
 
       boxEnter.append('line')
@@ -124,7 +120,7 @@ angular.module('wk.chart').factory 'wkBoxPlot', ($log, utils, barConfig, dataMan
       boxEnter.append('line')
         .attr('class', 'wk-chart-box-lw-conn')
         .classed('wk-chart-hidden', true)
-        .style({opacity: 0, 'stroke-dasharray':'2.2'})
+        .style({opacity: 0, 'stroke-dasharray':'2.2', 'stroke-width':3})
       boxEnter.append('line')
         .attr('class', 'wk-chart-box-uw')
         .classed('wk-chart-hidden', true)
@@ -132,13 +128,13 @@ angular.module('wk.chart').factory 'wkBoxPlot', ($log, utils, barConfig, dataMan
       boxEnter.append('line')
         .attr('class', 'wk-chart-box-uw-conn')
         .classed('wk-chart-hidden', true)
-        .style({opacity: 0, 'stroke-dasharray':'2.2'})
+        .style({opacity: 0, 'stroke-dasharray':'2.2', 'stroke-width':3})
       (if doAnimate then box.transition().duration( options.duration) else box)
         .attr('transform',(d) -> "translate(#{x.scale()(d.targetKey) + offset(d)})")
         .style('opacity', (d) -> if d.deleted then 0 else 1)
 
       uq = box.select('.wk-chart-box-uq')
-        .call(setStyle, 'uq')
+        .call(setStyle, 'uq', true) # no strole
       (if doAnimate then uq.transition().duration( options.duration) else uq)
         .attr('y', (d) -> y.scale()(d.uq.val))
         .attr('height', (d) -> Math.abs(y.scale()(d.uq.val) - y.scale()(d.med.val)))
@@ -146,7 +142,7 @@ angular.module('wk.chart').factory 'wkBoxPlot', ($log, utils, barConfig, dataMan
         .style('opacity', 1)
 
       lq = box.select('.wk-chart-box-lq')
-        .call(setStyle, 'lq')
+        .call(setStyle, 'lq', true) # no stroke
       (if doAnimate then lq.transition().duration( options.duration) else lq)
         .attr('y', (d) -> y.scale()(d.med.val))
         .attr('height', (d) -> Math.abs(y.scale()(d.med.val) - y.scale()(d.lq.val)))
@@ -160,7 +156,7 @@ angular.module('wk.chart').factory 'wkBoxPlot', ($log, utils, barConfig, dataMan
         .attr('x2', (d) -> if d.added or d.deleted then 0 else barWidth*1.3)
         .attr('y1', (d) -> y.scale()(d.med.val))
         .attr('y2', (d) -> y.scale()(d.med.val))
-        .style({'opacity':1, 'stroke-width':2})
+        .style({'opacity':1, 'stroke-width':3})
 
       lWhisker =  box.select('.wk-chart-box-lw')
         .call(setStyle, 'min')
@@ -204,12 +200,6 @@ angular.module('wk.chart').factory 'wkBoxPlot', ($log, utils, barConfig, dataMan
       box.exit()
         .remove()
 
-    brush = (axis, idxRange) ->
-      this.selectAll('.wk-chart-rect')
-          .attr('transform',(d) -> "translate(0, #{if (x = axis.scale()(d.targetKey)) >= 0 then x else -1000})")
-        .selectAll('.wk-chart-rect')
-          .attr('height', (d) -> axis.scale().rangeBand())
-
     #--- Configuration and registration ------------------------------------------------------------------------------
     me.layout = (layout) ->
       if arguments.length is 0 then return _layout
@@ -228,7 +218,6 @@ angular.module('wk.chart').factory 'wkBoxPlot', ($log, utils, barConfig, dataMan
         _tooltip.on "enter.#{_id}", ttHelper.enter
 
       #host.lifeCycle().on "drawChart", draw
-      _layout.lifeCycle().on "brushDraw.#{_id}", brush
       _layout.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
       _layout.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
 

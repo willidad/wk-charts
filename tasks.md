@@ -6,6 +6,9 @@ Brushing for all bar / column charts: any data update positions all bars/columns
 Brushing for all bar / column charts: removing a element in the brushing area removes rects, but not axis entry 
 Brush all charts: Adding /deleting entries does not adjust brush overlay to reflect brush window
 
+BoxPlot reverse axis: Animation starts / ends at wrong position
+BoxPlot ordinalPadding: delete last animates tp wrong position
+
 Fixed
 -----
 

@@ -130,6 +130,7 @@ angular.module('wk.chart').provider 'wkChartScales', () ->
         # setup range
         offs = if _reverse then _paddingRight + _outerRight else _paddingLeft + _outerLeft
         r0 = start + _step *  offs
+        _range = []
         for i in [0 .. _domain.length - 1]
           _range[i] = r0 + i * _step
         if _reverse then _range.reverse()
