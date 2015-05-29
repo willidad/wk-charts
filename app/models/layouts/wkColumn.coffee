@@ -31,7 +31,7 @@ angular.module('wk.chart').factory 'wkColumn', ($log, utils, barConfig, dataMana
       drawPath.apply(this, [true, layoutData, options, x, y, color])
 
     drawPath = (doAnimate, data, options, x, y, color) ->
-
+      alert('This is a test');
       setStyle = (d) ->
         elem = d3.select(this)
         elem.style(_columnStyle)

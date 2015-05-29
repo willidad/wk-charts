@@ -34,6 +34,7 @@ angular.module('wk.chart').factory 'wkLine', ($log, utils, barConfig, dataLabelF
     setAnimationEnd = (data, options, x, y, color) ->
       markers.active(_showMarkers)
       layoutData = xData.animationEndLayers()
+      dataLabels.duration(options.duration).active(_layout.showDataLabels()) # needs to be here to ensure right opacity animation !
       drawPath.apply(this, [true, layoutData, options, x, y, color])
       timing.stop('chart')
       timing.report()
@@ -125,6 +126,9 @@ angular.module('wk.chart').factory 'wkLine', ($log, utils, barConfig, dataLabelF
         _tooltip.on "enter.#{_id}", ttHelper.enter
         _tooltip.on "moveData.#{_id}", ttHelper.moveData
         _tooltip.on "moveMarker.#{_id}", ttHelper.moveMarkers
+        dataLabels
+          .keyScale(_scaleList.x)
+          .valueScale(_scaleList.y)
 
       _layout.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
       _layout.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd

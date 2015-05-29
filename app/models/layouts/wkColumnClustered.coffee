@@ -1,4 +1,4 @@
-angular.module('wk.chart').factory 'wkColumnClustered', ($log, utils, barConfig, dataManagerFactory, tooltipHelperFactory)->
+angular.module('wk.chart').factory 'wkColumnClustered', ($log, utils, barConfig, dataLabelFactory, dataManagerFactory, tooltipHelperFactory)->
   clusteredColumnCntr = 0
   wkColumnClustered = () ->
     me = () ->
@@ -17,6 +17,7 @@ angular.module('wk.chart').factory 'wkColumnClustered', ($log, utils, barConfig,
 
     xData = dataManagerFactory()
     ttHelper = tooltipHelperFactory()
+    dataLabels = dataLabelFactory()
 
     initial = true
 
@@ -42,6 +43,7 @@ angular.module('wk.chart').factory 'wkColumnClustered', ($log, utils, barConfig,
 
     setAnimationEnd = (data, options, x, y, color) ->
       layoutData = xData.animationEndLayers()
+      dataLabels.duration(options.duration).active(_layout.showDataLabels()) # needs to be here to ensure right opacity animation !
       drawPath.apply(this, [true, layoutData, options, x, y, color])
 
     drawPath = (doAnimate, data, options, x, y, color) ->
@@ -92,30 +94,33 @@ angular.module('wk.chart').factory 'wkColumnClustered', ($log, utils, barConfig,
       layers.exit()
         .remove()
 
-      bars = layers.selectAll('.wk-chart-rect')
+      barsGroup = layers.selectAll('g.wk-chart-rect-container')
         .data(
           (d) -> d.values
         , (d) -> d.layerKey + '|' + d.key
         )
 
-      bars.enter().append('rect')
+      barsGroupEnter = barsGroup.enter().append('g').attr('class', 'wk-chart-rect-container')
+        .attr('transform', (d)-> "translate(#{x.scale()(d.targetKey) + d.y0 + offset(d)})")
+        
+      bars = barsGroupEnter.append('rect')
         .attr('class', 'wk-chart-rect wk-chart-selectable')
         #.style('fill', (d) -> color.scale()(d.layerKey))
         .style('opacity', 0)
         .call(_tooltip.tooltip)
         .call(_selected)
 
-      bars
+      bars      
         .each(setStyle)
 
       (if doAnimate then bars.transition().duration(options.duration) else bars)
-        .attr('x', (d) -> x.scale()(d.targetKey) + d.y0 + offset(d))
         .attr('width', (d) -> d.y)
         .attr('height', (d) -> Math.abs(y.scale()(0) - y.scale()(d.targetValue)))
         .attr('y', (d) -> Math.min(y.scale()(0), y.scale()(d.targetValue)))
         .style('opacity', 1)
 
-      bars.exit()
+      barsGroup.call(dataLabels, doAnimate, _layout.dataLabelStyle(), _layout.dataLabelBackgroundStyle())
+      barsGroup.exit()
         .remove()
 
       initial = false
@@ -140,6 +145,9 @@ angular.module('wk.chart').factory 'wkColumnClustered', ($log, utils, barConfig,
           .valueScale(_scaleList.y)
           .colorScale(_scaleList.color)
           .value((d) -> d.value)
+        dataLabels
+          .keyScale(_scaleList.x)
+          .valueScale(_scaleList.y)
 
       _layout.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
       _layout.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd
