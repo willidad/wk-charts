@@ -194,7 +194,7 @@ td.wk-chart-tt-svg-box {
 }
 
 .wk-chart-brush-extent-marker {
-    fill: green;
+    fill: #8cee8c;
     opacity:0.3;
 }
 
@@ -205,12 +205,13 @@ td.wk-chart-tt-svg-box {
 }
 
 .wk-chart-brush-extent {
-    opacity: 0;
+    opacity: 1;
+    fill:none;
 }
 
 .wk-chart-brush-rect1, .wk-chart-brush-rect2 {
-    opacity: 0.3;
-    fill:lightgrey;
+    opacity: 1;
+    fill:none;
 }
 
 .wk-chart-brush-label1 > rect, .wk-chart-brush-label2 > rect {

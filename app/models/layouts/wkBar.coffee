@@ -73,7 +73,7 @@ angular.module('wk.chart').factory 'wkBar', ($log, utils, barConfig, dataLabelFa
       bars = bars.data(data[0].values, (d, i) -> d.key)
 
       enter = bars.enter().append('g').attr('class','wk-chart-layer')
-        .attr('transform', (d)-> "translate(#{x.scale()(0)}, #{y.scale()(d.targetKey) + offset(d)})")
+        .attr('transform', (d)-> "translate(0, #{y.scale()(d.targetKey) + offset(d)})")
 
       enter.append('rect')
         .attr('class', 'wk-chart-rect wk-chart-selectable')
@@ -83,7 +83,7 @@ angular.module('wk.chart').factory 'wkBar', ($log, utils, barConfig, dataLabelFa
         .call(_selected)
 
       (if doAnimate then bars.transition().duration(options.duration) else bars)
-          .attr('transform', (d) -> "translate(#{x.scale()(0)}, #{y.scale()(d.targetKey) + offset(d)}) scale(1,1)")
+          .attr('transform', (d) -> "translate(0, #{y.scale()(d.targetKey) + offset(d)}) scale(1,1)")
 
       rect = bars.select('rect.wk-chart-rect')
         #.style('fill', (d) -> if color.property().length is 0 then color.scale()(d.layerKey) else color.map(d.data))
@@ -93,6 +93,7 @@ angular.module('wk.chart').factory 'wkBar', ($log, utils, barConfig, dataLabelFa
       (if doAnimate then rect.transition().duration(options.duration) else rect)
         .attr('height', (d) -> if d.added or d.deleted then 0 else barHeight)
         .attr('width', (d) -> Math.abs(x.scale()(0) - x.scale()(d.targetValue)))
+        .attr('x',(d) -> Math.min(x.scale()(0), x.scale()(d.targetValue)))
         .style('opacity', 1)
 
       bars.exit()

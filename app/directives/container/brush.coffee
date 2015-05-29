@@ -96,7 +96,7 @@ angular.module('wk.chart').directive 'brush', ($log, behavior) ->
       brush.events().on "brushStart.#{_id}", () ->
         if attrs.brushStart
           scope.brushStart()
-          scope.$apply()
+          _.defer(() -> scope.$apply())
 
       brush.events().on "brush.#{_id}", (idxRange, valueRange, domain) ->
         if attrs.selectedValues
@@ -104,12 +104,12 @@ angular.module('wk.chart').directive 'brush', ($log, behavior) ->
         if attrs.selectedDomain
           scope.selectedDomain = domain
         scope.selectedDomainChange({domain:domain})
-        scope.$apply()
+        _.defer(() -> scope.$apply())
 
       brush.events().on "brushEnd.#{_id}", (idxRange, valueRange, domain) ->
         if attrs.brushEnd
           scope.brushEnd({domain:domain})
-          scope.$apply()
+          _.defer(() -> scope.$apply())
 
       chart.lifeCycle().on 'drawChart.brush', (data) ->
         brush.data(data)

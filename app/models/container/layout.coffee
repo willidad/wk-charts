@@ -83,7 +83,7 @@ angular.module('wk.chart').factory 'layout', ($log, scale, scaleList, timing) ->
       container = _container.getChartArea()
       drawArea = container.select(".#{me.id()}")
       if drawArea.empty()
-        drawArea = container.append('g').attr('class', (d) -> me.id()).style('clip-path', "url(#wk-chart-clip-#{_container.id()})")
+        drawArea = container.append('g').attr('class', (d) -> me.id()).style({mask: "url(#wk-chart-brush-mask-#{_container.id()})", 'clip-path': "url(#wk-chart-clip-#{_container.id()})"}) #, 'clip-path': "url(#wk-chart-clip-#{_container.id()})"
       return drawArea
 
     buildArgs = (data, notAnimated) ->
