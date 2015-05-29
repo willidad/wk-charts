@@ -59,7 +59,7 @@ angular.module('wk.chart').directive 'areaStacked', (wkAreaStacked, $log, utils,
       ###
       attrs.$observe 'spline', (val) ->
         if val is '' or val is 'true'
-          model.sline(true)
+          model.spline(true)
         else
           model.spline(false)
         controller.me.lifeCycle().update()

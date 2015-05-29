@@ -6,6 +6,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
     _container = undefined
     _chart = undefined;
     _tooltip = undefined;
+    _svg = undefined
     _x = undefined
     _y = undefined
     _data = []
@@ -19,6 +20,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
     _axisG = undefined
     _chartAreaBg = undefined
     _brushElements = undefined
+    _brushVisible = undefined
     _scaleWidth = 0;
     _scaleHeight = 0;
 
@@ -55,6 +57,11 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
     me.tooltip = (tt) ->
       if arguments.length is 0 then return _tooltip
       _tooltip = tt
+      return me
+
+    me.svg = (val) ->
+      if arguments.length is 0 then return _svg
+      _svg = val
       return me
 
     me.x = (val) ->
@@ -97,18 +104,19 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
       # create brush elements
       _axisG = _container.select(".wk-chart-axis.wk-chart-#{_axis.axisOrient()}")
       _chartAreaBg = _container.select('.wk-chart-background').node()
-      _brushElements = _container.selectAll('.wk-chart-brush')
+      _brushElements = _svg.selectAll('.wk-chart-brush')
+      _brushVisible = _svg.selectAll('.wk-chart-brush-vis')
       _container.selectAll('.wk-chart-brush-line1, .wk-chart-brush-line2').attr(_brushAttr, 3).style('cursor', _cursor)
       if _horizontal
         _brushElements.attr('y',0).attr('height', _scaleHeight + axisSizing.bottom.height + 3)
-        _container.select('.wk-chart-brush-extent-marker').attr('y', _scaleHeight).attr('height', axisSizing.bottom.height + 3)
+        _container.selectAll('.wk-chart-brush-extent-marker').attr('y', _scaleHeight).attr('height', axisSizing.bottom.height + 3)
         _container.selectAll('.wk-chart-brush-label-text').attr('dy', '.71em')
       else
         _brushElements.attr('x', -axisSizing.left.width - 3).attr('width', axisSizing.left.width + _scaleWidth +  3)
-        _container.select('.wk-chart-brush-extent-marker').attr('x', -axisSizing.left.width - 3).attr('width', axisSizing.left.width + 3)
+        _container.selectAll('.wk-chart-brush-extent-marker').attr('x', -axisSizing.left.width - 3).attr('width', axisSizing.left.width + 3)
         _container.selectAll('.wk-chart-brush-label-text').attr('dy', '.31em')
 
-      _area.on('mousedown.brush', brushDispatch)
+      _container.on('mousedown.brush', brushDispatch)
       return me
 
     me.data = (data) ->
@@ -131,7 +139,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
         positionBrush()
 
     getAxisValue = (pos) ->
-      _axis.value(_data[_axis.findIndex(_axis.invert(pos))])
+      _axis.value(_axis.find(_axis.invert(pos)))
 
     mousePos = () ->
       p = if _horizontal then d3.mouse(_area.node())[0] else d3.mouse(_area.node())[1]
@@ -255,7 +263,10 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
     clearBrush = () ->
       _pos1 = 0
       _pos2 = 0
-      _brushElements.style({visibility: 'hidden', 'pointer-events' : 'none'})
+      _brushVisible.style({visibility: 'hidden', 'pointer-events' : 'none'})
+      _svg.selectAll('.wk-chart-brush-extent').attr(_brushAxis, 0).attr(_brushAttr, if _horizontal then _scaleWidth else _scaleHeight)
+      _svg.selectAll('.wk-chart-brush-rect1').attr(_brushAttr, 0)
+      _svg.selectAll('.wk-chart-brush-rect2').attr(_brushAxis, if _horizontal then _scaleWidth else _scaleHeight).attr(_brushAttr, 0)
       d3.select('body').style('cursor', undefined)
       clearSelection()
       brushEnd()
@@ -276,26 +287,30 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
       else
         sel = (s) ->
           if typeof s is 'string'
-            s = _container.selectAll(s)
-          if animate then s.transition().duration(300) else s
+            s = _svg.selectAll(s)
+          if animate then s.transition().duration(d3Animation.duration) else s
 
         empty = false;
-        sel('.wk-chart-brush-rect1').attr(_brushAxis, 0).attr(_brushAttr, Math.min(_pos1, _pos2))
-        sel('.wk-chart-brush-rect2').attr(_brushAxis, Math.max(_pos1, _pos2)).attr(_brushAttr, (if _horizontal then _scaleWidth else _scaleHeight) - Math.max(_pos1, _pos2))
-        sel('.wk-chart-brush-extent').attr(_brushAxis, Math.min(_pos1, _pos2)).attr(_brushAttr, Math.abs(_pos2 - _pos1))
-        sel('.wk-chart-brush-extent-marker').attr(_brushAxis, Math.min(_pos1, _pos2)).attr(_brushAttr, Math.abs(_pos2 - _pos1))
-        sel('.wk-chart-brush-line1').attr(_brushAxis, _pos1 - 3)
-        sel('.wk-chart-brush-line2').attr(_brushAxis, _pos2)
-        t1Size = setText('.wk-chart-brush-label1',_axis.formatValue(getAxisValue(Math.min(_pos1,_pos2))))
-        t2Size = setText('.wk-chart-brush-label2',_axis.formatValue(getAxisValue(Math.max(_pos1,_pos2))))
+        _attrLimit = if _horizontal then _scaleWidth else _scaleHeight
+        _minPos = Math.max(Math.min(_pos1, _pos2), 0)
+        _maxPos = Math.min(Math.max(_pos1, _pos2), _attrLimit)
+        sel('.wk-chart-brush-rect1').attr(_brushAxis, 0).attr(_brushAttr, _minPos)
+        sel('.wk-chart-brush-rect2').attr(_brushAxis, _maxPos).attr(_brushAttr, Math.abs(_attrLimit - _maxPos))
+        sel('.wk-chart-brush-extent').attr(_brushAxis, _minPos).attr(_brushAttr, Math.abs(_maxPos - _minPos))
+        sel('.wk-chart-brush-extent-marker').attr(_brushAxis, _minPos).attr(_brushAttr, Math.abs(_maxPos - _minPos))
+        sel('.wk-chart-brush-line1').attr(_brushAxis, _minPos-3)
+        sel('.wk-chart-brush-line2').attr(_brushAxis, _maxPos)
+        t1Size = setText('.wk-chart-brush-label1',_axis.formatValue(getAxisValue(_minPos)))
+        t2Size = setText('.wk-chart-brush-label2',_axis.formatValue(getAxisValue(_maxPos)))
         if _horizontal
           lPos = if _labelInAxis then _scaleHeight + 4 else 0
-          sel('.wk-chart-brush-label1').attr('transform', "translate(#{Math.min(Math.max(Math.min(_pos1, _pos2) - t1Size.width, 0), _scaleWidth - t1Size.width)}, #{lPos})")
-          sel('.wk-chart-brush-label2').attr('transform', "translate(#{Math.min(Math.max(Math.max(_pos1, _pos2), 0), _scaleWidth - t2Size.width)}, #{lPos})")
+          sel('.wk-chart-brush-label1').attr('transform', "translate(#{Math.min(Math.max(_minPos - t1Size.width, 0), _scaleWidth - t1Size.width)}, #{lPos})")
+          sel('.wk-chart-brush-label2').attr('transform', "translate(#{Math.min(Math.max(_maxPos, 0), _scaleWidth - t2Size.width)}, #{lPos})")
         else
-          lPos = if _labelInAxis then -t1Size.width else _scaleWidth - t1Size.width
-          sel('.wk-chart-brush-label1').attr('transform', "translate(#{lPos}, #{Math.min(Math.max(Math.min(_pos1, _pos2) - t1Size.height / 2, t1Size.height / 2),_scaleHeight - t1Size.height / 2)})")
-          sel('.wk-chart-brush-label2').attr('transform', "translate(#{lPos}, #{Math.min(Math.max(Math.max(_pos1, _pos2) + t1Size.height / 2, t2Size.height / 2),_scaleHeight - t2Size.height / 2)})")
+          l1Pos = if _labelInAxis then -t1Size.width else _scaleWidth - t1Size.width
+          l2Pos = if _labelInAxis then -t2Size.width else _scaleWidth - t2Size.width
+          sel('.wk-chart-brush-label1').attr('transform', "translate(#{l1Pos}, #{Math.min(Math.max(_minPos - t1Size.height / 2, t1Size.height / 2),_scaleHeight - t1Size.height / 2)})")
+          sel('.wk-chart-brush-label2').attr('transform', "translate(#{l2Pos}, #{Math.min(Math.max(_maxPos + t1Size.height / 2, t2Size.height / 2),_scaleHeight - t2Size.height / 2)})")
         setSelection()
 
     brushDispatch = () ->
@@ -305,7 +320,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
         handle1Start()
       else if p > _pos1 and p < _pos2
         extentStart()
-      else if p >= _pos2 and p < _pos2 + 4
+      else if p >= _pos2 and p < _pos2 + 4 
         handle2Start()
       else brushStart()
 
@@ -313,7 +328,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
 
     brushStart = (d) ->
       d3.event.stopPropagation()
-      _brushElements.style({visibility: null, 'pointer-events': 'all'})
+      _brushVisible.style({visibility: null, 'pointer-events': 'all'})
       _tooltip.hide(true)
       _startPos = mousePos()
       setPos1(_startPos)
@@ -391,7 +406,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
 
     brushEnd = (d) ->
       if _tooltip
-        _tooltip.hide(false)
+        _.defer(() -> _tooltip.hide(false))
       w = d3.select($window)
       w.on('mousemove.brush', undefined)
       w.on('mouseup.brush', undefined)
