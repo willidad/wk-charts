@@ -29,8 +29,8 @@
 }
 
 .wk-chart-area-path {
-    stroke-width:1!important;
-    shape-rendering: crispEdges;
+    stroke-width:1;
+    /*shape-rendering: crispEdges;*/
 }
 
 .wk-charts-tt-marker {
