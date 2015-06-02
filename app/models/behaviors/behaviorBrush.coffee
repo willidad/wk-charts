@@ -369,6 +369,7 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
       d3.select('body').style('cursor', _cursor)
 
     brushMove = (d) ->
+      console.log('movin brush');
       d3.event.stopPropagation()
       p = mousePos()
       setPos1(Math.min(_startPos, p))
@@ -411,6 +412,10 @@ angular.module('wk.chart').factory 'behaviorBrush', ($log, $window, d3Animation)
       w.on('mousemove.brush', undefined)
       w.on('mouseup.brush', undefined)
       d3.select('body').style('cursor', undefined)
+      
+      # A threshold for setting minimum brush size.
+      if _pos1 != 0 && _pos2 != 0 && Math.abs(_pos1 - _pos2) < 3
+        clearBrush() 
       _brushEvents.brushEnd(_idxRange, _selectedKeys, _selectedDomain)
 
     return me

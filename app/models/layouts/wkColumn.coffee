@@ -31,7 +31,7 @@ angular.module('wk.chart').factory 'wkColumn', ($log, utils, barConfig, dataMana
       drawPath.apply(this, [true, layoutData, options, x, y, color])
 
     drawPath = (doAnimate, data, options, x, y, color) ->
-
+      alert('This is a test');
       setStyle = (d) ->
         elem = d3.select(this)
         elem.style(_columnStyle)
@@ -91,7 +91,7 @@ angular.module('wk.chart').factory 'wkColumn', ($log, utils, barConfig, dataMana
         .attr('y', (d) -> Math.min(y.scale()(0), y.scale()(d.targetValue)))
         .style('opacity', 1)
 
-      columns.call(dataLabels, doAnimate, _layout.dataLabelStyle())
+      columns.call(dataLabels, doAnimate, _layout.dataLabelStyle(), _layout.dataLabelBackgroundStyle())
 
       columns.exit()
       .remove()
@@ -135,6 +135,11 @@ angular.module('wk.chart').factory 'wkColumn', ($log, utils, barConfig, dataMana
     me.columnStyle = (val) ->
       if arguments.length is 0 then return _columnStyle
       _columnStyle = val
+      return me
+
+    me.columnConfig = (val) ->
+      if arguments.length is 0 then return config
+      _.assign(config, val)
       return me
 
     return me

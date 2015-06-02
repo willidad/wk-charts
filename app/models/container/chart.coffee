@@ -114,7 +114,11 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
         if not _ownedScales.hasScale(s) and ps = _ownedScales.getKind(s.kind(), s.orientation())
           s.parentScale(ps)
           # clone relevant parent scale attributes to layout specific scale. This overrides all layout specific scale settings except property and padding
-          s.scaleType(ps.scaleType())
+          #ps.rangePadding(s.rangePadding())
+          if ps.reverse()
+            s.reverse(true)
+
+          #s.scaleType(ps.scaleType())
           s.dataFormat(ps.dataFormat())
           s.reverse(ps.reverse())
           s.showAxis(false)
@@ -166,6 +170,13 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
 
     me.behavior = () ->
       return _behavior
+
+    me.destroy = () ->
+      me.lifeCycle().on '.chart', null
+      me.container().element(undefined)
+      $log.log 'Destroying chart'
+      me.lifeCycle().destroy()
+      
 
     #--- Chart drawing life cycle --------------------------------------------------------------------------------------
 
@@ -224,6 +235,7 @@ angular.module('wk.chart').factory 'chart', ($log, scaleList, container, behavio
     me.lifeCycle().on 'update.chart', (noAnimation) -> me.execLifeCycleFull(_data, noAnimation)
     me.lifeCycle().on 'updateAttrs', me.attributeChange
     me.lifeCycle().on 'rescaleDomains', _lifeCycle.scaleDomains(_data, true) #no animation
+
 
     #--- Initialization ------------------------------------------------------------------------------------------------
 

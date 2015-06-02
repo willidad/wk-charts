@@ -3,8 +3,8 @@ exports.config =
         definition: false
         wrapper: false
     paths:
-        #'public': '../cpm4/frontend/src/main/webapp/vendor/wk-charts'
-        'public': '../wk-charts-build/lib'
+        'public': '../cpm4/frontend/src/main/webapp/vendor/wk-charts'
+        #'public': '../wk-charts-build/lib'
         'watched': [ 'app', 'wk.chart' ]
     files:
         javascripts:

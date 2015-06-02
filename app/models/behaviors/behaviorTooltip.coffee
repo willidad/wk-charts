@@ -168,6 +168,7 @@ angular.module('wk.chart').factory 'behaviorTooltip', ($log, $document, $rootSco
             _templScope.label = undefined
             _templScope.value = undefined
             _templScope.$destroy()
+          $(_compiledTempl).remove();
           _compiledTempl = undefined
           _areaNode = undefined
         return me

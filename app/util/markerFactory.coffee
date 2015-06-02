@@ -1,4 +1,4 @@
-angular.module('wk.chart').factory 'markerFactory', ($log, d3Animation) ->
+angular.module('wk.chart').factory 'markerFactory', ($log, d3Animation, dataLabelFactory) ->
 
   markersCnt = 0
 
@@ -15,30 +15,45 @@ angular.module('wk.chart').factory 'markerFactory', ($log, d3Animation) ->
     _keyScale = undefined
     _markerSelection = undefined
     _id = markersCnt++
+    _showDataLabels = true
+    dataLabels = dataLabelFactory().markerLabels(true)
+
 
     me = (s, doAnimate) ->
+      # this draws the markers.
+      # markers allow for drawing both marker items as well as
+      # data labels.
       _markerSelection = s
-      if _active
-        m = s.selectAll(".wk-chart-marker-#{_id}").data(
+      if _active or _showDataLabels
+        m = s.selectAll("g.wk-chart-marker-#{_id}").data(
           (d) -> d.values
         , (d, i) -> i
         )
 
-        m.enter().append('circle').attr('class', "wk-chart-marker-#{_id}")
-          .style('fill', _color)
-          .attr('r', 5)
-          .style('pointer-events', 'none')
+        markerGroup = m.enter().append('g').attr('class', "wk-chart-marker-#{_id}")
           .style('opacity', _initialOpacity)
+          .style('pointer-events', 'none')
+
+        if _active
+          markerGroup.append('circle').attr('class', 'wk-chart-marker-bubble')
+            .style('fill', _color)
+            .attr('r', 5)
+        else
+          m.selectAll('circle.wk-chart-marker-bubble').remove()
+
+        if _showDataLabels 
+          m.call(dataLabels, doAnimate, {}, {})          
+
+
         mUpdate = if doAnimate then m.transition().duration(_duration) else m
-        mUpdate
-          .attr('cx', _x)
-          .attr('cy', _y)
+        mUpdate.attr('transform', (d) -> "translate(#{_x(d)}, #{_y(d)})")
           .style('opacity', (d) -> (if d.added or d.deleted or d.layerAdded or d.layerDeleted then 0 else 1) * _opacity)
+
         mExit = if doAnimate then m.exit().transition().duration(_duration) else m.exit()
-        mExit
-          .remove()
+        mExit.remove()
+
       else
-        s.selectAll(".wk-chart-marker-#{_id}").transition().duration(_duration)
+        s.selectAll("g.wk-chart-marker-#{_id}").transition().duration(_duration)
           .style('opacity', 0).remove()
 
     me.brush = (selection, idxRange) ->
@@ -63,6 +78,13 @@ angular.module('wk.chart').factory 'markerFactory', ($log, d3Animation) ->
       _active = trueFalse
       _opacity = if _active then 1 else 0
       return me
+
+    me.showDataLabels = (trueFalse) ->
+      if arguments.lenght is 0 then return _showDataLabels
+      _showDataLabels = trueFalse
+
+    me.dataLabels = ->
+      return dataLabels
 
     me.x = (val) ->
       if arguments.length is 0 then return _x

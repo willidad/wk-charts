@@ -188,6 +188,11 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
       if arguments.length is 0 then return _kind
       else
         _kind = kind
+        if kind is 'x'
+          me.scaleType('linear')
+          me.resetOnNewData(true)
+          me.isHorizontal(true)
+
         return me
 
     me.parent = (parent) ->
@@ -329,14 +334,13 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
 
     _domainMin = undefined
     me.domainMin = (val) ->
-      if arguments.length is 0 then return _domainMin or _calculatedDomain[0]
+      if arguments.length is 0 then return (if _domainMin != undefined then _domainMin else if _calculatedDomain then _calculatedDomain[0] else undefined)
       _domainMin = parsedValue(val)
       return me
 
     _domainMax = undefined
-    _domainMax = undefined
     me.domainMax = (val) ->
-      if arguments.length is 0 then return _domainMax or _calculatedDomain[1]
+      if arguments.length is 0 then return (if _domainMax != undefined then _domainMax else if _calculatedDomain then _calculatedDomain[1] else undefined)
       _domainMax = parsedValue(val)
       return me
 
@@ -442,7 +446,7 @@ angular.module('wk.chart').factory 'scale', ($log, legend, formatDefaults, wkCha
       if arguments.length is 0 then return _inputFormatString
       else
         _inputFormatString = format
-        if _scaleType is 'time'
+        if _scaleType is 'time' and format
           _inputFormatFn = wkChartLocale.timeFormat(format)
         else
           _inputFormatFn = (d) -> d

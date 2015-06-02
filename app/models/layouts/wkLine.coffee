@@ -105,7 +105,6 @@ angular.module('wk.chart').factory 'wkLine', ($log, utils, barConfig, dataLabelF
 
     #--- Configuration and registration ------------------------------------------------------------------------------
 
-
     me.layout = (layout) -> 
       if arguments.length is 0 then return _layout
       _layout = layout
@@ -124,6 +123,11 @@ angular.module('wk.chart').factory 'wkLine', ($log, utils, barConfig, dataLabelF
         _tooltip.on "enter.#{_id}", ttHelper.enter
         _tooltip.on "moveData.#{_id}", ttHelper.moveData
         _tooltip.on "moveMarker.#{_id}", ttHelper.moveMarkers
+        markers.duration(_layout.chart().animationDuration())
+        markers.dataLabels()
+          .keyScale(_scaleList.x)
+          .valueScale(_scaleList.y)
+          .active(layout.showDataLabels())
 
       _layout.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
       _layout.lifeCycle().on "animationEndState.#{_id}", setAnimationEnd

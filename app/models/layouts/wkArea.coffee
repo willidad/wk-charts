@@ -8,6 +8,7 @@ angular.module('wk.chart').factory 'wkArea', ($log, utils, tooltipHelperFactory,
     _scaleList = {}
     _showMarkers = false
     _areaStyle = false
+    _lineStyle = false
     _spline = false
     offset = 0
     _id = 'area' + areaCntr++
@@ -72,10 +73,15 @@ angular.module('wk.chart').factory 'wkArea', ($log, utils, tooltipHelperFactory,
 
       path = layers.select('.wk-chart-area-path')
         .attr('transform', "translate(#{offset})")
-        .each(setStyle)
       path = if doAnimate then path.transition().duration( options.duration) else path
+      path.each(setStyle)
+
+      targetOpacity = _showOpacity
+      if me.areaStyle() and me.areaStyle().opacity
+        targetOpacity = me.areaStyle().opacity
+
       path.attr('d', (d) -> area(d.values))
-        .style('opacity', (d) -> if d.added or d.deleted then 0 else _showOpacity)
+        .style('opacity', (d) -> if d.added or d.deleted then 0 else targetOpacity)
         #.style('pointer-events', 'none')
       layers.exit()
         .remove()
@@ -109,6 +115,11 @@ angular.module('wk.chart').factory 'wkArea', ($log, utils, tooltipHelperFactory,
         _tooltip.on "enter.#{_id}", ttHelper.enter
         _tooltip.on "moveData.#{_id}", ttHelper.moveData
         _tooltip.on "moveMarker.#{_id}", ttHelper.moveMarkers
+        markers.duration(_layout.chart().animationDuration())
+        markers.dataLabels()
+          .keyScale(_scaleList.x)
+          .valueScale(_scaleList.y)
+          .active(layout.showDataLabels())
 
       #host.lifeCycle().on 'drawChart', draw
       _layout.lifeCycle().on "animationStartState.#{_id}", setAnimationStart
@@ -132,6 +143,11 @@ angular.module('wk.chart').factory 'wkArea', ($log, utils, tooltipHelperFactory,
     me.areaStyle = (val) ->
       if arguments.length is 0 then return _areaStyle
       _areaStyle = val
+      return me
+
+    me.lineStyle = (val) ->
+      if arguments.length is 0 then return _lineStyle
+      _lineStyle = val
       return me
 
 
